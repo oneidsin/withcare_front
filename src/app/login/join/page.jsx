@@ -1,13 +1,15 @@
 "use client"
 
 import "../login.css"
-import {useRef, useState} from "react";
+import {useRef, useState, useEffect} from "react";
 import axios from "axios";
 import { useRouter } from 'next/navigation';
 
 export default function joinPage(){
     const router = useRouter();
-    const[info,setInfo]=useState({id:'',pw:'',name:'',year:'',gender:'',email:''});
+    const[info,setInfo]=useState({id:'',pw:'',name:'',year:'',gender:'',email:'',cancer:'',stage:''});
+    const[cancerTypes, setCancerTypes] = useState([]);
+    const[stageTypes, setStageTypes] = useState([]);
     let chk = useRef(false);
 
     const input=(e)=>{
@@ -43,18 +45,14 @@ export default function joinPage(){
             return;
         }
 
-        try {
-            const response = await axios.post('http://localhost/join', info);
-            if (response.data.success) {
-                alert('회원가입이 완료되었습니다.');
-                router.push('/login'); // 로그인 페이지로 이동
-            } else {
-                alert('회원가입에 실패했습니다. 다시 시도해주세요.');
-            }
-        } catch (error) {
-            console.error('회원가입 에러:', error);
-            alert('회원가입 중 오류가 발생했습니다.');
+        const response = await axios.post('http://localhost/join', info);
+        if (response.data.success) {
+            alert('회원가입이 완료되었습니다.');
+            router.push('/login'); // 로그인 페이지로 이동
+        } else {
+            alert('회원가입에 실패했습니다. 다시 시도해주세요.');
         }
+        
     };
 
     return (
@@ -99,6 +97,32 @@ export default function joinPage(){
                     <th>EMAIL</th>
                     <td>
                         <input type="text" name="email" value={info.email} onChange={input}/>
+                    </td>
+                </tr>
+                <tr>
+                    <th>암 종류</th>
+                    <td>
+                        <select name="cancer" value={info.cancer} onChange={input}>
+                            <option value="">선택하세요</option>
+                            {cancerTypes.map((cancer) => (
+                                <option key={cancer.cancer_name} value={cancer.cancer_name}>
+                                    {cancer.cancer_name}
+                                </option>
+                            ))}
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th>암 병기</th>
+                    <td>
+                        <select name="stage" value={info.stage} onChange={input}>
+                            <option value="">선택하세요</option>
+                            {stageTypes.map((stage) => (
+                                <option key={stage.id} value={stage.id}>
+                                    {stage.name}
+                                </option>
+                            ))}
+                        </select>
                     </td>
                 </tr>
                 <tr>
