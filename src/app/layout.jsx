@@ -1,5 +1,10 @@
 "use client" // ✅ 반드시 최상단
 
+import { AiOutlineLogin } from "react-icons/ai";
+import { AiOutlineSearch } from "react-icons/ai";
+import { AiOutlineMail } from "react-icons/ai";
+import { AiOutlineBell } from "react-icons/ai";
+import { AiOutlineUser } from "react-icons/ai";
 import './app.css'
 import { Provider } from "react-redux";
 import Link from "next/link";
@@ -18,44 +23,15 @@ export default function RootLayout({ children }) {
                 <img src="/logo.png" alt="withcare 로고" className="logo" />
                 </Link>
 
-                {/* ✅ 헤더 우측 기능 영역 */}
                 <div className="header-right">
-                    {/* 로그인 / 로그아웃 */}
-                    <Link href="/login">
-                        <span className="emoji">🚪</span>
-                    </Link>
-
-                    {/* 검색 */}
-                    <Link href="/search">
-                        <div className="icon-wrapper">
-                            <span className="emoji">🔍</span>
-                        </div>
-                    </Link>
-
-                    {/* 쪽지 */}
-                    <Link href="/messages">
-                        <div className="icon-wrapper">
-                            <span className="emoji">✉️</span>
-                        </div>
-                    </Link>
-
-                    {/* 알림 */}
-                    <Link href="/notifications">
-                        <div className="icon-wrapper">
-                            <span className="emoji">🔔</span>
-                        </div>
-                    </Link>
-
-                    {/* 프로필 */}
-                    <Link href="/profile">
-                        <span className="emoji">👤</span>
-                    </Link>
-                </div>
-
-                <div className='header-rt'>
                     {/* 아이콘 추가 */}
-                    
+                    <AiOutlineLogin style={{ fontSize: '28px', cursor: 'pointer', marginRight: '18px' }} title="로그아웃" />
+                    <AiOutlineSearch style={{ fontSize: '28px', cursor: 'pointer', marginRight: '18px' }} title="검색" />
+                    <AiOutlineMail style={{ fontSize: '28px', cursor: 'pointer', marginRight: '18px' }} title="메일" />
+                    <AiOutlineBell style={{ fontSize: '28px', cursor: 'pointer', marginRight: '18px' }} title="알림" />
+                    <AiOutlineUser style={{ fontSize: '28px', cursor: 'pointer' }} title="프로필" />
                 </div>
+                    
             </header>
             <nav>
                 <a href="#">공지사항</a>
