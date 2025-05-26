@@ -18,9 +18,37 @@ export default function RootLayout({ children }) {
                 <img src="/logo.png" alt="withcare 로고" className="logo" />
                 </Link>
 
+                {/* ✅ 헤더 우측 기능 영역 */}
                 <div className="header-right">
+                    {/* 로그인 / 로그아웃 */}
                     <Link href="/login">
-                        <span style={{ fontSize: '24px', cursor: 'pointer' }}>로그인</span>
+                        <span className="emoji">🚪</span>
+                    </Link>
+
+                    {/* 검색 */}
+                    <Link href="/search">
+                        <div className="icon-wrapper">
+                            <span className="emoji">🔍</span>
+                        </div>
+                    </Link>
+
+                    {/* 쪽지 */}
+                    <Link href="/messages">
+                        <div className="icon-wrapper">
+                            <span className="emoji">✉️</span>
+                        </div>
+                    </Link>
+
+                    {/* 알림 */}
+                    <Link href="/notifications">
+                        <div className="icon-wrapper">
+                            <span className="emoji">🔔</span>
+                        </div>
+                    </Link>
+
+                    {/* 프로필 */}
+                    <Link href="/profile">
+                        <span className="emoji">👤</span>
                     </Link>
                 </div>
 
