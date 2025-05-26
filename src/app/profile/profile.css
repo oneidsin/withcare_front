@@ -1,0 +1,145 @@
+.profile-page {
+    display: flex;
+    gap: 24px;
+    padding: 24px;
+    background-color: #fdfaf6;
+    font-family: sans-serif;
+}
+
+.sidebar {
+    width: 240px;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    padding: 20px;
+}
+
+.sidebar ul li {
+    cursor: pointer;
+    padding: 4px 8px;
+}
+
+.sidebar ul li.active {
+    font-weight: bold;
+    color: #0070f3; /* 강조 색상 */
+}
+
+.user-info {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.profile-img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 12px;
+    border: 1px solid #ccc;
+}
+
+.username {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.role {
+    color: #aa3333;
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+.visit {
+    font-size: 12px;
+    color: #888;
+    margin-top: 4px;
+}
+
+.activity-box {
+    border-top: 1px solid #eee;
+    padding-top: 16px;
+    cursor: pointer;
+}
+
+.activity-box h4 {
+    margin-bottom: 12px;
+    font-size: 16px;
+    color: #333;
+}
+
+.activity-box ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.activity-box li {
+    padding: 6px 0;
+    font-size: 14px;
+    color: #555;
+}
+
+
+.main-profile {
+    flex: 1;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    padding: 24px;
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.intro-text {
+    font-size: 14px;
+    color: #777;
+}
+
+.profile-details p {
+    margin: 4px 0;
+    font-size: 14px;
+}
+
+.tab-section {
+    margin-top: 32px;
+}
+
+.tab-menu {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.tab-content,
+.activity-content {
+    transition: opacity 0.3s ease;
+    opacity: 1;
+}
+
+.tab-menu button {
+    padding: 8px 16px;
+    border: none;
+    background: #f4f4f4;
+    cursor: pointer;
+    border-radius: 4px;
+    margin-right: 8px;
+}
+
+.tab-menu button.active {
+    background: #0070f3;
+    color: white;
+    font-weight: bold;
+}
+
+.tab-content {
+    padding: 20px;
+    background-color: #fafafa;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #444;
+}

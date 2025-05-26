@@ -36,7 +36,10 @@ export default function RootLayout({ children }) {
 
                     <AiOutlineMail style={{ fontSize: '28px', cursor: 'pointer', marginRight: '18px' }} title="메일" />
                     <AiOutlineBell style={{ fontSize: '28px', cursor: 'pointer', marginRight: '18px' }} title="알림" />
-                    <AiOutlineUser style={{ fontSize: '28px', cursor: 'pointer' }} title="프로필" />
+                    <Link href="/profile">
+                        <AiOutlineUser style={{ fontSize: '28px', cursor: 'pointer' }} title="프로필" />
+                    </Link>
+
                 </div>
                     
             </header>
