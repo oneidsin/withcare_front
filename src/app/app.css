@@ -185,3 +185,70 @@ footer {
     padding: 16px;
     text-align: center;
 }
+
+/* 아이콘끼리의 간격 */
+.icon-wrapper {
+    position: relative;
+    margin-right: 16px;
+    display: inline-block;
+}
+
+/* 우측 상단 부분 ㅁ */
+/* 아이콘 감싸는 이미지 */
+.icon-wrapper img {
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+}
+
+/* 아이콘 위 숫자 */
+.badge {
+    position: absolute;
+    top: -5px;
+    right: -10px;
+    background: red;
+    color: white;
+    font-size: 12px;
+    width: 18px;
+    height: 18px;
+    text-align: center;
+    border-radius: 50%;
+    line-height: 18px;
+}
+
+/* 아이콘 */
+.icon {
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+/* 로그인 버튼 */
+.login-btn {
+    font-size: 16px;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.header {
+    height: 60px;
+    display: flex;
+    justify-content: space-between; /* 좌측 로고, 우측 아이콘들 */
+    align-items: center;            /* 수직 가운데 정렬 */
+    padding: 0 20px;
+    background-color: #fff;
+    box-sizing: border-box;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px; /* 아이콘 간격 */
+    margin-right: 50px;
+}
+
+.emoji {
+    font-size: 24px;  /* 원하는 크기로 설정 (예: 32px, 40px 등) */
+    line-height: 1;   /* 간격 맞추기 위해 라인 높이 조절 */
+}
