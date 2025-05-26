@@ -23,6 +23,11 @@ export default function RootLayout({ children }) {
                         <span style={{ fontSize: '24px', cursor: 'pointer' }}>로그인</span>
                     </Link>
                 </div>
+
+                <div className='header-rt'>
+                    {/* 아이콘 추가 */}
+                    
+                </div>
             </header>
             <nav>
                 <a href="#">공지사항</a>
