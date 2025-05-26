@@ -14,7 +14,9 @@ export default function RootLayout({ children }) {
         <body>
         <Provider store={store}> {/* ✅ Provider는 클라이언트 컴포넌트 안에서만 가능 */}
             <header className="header">
+                <Link href="/">
                 <img src="/logo.png" alt="withcare 로고" className="logo" />
+                </Link>
 
                 <div className="header-right">
                     <Link href="/login">

@@ -2,7 +2,7 @@
 
 import "./login.css"
 import { useDispatch } from "react-redux";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { setUser } from "@/redux/userReducer";
 import { useRouter } from "next/navigation";
 import Link from "next/link";  // useRouter 임포트
@@ -11,6 +11,7 @@ export default function LoginPage() {
 
     const dispatch = useDispatch();
     const router = useRouter();  // useRouter 사용
+    const pwInputRef = useRef(null);
 
     const [id, setId] = useState('');
     const [pw, setPw] = useState('');
@@ -43,19 +44,31 @@ export default function LoginPage() {
                 placeholder="아이디를 입력하세요."
                 value={id}
                 onChange={(e) => setId(e.target.value)}
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        pwInputRef.current.focus();
+                    }
+                }}
             />
             <p> 비밀번호 </p>
             <input
+                ref={pwInputRef}
                 type="password"
                 placeholder="비밀번호를 입력하세요."
                 value={pw}
                 onChange={(e) => setPw(e.target.value)}
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                        login();
+                    }
+                }}
             />
             </div>
             <br/>
             <button onClick={login}>로그인</button>
             <br/>
-            <button onClick> 회원가입 </button>
+            <button> 회원가입 </button>
             <p>
                 <Link href="/login/find-id">아이디를 잊으셨나요?</Link>
                 <br/>

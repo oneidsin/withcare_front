@@ -50,10 +50,17 @@
     cursor: pointer;
     transition: all 0.2s ease;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-    margin-right: 12px;
+    width: 100%;
+    margin: 8px 0;
 }
 
-
+.button-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin: 20px 0;
+}
 
 .login button:active {
     box-shadow: 0 0 12px 8px rgba(135, 209, 255, 0.5);
