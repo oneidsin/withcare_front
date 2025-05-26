@@ -76,3 +76,71 @@
     margin: 0 auto 12px auto; /* 가운데 정렬 + 아래 여백 */
 }
 
+/* 테이블 스타일 */
+.login table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.login th {
+    text-align: left;
+    padding: 12px 8px;
+    width: 100px;
+    font-weight: 600;
+    color: #333;
+}
+
+.login td {
+    padding: 8px;
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+}
+
+.login td input[type="text"],
+.login td input[type="password"] {
+    width: 100%;
+    margin-bottom: 0;
+}
+
+/* 중복체크 버튼 스타일 */
+.login #overlay {
+    width: auto;
+    min-width: 90px;
+    padding: 10px 16px;
+    font-size: 13px;
+    background-color: #f0f9ff;
+    margin: 0;
+    white-space: nowrap;
+}
+
+/* 라디오 버튼 컨테이너 */
+.login td input[type="radio"] {
+    width: auto;
+    margin-right: 8px;
+    margin-bottom: 0;
+}
+
+/* 회원가입 버튼 스타일 */
+.login input[type="button"] {
+    background-color: #3a8dde;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    font-size: 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin-top: 16px;
+    width: 100%;
+}
+
+.login input[type="button"]:hover {
+    background-color: #2c7ac9;
+}
+
+/* 마지막 행 스타일 */
+.login tr:last-child th {
+    padding-top: 20px;
+}
+

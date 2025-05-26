@@ -12,7 +12,6 @@ export default function FindIdPage() {
     return (
         <div className="login">
             <img src="/logo.png" alt="withcare 로고" className="logo" />
-            <div className="idpw">
                 <p>이름</p>
                 <input
                     type="text"
@@ -56,7 +55,6 @@ export default function FindIdPage() {
                 />
                 <button>비밀번호 변경 페이지로 이동</button>
                 <Link href="/login/find-id">아이디를 잊으셨나요?</Link>
-            </div>
         </div>
     );
 }

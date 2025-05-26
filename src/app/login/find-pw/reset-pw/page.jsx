@@ -1,9 +1,12 @@
 "use client"
 
+import "./../../login.css"
+
 export default function resetPw() {
     return (
         <>
             <div className="login">
+                <img src="/logo.png" alt="withcare 로고" className="logo" />
                 <p> 비밀번호 </p>
                 <input
                     type="password"

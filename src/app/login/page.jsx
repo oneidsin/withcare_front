@@ -37,7 +37,6 @@ export default function LoginPage() {
     return (
         <div className="login">
             <img src="/logo.png" alt="withcare 로고" className="logo" />
-            <div className="idpw">
             <p> 아이디 </p>
             <input
                 type="text"
@@ -64,11 +63,12 @@ export default function LoginPage() {
                     }
                 }}
             />
-            </div>
             <br/>
             <button onClick={login}>로그인</button>
             <br/>
+            <Link href="/login/join">
             <button> 회원가입 </button>
+            </Link>
             <p>
                 <Link href="/login/find-id">아이디를 잊으셨나요?</Link>
                 <br/>
