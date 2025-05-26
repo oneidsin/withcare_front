@@ -1,0 +1,34 @@
+.search-page {
+    padding: 20px;
+}
+
+.search-bar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.tag {
+    background-color: #f0f0f0;
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.post-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.post-table th,
+.post-table td {
+    border-bottom: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+}

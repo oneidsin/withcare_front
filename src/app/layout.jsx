@@ -23,10 +23,17 @@ export default function RootLayout({ children }) {
                 <img src="/logo.png" alt="withcare 로고" className="logo" />
                 </Link>
 
+
                 <div className="header-right">
                     {/* 아이콘 추가 */}
-                    <AiOutlineLogin style={{ fontSize: '28px', cursor: 'pointer', marginRight: '18px' }} title="로그아웃" />
-                    <AiOutlineSearch style={{ fontSize: '28px', cursor: 'pointer', marginRight: '18px' }} title="검색" />
+                    <Link href="/login">
+                        <AiOutlineLogin style={{ fontSize: '28px', cursor: 'pointer', marginRight: '18px' }} title="로그인" />
+                    </Link>
+
+                    <Link href="/search">
+                        <AiOutlineSearch style={{ fontSize: '28px', cursor: 'pointer', marginRight: '18px' }} title="검색" />
+                    </Link>
+
                     <AiOutlineMail style={{ fontSize: '28px', cursor: 'pointer', marginRight: '18px' }} title="메일" />
                     <AiOutlineBell style={{ fontSize: '28px', cursor: 'pointer', marginRight: '18px' }} title="알림" />
                     <AiOutlineUser style={{ fontSize: '28px', cursor: 'pointer' }} title="프로필" />
