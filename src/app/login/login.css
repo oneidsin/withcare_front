@@ -123,9 +123,9 @@
 
 /* 회원가입 버튼 스타일 */
 .login input[type="button"] {
-    background-color: #3a8dde;
-    color: white;
-    border: none;
+    background-color: #f0f9ff;
+    color: #000000;
+    border: 1px solid rgba(135, 209, 255, 0.5);
     padding: 12px 24px;
     font-size: 16px;
     border-radius: 6px;
