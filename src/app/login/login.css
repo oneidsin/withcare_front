@@ -1,0 +1,70 @@
+/* Reset & 기본 설정 (필요하면 app.css에만 남겨두고 컴포넌트에서는 생략 가능) */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+.login {
+    max-width: 400px;
+    margin: 80px auto;
+    padding: 32px;
+    background-color: #fafafa;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(200, 200, 200, 0.15);
+    font-family: 'Pretendard', sans-serif;
+    color: #4a4a4a;
+}
+
+.login p {
+    margin-top: 24px;
+    font-size: 12px;
+    color: #888;
+    user-select: none;
+}
+
+.login input {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    outline-offset: 2px;
+    outline-color: #a3cfff;
+    transition: border-color 0.2s ease;
+}
+
+.login input:focus {
+    border-color: #3a8dde;
+}
+
+.login button {
+    background-color: rgba(174, 226, 255, 0.4);
+    color: #2d2d2d;
+    border: 1px solid rgba(135, 209, 255, 0.5);
+    padding: 10px 20px;
+    font-size: 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    margin-right: 12px;
+}
+
+
+
+.login button:active {
+    box-shadow: 0 0 12px 8px rgba(135, 209, 255, 0.5);
+    transform: scale(0.98);
+}
+
+.login br {
+    margin-bottom: 20px;
+}
+
+.login .logo {
+    display: block;
+    margin: 0 auto 12px auto; /* 가운데 정렬 + 아래 여백 */
+}
