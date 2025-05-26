@@ -11,48 +11,52 @@ import Link from "next/link";
 import { store } from "@/redux/store";
 
 export default function RootLayout({ children }) {
-    return (
-        <html lang="ko">
-        <head>
-            <link rel="icon" href="/favicon.ico" type="image/x-icon" />
-        </head>
-        <body>
+  return (
+    <html lang="ko">
+      <head>
+        <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+      </head>
+      <body>
         <Provider store={store}> {/* ✅ Provider는 클라이언트 컴포넌트 안에서만 가능 */}
-            <header className="header">
-                <Link href="/">
-                <img src="/logo.png" alt="withcare 로고" className="logo" />
-                </Link>
+          <header className="header">
+            <Link href="/">
+              <img src="/logo.png" alt="withcare 로고" className="logo" />
+            </Link>
 
 
-                <div className="header-right">
-                    {/* 아이콘 추가 */}
-                    <Link href="/login">
-                        <AiOutlineLogin style={{ fontSize: '28px', cursor: 'pointer', marginRight: '18px' }} title="로그인" />
-                    </Link>
+            <div className="header-right">
+              {/* 아이콘 추가 */}
+              <Link href="/login">
+                <AiOutlineLogin style={{ fontSize: '28px', cursor: 'pointer', marginRight: '18px' }} title="로그인" />
+              </Link>
+              <Link href="/search">
+                <AiOutlineSearch style={{ color: 'black', fontSize: '28px', cursor: 'pointer', marginRight: '18px' }} title="검색" />
+              </Link>
+              <Link href="/msg">
+                <AiOutlineMail style={{ color: 'black', fontSize: '28px', cursor: 'pointer', marginRight: '18px' }} title="메일" />
+              </Link>
+              <Link href="/alert">
+                <AiOutlineBell style={{ color: 'black', fontSize: '28px', cursor: 'pointer', marginRight: '18px' }} title="알림" />
+              </Link>
+              <Link href="/profile">
+                <AiOutlineUser style={{ color: 'black', fontSize: '28px', cursor: 'pointer' }} title="프로필" />
+              </Link>
+            </div>
 
-                    <Link href="/search">
-                        <AiOutlineSearch style={{ fontSize: '28px', cursor: 'pointer', marginRight: '18px' }} title="검색" />
-                    </Link>
-
-                    <AiOutlineMail style={{ fontSize: '28px', cursor: 'pointer', marginRight: '18px' }} title="메일" />
-                    <AiOutlineBell style={{ fontSize: '28px', cursor: 'pointer', marginRight: '18px' }} title="알림" />
-                    <AiOutlineUser style={{ fontSize: '28px', cursor: 'pointer' }} title="프로필" />
-                </div>
-                    
-            </header>
-            <nav>
-                <a href="#">공지사항</a>
-                <a href="#">자유 게시판</a>
-                <a href="#">Q&A</a>
-                <a href="#">정보 게시판</a>
-                <a href="#">환우 게시판</a>
-                <a href="#">완치 후의 삶</a>
-                <a href="#">랭킹</a>
-            </nav>
-            <main className="container">{children}</main>
-            <footer>ⓒ 2025 withcare</footer>
+          </header>
+          <nav>
+            <Link href="/notice">공지사항</Link>
+            <Link href="/free">자유 게시판</Link>
+            <Link href="/qna">Q&A</Link>
+            <Link href="/info">정보 게시판</Link>
+            <Link href="/patient">환우 게시판</Link>
+            <Link href="/aftercure">완치 후의 삶</Link>
+            <Link href="/ranking">랭킹</Link>
+          </nav>
+          <main className="container">{children}</main>
+          <footer>ⓒ 2025 withcare</footer>
         </Provider>
-        </body>
-        </html>
-    );
+      </body>
+    </html>
+  );
 }

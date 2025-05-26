@@ -1,0 +1,111 @@
+/* app.css 파일에 추가 */
+
+.msg-layout {
+  display: flex;
+  width: 100%;
+  /* 레이아웃 전체 너비 */
+  min-height: calc(100vh - [헤더 높이] - [푸터 높이]);
+  /* 화면 전체 높이에서 헤더/푸터 높이 제외 */
+  margin-top: [헤더 높이];
+  /* 헤더 아래에 위치하도록 */
+  /* background-color: #f0f2f5; Optional: 배경색 */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  margin: 20px;
+  padding: 20px;
+}
+
+.msg-sidebar {
+  width: 250px;
+  height: auto;
+  /* 사이드바 너비 */
+  background-color: #ffffff;
+  /* 사이드바 배경색 */
+  padding: 20px;
+  border-right: 1px solid #ddd;
+  /* 사이드바 구분선 */
+  display: flex;
+  /* 내부 요소 정렬을 위해 */
+  flex-direction: column;
+  /* 내부 요소 세로 정렬 */
+  gap: 30px;
+  /* 요소 간 간격 */
+}
+
+.user-profile {
+  display: flex;
+  /* height: 150px; */
+  /* 세로 배치를 방해할 수 있습니다. 필요에 따라 조절하거나 삭제하세요. */
+  flex-direction: column;
+  /* 사진과 이름을 세로로 나열 */
+  align-items: center;
+  /* 가로 방향(교차축)으로 중앙 정렬 */
+  gap: 10px;
+  /* 사진과 이름 사이의 세로 간격 */
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.profile-pic {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  /* 원형 프로필 사진 */
+  object-fit: cover;
+  /* 이미지 비율 유지 */
+}
+
+.user-name {
+  font-weight: bold;
+  font-size: 1.1em;
+}
+
+.msg-nav {
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.msg-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  text-align: center;
+}
+
+.msg-nav li {
+  margin-bottom: 15px;
+}
+
+.msg-nav a {
+  text-decoration: none;
+  color: #333;
+  /* 메뉴 색상 */
+  font-size: 1em;
+
+  /* 필요에 따라 호버 스타일 추가 */
+  &:hover {
+    color: #0070f3;
+  }
+}
+
+.msg-content-box {
+  flex: 1;
+  /* 남은 공간 전체 사용 */
+  background-color: #ffffff;
+  /* 중앙 박스 배경색 */
+  margin: 20px;
+  /* 사이드바와의 간격 및 전체 마진 */
+  padding: 30px;
+  /* 박스 내부 여백 */
+  border-radius: 8px;
+  /* 박스 모서리 둥글게 */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  /* 박스 그림자 */
+  /* 중앙 정렬 */
+  /* display: flex;  */
+  /* 만약 children 내용도 가운데 정렬하려면 flex 추가 */
+  /* justify-content: center; */
+  /* align-items: center; */
+}
