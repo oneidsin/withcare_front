@@ -1,15 +1,19 @@
 "use client";
 
-import React from "react";
+import React, {useState} from "react";
 import './search.css'
 
 export default function SearchPage() {
+
+    const [sortOption, setSortOption] = useState("latest");
+
     return (
         <div className="search-page">
             <div className="search-bar">
                 <select>
                     <option value="">게시판 종류</option>
                     {/* 다른 게시판들 */}
+
                 </select>
                 <input type="text" placeholder="찾기 검색어" />
                 <button>🔍</button>
@@ -33,6 +37,19 @@ export default function SearchPage() {
                     <span className="tag">췌장암</span>
                     {/* ... */}
                 </div>
+            </div>
+
+            {/* 정렬 옵션 */}
+            <div className="sort-box">
+                <label htmlFor="sort">정렬순</label>
+                <select
+                    id="sort"
+                    name="sort"
+                    value={sortOption}
+                    onChange={(e) => setSortOption(e.target.value)}>
+                    <option value="latest">최신순</option>
+                    <option value="popular">인기순</option>
+                </select>
             </div>
 
             {/* 게시판 리스트 */}

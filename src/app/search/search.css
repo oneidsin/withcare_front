@@ -21,9 +21,18 @@
     font-size: 14px;
 }
 
+.recent-keywords{
+    margin-top: 15px;
+}
+
+.popular-keywords{
+    margin-top: 30px;
+}
+
 .post-table {
     width: 100%;
     border-collapse: collapse;
+    margin-top: 20px;
 }
 
 .post-table th,
@@ -31,4 +40,25 @@
     border-bottom: 1px solid #ddd;
     padding: 12px;
     text-align: left;
+}
+
+/* 정렬 옵션 */
+.sort-box {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 16px;
+    gap: 8px;
+}
+
+.sort-box label {
+    font-size: 14px;
+    color: #444;
+}
+
+.sort-box select {
+    padding: 6px 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
 }
