@@ -40,7 +40,9 @@ export default function HomePage() {
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <button className="button">관리자 페이지로 이동</button>
+                <Link href="admin/admin-board">
+                    <button className="button">관리자 페이지로 이동</button>
+                </Link>
             </div>
 
         </div>

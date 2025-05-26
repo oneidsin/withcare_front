@@ -116,7 +116,7 @@ export default function BoardWrite() {
                     <div className="form-group">
                         <label>활성화 설정</label>
                         <div className="form-radio">
-                            <label><input type="radio" name="lv_idx" value="" checked={form.lv_idx === ''} onChange={handleChange} /> 공개</label>
+                            <label><input type="radio" name="lv_idx" value="0" checked={form.lv_idx === '0'} onChange={handleChange} /> 공개</label>
                             <label><input type="radio" name="lv_idx" value="1" checked={form.lv_idx === '1'} onChange={handleChange} /> 비공개</label>
                         </div>
                     </div>
