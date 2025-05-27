@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import './crawl.css';
+import axios from 'axios';
 
 const crawlSites = [
   { id: 1, name: '암정보센터', url: 'https://www.cancer.go.kr', lastCrawled: '2025/05/25', active: true, crawlInterval: 24 },
@@ -13,6 +14,12 @@ const crawlSites = [
 export default function AdminCrawl() {
   const [sites, setSites] = useState(crawlSites);
   const [tempIntervals, setTempIntervals] = useState({});
+
+  const getCrawlinfo = async () => {
+    const response = await axios.get(`http://localhost/${id}/crawl/getCrawlInfo`);
+    console.log(response);
+  }
+
 
   // 개별 사이트 활성화 상태 변경 (실시간 저장)
   const handleStatusChange = async (siteId, newStatus) => {
