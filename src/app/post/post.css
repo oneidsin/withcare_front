@@ -95,3 +95,11 @@ div.post-page{
     width: 40%;
     height: 19px;
 }
+
+.container {
+    width: 85%;
+}
+
+.write-button {
+    margin-left: auto;
+}
