@@ -21,9 +21,13 @@ export default function FindPwPage() {
         }
 
         const res = await fetch(`http://localhost:80/find-pw?name=${info.name}&id=${info.id}&year=${info.year}&email=${info.email}`);
-        const data = await res.text();
-
-        setResult(res.ok ? `회원님의 비밀번호는 ${data}입니다.` : (data || '일치하는 회원 정보가 없습니다.'));
+        
+        if (res.ok) {
+            // 회원정보가 일치하면 비밀번호 재설정 페이지로 이동
+            window.location.href = `/login/find-pw/reset-pw?id=${info.id}`;
+        } else {
+            setResult('일치하는 회원 정보가 없습니다.');
+        }
     }
 
     return (
