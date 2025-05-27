@@ -10,8 +10,12 @@ export default function PostDetailPage() {
     const router = useRouter();
     const postIdx = searchParams.get('post_idx');
 
-    // 게시글 정보, 작성자 일치
     const [post, setPost] = useState(null);
+
+    const boardIdxFromParam = searchParams.get('board_idx');
+    const boardIdx = boardIdxFromParam || post?.board_idx;
+
+    // 게시글 정보, 작성자 일치
     const [likes, setLikes] = useState(0);
     const [dislikes, setDislikes] = useState(0);
     const [photos, setPhotos] = useState([]);
@@ -155,9 +159,9 @@ export default function PostDetailPage() {
             <div className="detail-meta">
                 <div className="meta-left">
                     <div className="meta-author-line">
-                        <img className="avatar" src="/default-avatar.png" alt="avatar" />
+                        {/*<img className="avatar" src="/default-avatar.png" alt="avatar" />*/}  {/*프로필 사진 나오게 해야 함!*/}
                         <span>{post.id}</span>
-                        <span className="badge">관리자</span>
+                        <span className="badge">관리자</span> {/*배지 나오게 해야 함!*/}
                     </div>
                     <div className="meta-date-line">
                         {post.post_create_date.slice(0, 10)} ・ 조회 {post.post_view_cnt}
@@ -166,7 +170,7 @@ export default function PostDetailPage() {
                 <div className="detail-controls">
                     {canEditOrDelete ? (
                         <>
-                            <button>수정</button>
+                            <button onClick={() => router.push(`/post/update?post_idx=${post.post_idx}`)}>수정</button>
                             <button onClick={handleDelete}>삭제</button>
                         </>
                     ) : (
@@ -202,7 +206,12 @@ export default function PostDetailPage() {
             </div>
 
             <div className="detail-footer">
-                <button className="list-button" onClick={() => router.back()}>← 목록</button>
+                <button
+                    className="list-button"
+                    onClick={() => router.push(`/post/list?board_idx=${boardIdx}`)}
+                >
+                    ← 목록
+                </button>
             </div>
         </div>
     );

@@ -1,0 +1,132 @@
+.update-container {
+    width: 80%;
+    margin: 0 auto;
+    background: #fff;
+    padding: 2rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+}
+
+.update-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #ccc;
+}
+
+.form-row {
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-row label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.form-row input,
+.form-row textarea,
+.form-row select {
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 0.25rem;
+}
+
+textarea {
+    resize: vertical;
+}
+
+.file-list {
+    margin-top: 0.5rem;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.25rem;
+}
+
+.file-item input[type="checkbox"] {
+    margin-right: 0.5rem;
+}
+
+.file-new {
+    margin-top: 0.5rem;
+    font-style: italic;
+    color: #555;
+}
+
+.button-group {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.cancel-button {
+    padding: 0.5rem 1rem;
+    background-color: #e5e7eb;
+    border-radius: 0.25rem;
+    border: none;
+    cursor: pointer;
+}
+
+.submit-button {
+    padding: 0.5rem 1rem;
+    background-color: #16a34a;
+    color: white;
+    border-radius: 0.25rem;
+    border: none;
+    cursor: pointer;
+}
+
+.radio-group {
+    display: flex;
+    align-items: center;
+}
+
+.radio-group label {
+    font-weight: normal;
+    margin-right: 1rem;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.file-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.thumb {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 0.25rem;
+    border: 1px solid #ccc;
+}
+
+.preview-item {
+    position: relative;
+    display: inline-block;
+    margin-right: 0.5rem;
+}
+
+.delete-button {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: red;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}

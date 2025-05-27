@@ -115,3 +115,12 @@
 .comment-writer{
     align-self: flex-start;
 }
+
+.attached-image{
+    width: 80%;
+    margin: 0 auto;
+    margin-top: 16px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+}
