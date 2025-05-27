@@ -48,6 +48,7 @@ export default function Block() {
     }
   };
 
+  // 차단 해제 함수
   const handleUnblock = async (blocked_id) => {
     if (!window.confirm("차단을 해제하시겠습니까?")) return;
 

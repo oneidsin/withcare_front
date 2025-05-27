@@ -148,3 +148,174 @@
     font-size: 14px;
     color: #444;
 }
+
+.activity-tabs {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.activity-tab-button {
+    padding: 6px 14px;
+    background: #fafafa;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.activity-tab-button.active {
+    background-color: #007bff;
+    color: white;
+}
+
+/* 회원 탈퇴 */
+.top-right {
+    display: flex;
+    justify-content: flex-end;
+    padding: 1rem;
+}
+
+.delete-btn {
+    background-color: #ff4d4f;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.1s;
+}
+
+.delete-btn:hover {
+    background-color: #d9363e;
+}
+
+
+/* 타임라인 페이지 *//* 전체 레이아웃 */
+.timeline-page {
+    display: flex;
+    justify-content: center;
+    padding-top: 200px;    /* 상단 여백 확보 */
+    padding-bottom: 60px; /* 하단도 조금 띄우기 */
+    min-height: 100vh;
+}
+
+.timeline-wrapper {
+    margin-top: 100px;         /* ✅ 위에 여백 줌 */
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 70px;
+    padding: 24px;
+    width: 1000px;           /* profile-page 기준에 맞춤 */
+    font-family: sans-serif;
+}
+
+/* 왼쪽 프로필 + 일정 목록 */
+.left-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 220px;
+    padding-top: 20px;
+}
+
+.profile-mini {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.profile-mini img {
+    width: 30px;
+    height: 30px;
+    margin-right: 10px;
+}
+
+.mini-name {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.event-list {
+    max-height: 200px;         /* 👈 한 화면에 5개 정도만 보이게 */
+    overflow-y: auto;          /* 👈 넘치면 세로 스크롤 표시 */
+    padding-right: 8px;        /* 스크롤바 공간 확보 */
+}
+
+.event-item {
+    margin-bottom: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.event-item:hover {
+    color: #0070f3;
+}
+
+/* 가운데 달력 */
+.calendar-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+    width: 500px;               /* 캘린더 너비 조정 */
+    text-align: center;
+}
+
+/* 캘린더 본체 스타일 */
+.react-calendar {
+    width: 100%;
+    max-width: 100%;
+    border: none;
+    font-family: 'Noto Sans KR', sans-serif;
+}
+
+.react-calendar__tile--active {
+    background: #0070f3;
+    color: white;
+    border-radius: 4px;
+}
+
+.react-calendar__tile--now {
+    background: black;
+    border-radius: 10px;
+    position: relative;
+}
+
+.react-calendar__tile--hasActive {
+    background: #e0e0e0;
+}
+
+.react-calendar__tile.has-event {
+    background: #ffe4b3;
+    border-radius: 10px;
+    position: relative;
+    font-weight: bold;
+}
+
+/* 월 이동 네비게이션 */
+.month-nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10px;
+    gap: 10px;
+}
+
+.month-nav button {
+    background-color: #eee;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.month-nav button:hover {
+    background-color: #ccc;
+}

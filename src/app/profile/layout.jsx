@@ -27,17 +27,17 @@ export default function ProfileLayout({ children }) {
                 </Link>
             </li>
             <li>
-                <Link href="/profile/comments">
+                <Link href="/profile/timeline">
                     <MdOutlineTimeline style={{ marginRight: '5px' }} />타임라인
                 </Link>
             </li>
             <li>
-                <Link href="/profile/likes">
+                <Link href="/profile/level">
                     <GiStairsGoal style={{ marginRight: '5px' }} />레벨
                 </Link>
             </li>
             <li>
-                <Link href="/profile/searches">
+                <Link href="/profile/badge">
                     <FaRegIdBadge style={{ marginRight: '5px' }} />배지
                 </Link>
             </li>
