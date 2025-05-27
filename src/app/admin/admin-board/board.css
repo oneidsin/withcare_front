@@ -3,7 +3,7 @@
     display: flex;
     flex-direction: column;
     padding: 24px;
-    max-width: 900px;
+    max-width: 1100px;
     margin: 0 auto;
 }
 
@@ -15,7 +15,8 @@
 
 .board-inner {
     display: flex;
-    gap: 40px;
+    gap: 60px;
+    align-items: flex-start;
 }
 
 /* 좌측 게시판 트리 */
@@ -24,6 +25,7 @@
     border: 1px solid #ccc;
     padding: 16px;
     border-radius: 6px;
+    min-width: 260px;
 }
 
 .section-label {
@@ -46,7 +48,7 @@
 }
 
 .tree-input {
-    width: 100%;
+    width: 96%;
     padding: 6px 8px;
     font-size: 13px;
     border: 1px solid #bbb;
@@ -62,6 +64,8 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
+    width: 100%;
+    max-width: 600px;
 }
 
 .form-group label {
@@ -116,4 +120,8 @@
 .form-submit button:active {
     box-shadow: 0 0 12px 8px rgba(135, 209, 255, 0.5); /* 밝은 효과 */
     transform: scale(0.98); /* 눌리는 효과 */
+}
+
+input.board-name{
+    width: 98% !important;
 }

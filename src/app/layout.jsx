@@ -45,13 +45,12 @@ export default function RootLayout({ children }) {
 
           </header>
           <nav>
-            <Link href="/notice">공지사항</Link>
-            <Link href="/free">자유 게시판</Link>
-            <Link href="/qna">Q&A</Link>
-            <Link href="/info">정보 게시판</Link>
-            <Link href="/patient">환우 게시판</Link>
-            <Link href="/aftercure">완치 후의 삶</Link>
-            <Link href="/ranking">랭킹</Link>
+            <Link href="/post?board_idx=1">공지사항</Link>
+            <Link href="/post?board_idx=2">자유 게시판</Link>
+            <Link href="/post?board_idx=3">Q&A</Link>
+            <Link href="/post?board_idx=4">정보 게시판</Link>
+            <Link href="/post?board_idx=5">환우 게시판</Link>
+            <Link href="/post?board_idx=6">완치 후의 삶</Link>
           </nav>
           <main className="container">{children}</main>
           <footer>ⓒ 2025 withcare</footer>
