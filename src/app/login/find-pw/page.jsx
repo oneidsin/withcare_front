@@ -26,7 +26,7 @@ export default function FindPwPage() {
             // 회원정보가 일치하면 비밀번호 재설정 페이지로 이동
             window.location.href = `/login/find-pw/reset-pw?id=${info.id}`;
         } else {
-            setResult('일치하는 회원 정보가 없습니다.');
+            setResult('회원 정보가 일치하지 않아 비밀번호를 재설정 할 수 없습니다.');
         }
     }
 
@@ -91,7 +91,7 @@ export default function FindPwPage() {
 
             <div style={{marginTop: '20px', textAlign: 'center'}}>
                 <button onClick={findPw} style={{width: '100%', marginBottom: '10px'}}>
-                    비밀번호 변경 페이지로 이동
+                    비밀번호 재설정 페이지로 이동
                 </button>
             </div>
             {result && (

@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import { BsTrash } from 'react-icons/bs';
 import './msg.css';
+import {store} from "@/redux/store";
+import {useSelector} from "react-redux";
 
 // 샘플 데이터를 10개로 늘립니다.
 const messages = [
@@ -19,6 +21,22 @@ const messages = [
 ];
 
 export default function Inbox() {
+
+
+  useEffect(() => {callList(1)},[]);
+
+  const callList = async (no) =>{
+    store.dispatch({type:'msg/outbox',payload:no});
+  };
+
+  let msg = useSelector(state=>{
+    return state.msg;
+  });
+
+
+
+
+
   const [selectedMessages, setSelectedMessages] = useState(new Set());
 
   // 전체 선택/해제 핸들러
