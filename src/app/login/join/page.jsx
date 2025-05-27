@@ -3,17 +3,34 @@
 import "../login.css"
 import {useRef, useState, useEffect} from "react";
 import axios from "axios";
-import { useRouter } from 'next/navigation';
 
 export default function joinPage(){
-    const router = useRouter();
-    const[info,setInfo]=useState({id:'',pw:'',name:'',year:'',gender:'',email:'',cancer:'',stage:''});
-    const[cancerTypes, setCancerTypes] = useState([]);
-    const[stageTypes, setStageTypes] = useState([]);
+    const[info,setInfo]=useState({id:'',pw:'',name:'',year:'',gender:'',email:'',cancer:null,stage:null});
+    const[cancer, setCancer] = useState([]);
+    const[stage, setStage] = useState([]);
     let chk = useRef(false);
+
+    useEffect(() => {
+        const getCancer = async () => {
+            const res = await axios.get('http://localhost/cancer');
+                setCancer(res.data);
+
+        };
+        
+        getCancer();
+
+        const getStage = async () => {
+            const res = await axios.get('http://localhost/stage');
+                setStage(res.data);
+        };
+        getStage();
+    }, []);
 
     const input=(e)=>{
         let {name,value} = e.target;
+        if ((name === 'cancer' || name === 'stage') && value === "") {
+            value = null;
+        }
         setInfo({...info, [name]:value});
     };
 
@@ -45,14 +62,18 @@ export default function joinPage(){
             return;
         }
 
-        const response = await axios.post('http://localhost/join', info);
-        if (response.data.success) {
+        // cancer와 stage가 선택되지 않은 경우 해당 필드 제외
+        const submitData = {...info};
+        if (!submitData.cancer) delete submitData.cancer;
+        if (!submitData.stage) delete submitData.stage;
+
+        const res = await axios.post('http://localhost/join', submitData);
+        if (res.data.success) {
             alert('회원가입이 완료되었습니다.');
-            router.push('/login'); // 로그인 페이지로 이동
+            window.location.href = '/login';
         } else {
             alert('회원가입에 실패했습니다. 다시 시도해주세요.');
         }
-        
     };
 
     return (
@@ -102,10 +123,10 @@ export default function joinPage(){
                 <tr>
                     <th>암 종류</th>
                     <td>
-                        <select name="cancer" value={info.cancer} onChange={input}>
+                        <select name="cancer" value={info.cancer || ""} onChange={input}>
                             <option value="">선택하세요</option>
-                            {cancerTypes.map((cancer) => (
-                                <option key={cancer.cancer_name} value={cancer.cancer_name}>
+                            {cancer.map((cancer) => (
+                                <option key={cancer.cancer_idx} value={cancer.cancer_idx}>
                                     {cancer.cancer_name}
                                 </option>
                             ))}
@@ -115,11 +136,11 @@ export default function joinPage(){
                 <tr>
                     <th>암 병기</th>
                     <td>
-                        <select name="stage" value={info.stage} onChange={input}>
+                        <select name="stage" value={info.stage || ""} onChange={input}>
                             <option value="">선택하세요</option>
-                            {stageTypes.map((stage) => (
-                                <option key={stage.id} value={stage.id}>
-                                    {stage.name}
+                            {stage.map((stage) => (
+                                <option key={stage.stage_idx} value={stage.stage_idx}>
+                                    {stage.stage_name}
                                 </option>
                             ))}
                         </select>

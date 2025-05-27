@@ -26,7 +26,7 @@ export default function LoginPage() {
         const data = await res.json();
 
         if (data.success) {
-            localStorage.setItem('token', data.token);
+            sessionStorage.setItem('token', data.token);
             dispatch(setUser({ id, token: data.token }));
             window.location.href = '/';  // 홈('/')으로 이동
         } else {
