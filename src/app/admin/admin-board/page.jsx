@@ -9,8 +9,10 @@ export default function BoardWrite() {
         board_name: '',
         lv_idx: '',
         anony_yn: false,
-        blind_yn: false
+        blind_yn: false,
+        view_level: '', // 추가
     });
+
     const [boardList, setBoardList] = useState([]);
     const [selectedIdx, setSelectedIdx] = useState(null);
     const [newBoardName, setNewBoardName] = useState('');
@@ -59,15 +61,30 @@ export default function BoardWrite() {
             alert("게시판 이름은 필수입니다.");
             return;
         }
+
         try {
-            const url = selectedIdx ? `http://localhost/board/update` : "http://localhost/board/write";
-            const res = await axios.post(url, form, {
+            const url = selectedIdx
+                ? `http://localhost/board/update`
+                : "http://localhost/board/write";
+
+            const method = selectedIdx ? 'put' : 'post';
+
+            const res = await axios({
+                method,
+                url,
+                data: form,
                 headers: { Authorization: token }
             });
+
             if (res.data.success) {
                 alert(selectedIdx ? "게시판이 수정되었습니다." : "게시판이 등록되었습니다.");
                 fetchBoards();
-                setForm({ board_name: '', lv_idx: '', anony_yn: false, blind_yn: false });
+                setForm({
+                    board_name: '',
+                    lv_idx: '',
+                    anony_yn: false,
+                    blind_yn: false
+                });
                 setSelectedIdx(null);
                 setNewBoardName('');
             } else {
@@ -110,15 +127,21 @@ export default function BoardWrite() {
                 <section className="board-form">
                     <div className="form-group">
                         <label>게시판 명</label>
-                        <input type="text" name="board_name" value={form.board_name} onChange={handleChange} />
+                        <input className="board-name" type="text" name="board_name" value={form.board_name} onChange={handleChange} />
                     </div>
 
                     <div className="form-group">
-                        <label>활성화 설정</label>
-                        <div className="form-radio">
-                            <label><input type="radio" name="lv_idx" value="0" checked={form.lv_idx === '0'} onChange={handleChange} /> 공개</label>
-                            <label><input type="radio" name="lv_idx" value="1" checked={form.lv_idx === '1'} onChange={handleChange} /> 비공개</label>
-                        </div>
+                        <label>열람 제한 레벨</label>
+                        <select name="lv_idx" value={form.lv_idx} onChange={handleChange}>
+                            <option value="">선택</option>
+                            <option value="1">레벨 1 이상</option>
+                            <option value="2">레벨 2 이상</option>
+                            <option value="3">레벨 3 이상</option>
+                            <option value="4">레벨 4 이상</option>
+                            <option value="5">레벨 5 이상</option>
+                            <option value="6">레벨 6 이상</option>
+                            <option value="7">관리자만</option>
+                        </select>
                     </div>
 
                     <div className="form-group">
