@@ -1,97 +1,104 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './crawl.css';
 import axios from 'axios';
 
-const crawlSites = [
-  { id: 1, name: '암정보센터', url: 'https://www.cancer.go.kr', lastCrawled: '2025/05/25', active: true, crawlInterval: 24 },
-  { id: 2, name: '서울아산병원', url: 'https://www.amc.seoul.kr', lastCrawled: '2025/05/26', active: true, crawlInterval: 12 },
-  { id: 3, name: '국립암센터', url: 'https://www.ncc.re.kr', lastCrawled: '2025/05/23', active: false, crawlInterval: 48 },
-  { id: 4, name: '건강보험심사평가원', url: 'https://www.hira.or.kr', lastCrawled: '2025/05/22', active: true, crawlInterval: 6 },
-];
-
 export default function AdminCrawl() {
-  const [sites, setSites] = useState(crawlSites);
+  const [crawlData, setCrawlData] = useState([]);
   const [tempIntervals, setTempIntervals] = useState({});
+  const id = sessionStorage.getItem('id');
 
+  useEffect(() => {
+    getCrawlinfo();
+  }, []);
+
+  // 크롤링 정보 가져오기
   const getCrawlinfo = async () => {
-    const response = await axios.get(`http://localhost/${id}/crawl/getCrawlInfo`);
-    console.log(response);
-  }
-
-
-  // 개별 사이트 활성화 상태 변경 (실시간 저장)
-  const handleStatusChange = async (siteId, newStatus) => {
-    const newActive = newStatus === 'Y';
-
-    // 즉시 UI 업데이트
-    setSites(prevSites =>
-      prevSites.map(site => {
-        if (site.id === siteId) {
-          return { ...site, active: newActive };
-        }
-        return site;
-      })
-    );
-
-    // 실시간 저장 로직 (실제 API 호출)
     try {
-      console.log(`사이트 ${siteId} 활성화 상태 저장:`, newActive);
-      // 여기에 실제 API 호출 코드 추가
-      // await updateSiteStatus(siteId, newActive);
+      const response = await axios.get(`http://localhost/${id}/crawl/getCrawlInfo`);
+      console.log(response);
+      setCrawlData(response.data.result);
     } catch (error) {
-      console.error('활성화 상태 저장 실패:', error);
-      // 실패시 원래 상태로 되돌리기
+      console.error('크롤링 정보 가져오기 실패:', error);
     }
   };
 
-  // 임시 수집 주기 변경
-  const handleTempIntervalChange = (siteId, newInterval) => {
+  // 날짜 포맷팅
+  const formatDate = (dateString) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+
+    const datePart = date.toLocaleDateString('ko-KR').replace(/ /g, ''); // 공백 제거
+    const timePart = date.toLocaleTimeString('ko-KR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false  // 24시간 형식
+    });
+
+    return `${datePart} ${timePart}`;
+  };
+
+  // 활성 상태 변경
+  const handleStatusChange = async (sourceIdx, newStatus) => {
+    const newActive = newStatus === 'Y';
+
+    setCrawlData(prev =>
+      prev.map(item =>
+        item.source_idx === sourceIdx ? { ...item, crawl_yn: newActive } : item
+      )
+    );
+
+    try {
+      await axios.put(`http://localhost/${id}/crawl/updateCrawlYn/${sourceIdx}`, {
+        crawl_yn: newStatus
+      });
+      console.log('활성화 상태 저장 완료');
+    } catch (error) {
+      alert('활성화 상태 저장 실패');
+    }
+  };
+
+  // input 값 변경 시 임시 상태에만 저장
+  const handleTempIntervalChange = (sourceIdx, value) => {
     setTempIntervals(prev => ({
       ...prev,
-      [siteId]: newInterval
+      [sourceIdx]: value
     }));
   };
 
-  // 수집 주기 일괄 저장
-  const handleSaveIntervals = async () => {
-    if (Object.keys(tempIntervals).length === 0) {
-      alert('변경된 수집 주기가 없습니다.');
+  // 저장 버튼 클릭 시 호출
+  const handleSaveInterval = async (sourceIdx) => {
+    const newInterval = tempIntervals[sourceIdx];
+    if (!newInterval || newInterval < 1) {
+      alert('1 이상의 숫자를 입력하세요');
       return;
     }
 
     try {
-      // 변경된 수집 주기들을 실제 상태에 반영
-      setSites(prevSites =>
-        prevSites.map(site => {
-          if (tempIntervals[site.id] !== undefined) {
-            const newInterval = parseInt(tempIntervals[site.id]);
-            if (newInterval > 0) {
-              return { ...site, crawlInterval: newInterval };
-            }
-          }
-          return site;
-        })
-      );
+      await axios.put(`http://localhost/${id}/crawl/updateCrawlCycle/${sourceIdx}`, {
+        crawl_cycle: newInterval
+      });
+      alert('수집 주기 저장 완료');
 
-      // 임시 상태 초기화
-      setTempIntervals({});
+      // 저장 후 임시 상태에서 제거
+      setTempIntervals(prev => {
+        const newState = { ...prev };
+        delete newState[sourceIdx];
+        return newState;
+      });
 
-      console.log('수집 주기 일괄 저장:', tempIntervals);
-      alert('수집 주기가 저장되었습니다.');
-
-      // 여기에 실제 API 호출 코드 추가
-      // await updateCrawlIntervals(tempIntervals);
+      // 데이터 다시 불러오기
+      getCrawlinfo();
     } catch (error) {
-      console.error('수집 주기 저장 실패:', error);
-      alert('저장에 실패했습니다.');
+      alert('수집 주기 저장 실패');
     }
   };
 
-  // 현재 표시할 수집 주기 값 (임시값이 있으면 임시값, 없으면 실제값)
-  const getDisplayInterval = (siteId, actualInterval) => {
-    return tempIntervals[siteId] !== undefined ? tempIntervals[siteId] : actualInterval;
+
+  // 현재 표시할 수집 주기 값
+  const getDisplayInterval = (sourceIdx, actualInterval) => {
+    return tempIntervals[sourceIdx] !== undefined ? tempIntervals[sourceIdx] : actualInterval;
   };
 
   // 변경사항이 있는지 확인
@@ -102,15 +109,6 @@ export default function AdminCrawl() {
       {/* 상단 헤더 */}
       <div className='inbox-header'>
         <h1>크롤링 관리</h1>
-        <div className='action-buttons'>
-          <button
-            className='save-button'
-            onClick={handleSaveIntervals}
-            disabled={!hasChanges}
-          >
-            수집 주기 저장
-          </button>
-        </div>
       </div>
 
       {/* 크롤링 사이트 테이블 */}
@@ -122,39 +120,43 @@ export default function AdminCrawl() {
             <th>수집 주기 설정 (시간)</th>
             <th>마지막 크롤링</th>
             <th>상태</th>
-            <th>관리</th>
           </tr>
         </thead>
         <tbody>
-          {sites.map((site) => (
-            <tr key={site.id} className={!site.active ? 'unread' : ''}>
+          {crawlData.map((item) => (
+            <tr key={item.source_idx} className={!item.crawl_yn ? 'unread' : ''}>
               <td>
                 <select
-                  value={site.active ? 'Y' : 'N'}
-                  onChange={(e) => handleStatusChange(site.id, e.target.value)}
+                  value={item.crawl_yn ? 'Y' : 'N'}
+                  onChange={(e) => handleStatusChange(item.source_idx, e.target.value)}
                   className="status-select"
                 >
                   <option value="Y">Y</option>
                   <option value="N">N</option>
                 </select>
               </td>
-              <td>{site.name}</td>
+              <td>{item.source_name}</td>
               <td>
                 <input
                   type="number"
-                  value={getDisplayInterval(site.id, site.crawlInterval)}
-                  onChange={(e) => handleTempIntervalChange(site.id, e.target.value)}
+                  value={getDisplayInterval(item.source_idx, item.crawl_cycle)}
+                  onChange={(e) => handleTempIntervalChange(item.source_idx, parseInt(e.target.value))}
                   className="interval-input"
                   min="1"
                   max="168"
                   placeholder="시간"
                 />
+                <button
+                  onClick={() => handleSaveInterval(item.source_idx)}
+                  disabled={tempIntervals[item.source_idx] === undefined}
+                  className="save-interval-button"
+                >
+                  저장
+                </button>
               </td>
-              <td>{site.lastCrawled}</td>
-              <td>{site.active ? '활성' : '비활성'}</td>
-              <td>
-                <button className='icon-button'>수정</button>
-              </td>
+
+              <td>{formatDate(item.last_crawl_at)}</td>
+              <td>{item.crawl_yn ? '활성' : '비활성'}</td>
             </tr>
           ))}
         </tbody>
