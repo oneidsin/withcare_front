@@ -126,7 +126,7 @@
 }
 
 /* 하단 작성하기 버튼 */
-.compose-button-container {
+.write-container {
   display: flex;
   justify-content: flex-end;
   /* 오른쪽 정렬 */
@@ -134,7 +134,7 @@
   /* 테이블과의 간격 */
 }
 
-.compose-button {
+.write-button {
   padding: 10px 25px;
   background-color: #007bff;
   /* 파란색 배경 */
@@ -146,7 +146,7 @@
   transition: background-color 0.2s;
 }
 
-.compose-button:hover {
+.write-button:hover {
   background-color: #0056b3;
 }
 

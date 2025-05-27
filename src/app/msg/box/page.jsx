@@ -22,8 +22,8 @@ export default function MsgBox() {
   const [selectedMessages, setSelectedMessages] = useState(new Set());
 
   // 전체 선택/해제 핸들러
-  const handleSelectAll = (event) => {
-    if (event.target.checked) {
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
       const allMessageIds = archivedMessages.map(msg => msg.id);
       setSelectedMessages(new Set(allMessageIds));
     } else {
