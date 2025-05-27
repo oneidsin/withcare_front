@@ -1,20 +1,36 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import '../msg.css'; // 기존 CSS 재사용
+import { useDispatch, useSelector } from 'react-redux';
+import { setBlockedUsers, setLoading } from '@/redux/blockUserReducer';
+import axios from 'axios';
 
-// 차단한 사용자 샘플 데이터
-const blockedUsersList = [
-  { id: 1, userId: 'block_user_01', blockedDate: '2025/05/01' },
-  { id: 2, userId: 'spammer_xyz', blockedDate: '2025/04/22' },
-  { id: 3, userId: 'annoying_123', blockedDate: '2025/03/10' },
-  { id: 4, userId: 'test_block_4', blockedDate: '2025/02/15' },
-  { id: 5, userId: 'user_no_more', blockedDate: '2025/01/30' },
-];
 
 export default function Block() {
-  // 실제 구현 시에는 상태 관리를 통해 목록을 업데이트해야 합니다.
-  const [blockedUsers, setBlockedUsers] = useState(blockedUsersList);
+  const dispatch = useDispatch();
+  const { list: blockedUsers, loading, error } = useSelector((state) => state.blockedUsers);
+
+  // 페이징
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10; // 한 페이지에 보여줄 사용자 수
+
+
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      dispatch(setLoading(true)); // 로딩 시작을 redux에 알림
+      try {
+        const response = await axios.get(`http://localhost/block/list/${id}`);
+        dispatch(setBlockedUsers(response.data)); // 성공 시 데이터를 redux에 저장
+      } catch (err) {
+        console.log("차단 목록 불러오기 실패", err);
+        dispatch(setError(err.message)); // 에러 발생시 에러를 redux에 저장
+      }
+    };
+    fetchUsers(); // 함수 호출
+  }, [dispatch]); // dispatch 는 일반적으로 변경되지 않지만, 의존성 배열에 포함하는 것이 좋다.
+
 
   // 차단 해제 핸들러 (실제 로직 추가 필요)
   const handleUnblock = (userIdToUnblock) => {
