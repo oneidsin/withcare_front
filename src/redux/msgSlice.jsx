@@ -1,6 +1,30 @@
-import {createSlice} from "@reduxjs/toolkit";
-import {store} from "@/redux/store";
+import {createSlice, createAsyncThunk} from "@reduxjs/toolkit";
 import axios from "axios";
+
+// 받은 쪽지함 조회 액션
+export const fetchInbox = createAsyncThunk(
+    'msg/fetchInbox',
+    async ({id}, {getState}) => {
+        const state = getState();
+        // 현재 로그인한 사용자의 id 확인
+        const currentUserId = sessionStorage.getItem('id');
+        
+        // 요청하는 id와 로그인한 사용자의 id가 일치하는지 확인
+        if (currentUserId !== id) {
+            return { loginYN: false, inbox: [], pages: 0 };
+        }
+
+        const response = await axios.get(
+            `http://localhost:80/msg/inbox/${currentUserId}`,
+            {
+                headers: {
+                    Authorization: sessionStorage.getItem('token')
+                }
+            }
+        );
+        return response.data;
+    }
+);
 
 const msgSlice = createSlice({
     name:'msg',
@@ -9,23 +33,28 @@ const msgSlice = createSlice({
         token : typeof window == 'undefined'? '':sessionStorage.getItem('token'),
         list:[],
         pages:0,
-        detail:{},
+        detail:{}
     },
-    reducers:{
-        set_state(state, action){
-            Object.keys(action.payload).forEach((key)=>{
+    reducers: {
+        set_state(state, action) {
+            Object.keys(action.payload).forEach((key) => {
                 state[key] = action.payload[key];
             });
-            return state;
-        },
-        list(state, action){
-            axios.get(`http://localhost:80/msg/outbox/${state.id}/${action.payload}`
-            ,{headers:{Authorization: state.token}}).then(({data}) => {
-                console.log(data);
-                store.dispatch({type:'msg/outbox',payload: {pages:data.pages, list:data.list}});
-            });
         }
+    },
+    extraReducers: (builder) => {
+        builder
+            .addCase(fetchInbox.fulfilled, (state, action) => {
+                if (action.payload.loginYN) {
+                    state.list = action.payload.inbox || [];
+                    state.pages = action.payload.pages || 0;
+                } else {
+                    state.list = [];
+                    state.pages = 0;
+                }
+            })
     }
 });
 
+export const {set_state} = msgSlice.actions;
 export default msgSlice.reducer;
