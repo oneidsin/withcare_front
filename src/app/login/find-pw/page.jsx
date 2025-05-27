@@ -54,6 +54,8 @@ export default function FindIdPage() {
                     }}
                 />
                 <button>비밀번호 변경 페이지로 이동</button>
+                <br/>
+                <br/>
                 <Link href="/login/find-id">아이디를 잊으셨나요?</Link>
         </div>
     );
