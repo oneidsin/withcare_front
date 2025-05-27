@@ -4,6 +4,8 @@
     padding: 24px;
     background-color: #fdfaf6;
     font-family: sans-serif;
+    width: 900px;       /* 전체 너비 제한 */
+    margin: 0 auto;
 }
 
 .sidebar {
@@ -82,6 +84,8 @@
 
 .main-profile {
     flex: 1;
+    width: 95%;
+    height: 95%;
     background-color: #fff;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
@@ -117,6 +121,7 @@
 
 .tab-content,
 .activity-content {
+    height: 120px;
     transition: opacity 0.3s ease;
     opacity: 1;
 }

@@ -2,6 +2,7 @@
 
 import React, {useState} from "react";
 import './search.css'
+import SidebarLayout from '@/components/layout/SidebarLayout';
 
 export default function SearchPage() {
 
