@@ -1,89 +1,122 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from 'react';
-import '../msg.css'; // 기존 CSS 재사용
-import { useDispatch, useSelector } from 'react-redux';
-import { setBlockedUsers, setLoading } from '@/redux/blockUserReducer';
+import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
-
+import { useSelector } from 'react-redux';
+import { Pagination, Stack } from '@mui/material';
+import "../msg.css";
 
 export default function Block() {
-  const dispatch = useDispatch();
-  const { list: blockedUsers, loading, error } = useSelector((state) => state.blockedUsers);
+  const { id, token } = useSelector((state) => state.blockedUsers);
 
-  // 페이징
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10; // 한 페이지에 보여줄 사용자 수
-
-
+  const page = useRef(1); // 현재 페이지
+  const [pages, setPages] = useState(1); // 전체 페이지 수
+  const [list, setList] = useState([]); // 차단 목록
+  const [loading, setLoading] = useState(false); // 로딩 상태
+  const [error, setError] = useState(''); // 에러 메시지
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      dispatch(setLoading(true)); // 로딩 시작을 redux에 알림
-      try {
-        const response = await axios.get(`http://localhost/block/list/${id}`);
-        dispatch(setBlockedUsers(response.data)); // 성공 시 데이터를 redux에 저장
-      } catch (err) {
-        console.log("차단 목록 불러오기 실패", err);
-        dispatch(setError(err.message)); // 에러 발생시 에러를 redux에 저장
+    if (id && token) {
+      fetchBlockedUsers(page.current);
+    }
+  }, [id, token]);
+
+  const fetchBlockedUsers = async (p) => {
+    setLoading(true);
+    setError('');
+
+    try {
+      const query = p && p !== 1 ? `?page=${p}` : ''; // 1이면 안 붙이고, 2 이상이면 붙임
+      const response = await axios.get(`http://localhost/msg/block/list/${id}${query}`, {
+        headers: { Authorization: token }
+      });
+
+      const { loginYN, result } = response.data;
+
+      if (loginYN && result) {
+        setList(result.list || []);
+        setPages(result.totalPage || 1);
+        page.current = result.page || 1;
+      } else {
+        setError('로그인이 필요합니다.');
       }
-    };
-    fetchUsers(); // 함수 호출
-  }, [dispatch]); // dispatch 는 일반적으로 변경되지 않지만, 의존성 배열에 포함하는 것이 좋다.
-
-
-  // 차단 해제 핸들러 (실제 로직 추가 필요)
-  const handleUnblock = (userIdToUnblock) => {
-    console.log(`${userIdToUnblock} 사용자를 차단 해제합니다.`);
-    // 예: setBlockedUsers(blockedUsers.filter(user => user.id !== userIdToUnblock));
-    alert(`${userIdToUnblock} 사용자의 차단을 해제했습니다.`); // 임시 알림
+    } catch (err) {
+      setError('차단 목록을 불러오는 중 오류가 발생했습니다.');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  const handleUnblock = async (blocked_id) => {
+    if (!window.confirm("차단을 해제하시겠습니까?")) return;
+
+    try {
+      const res = await axios.delete(`http://localhost/msg/block/list/cancel`, {
+        headers: { Authorization: token },
+        data: { id, blocked_id }
+      });
+
+      console.log(res);
+
+      fetchBlockedUsers(page.current);
+    } catch (err) {
+      console.error("차단 해제 중 오류 발생: ", err);
+      alert("차단 해제 중 오류가 발생했습니다.");
+    }
+  }
+
+
+
   return (
-    <div className='inbox-container'>
-      {/* 상단 헤더: 제목만 표시 */}
-      <div className='inbox-header'>
+    <div className="inbox-container">
+      <div className="inbox-header">
         <h1>차단한 사용자</h1>
-        {/* 여기서는 별도의 상단 버튼이 필요 없습니다. */}
       </div>
 
-      {/* 차단 사용자 목록 테이블 */}
-      <table className='message-table'> {/* 기존 테이블 스타일 재사용 */}
+      {loading && <p>로딩 중...</p>}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+
+      <p>현재 페이지: {page.current} / 전체 페이지: {pages}</p>
+
+      <table className="message-table">
         <thead>
           <tr>
-            {/* 체크박스는 필요 없으므로 제거 */}
-            <th>사용자 아이디</th>
+            <th>내가 차단한 ID</th>
             <th>차단 날짜</th>
             <th>차단 해제</th>
           </tr>
         </thead>
         <tbody>
-          {blockedUsers.length > 0 ? (
-            blockedUsers.map((user) => (
-              <tr key={user.id}>
-                <td className='user-id-cell'>{user.userId}</td> {/* 사용자 아이디 */}
-                <td>{user.blockedDate}</td> {/* 차단 날짜 */}
-                <td>
-                  <button
-                    className='unblock-button' // 새로운 버튼 스타일
-                    onClick={() => handleUnblock(user.userId)}
-                  >
-                    차단 해제
-                  </button>
-                </td>
+          {list.length > 0 ? (
+            list.map((user) => (
+              <tr key={user.user_block_idx}>
+                <td>{user.blocked_id}</td>
+                <td>{new Date(user.block_start_date).toLocaleDateString()}</td>
+                <td><button className='unblock-button'
+                  onClick={() => handleUnblock(user.blocked_id)}>차단 해제</button></td>
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan="3" style={{ textAlign: 'center', padding: '50px' }}>
+              <td colSpan="3" style={{ textAlign: 'center', color: '#888' }}>
                 차단한 사용자가 없습니다.
               </td>
             </tr>
           )}
+          <tr>
+            <td colSpan="3">
+              <Stack spacing={2} sx={{ alignItems: 'center', mt: 2 }}>
+                <Pagination
+                  count={pages}
+                  page={page.current}
+                  onChange={(e, p) => fetchBlockedUsers(p)}
+                />
+              </Stack>
+            </td>
+          </tr>
         </tbody>
       </table>
-
-      {/* 하단 작성하기 버튼은 필요 없습니다. */}
     </div>
   );
 }

@@ -154,22 +154,20 @@
 
 /* 차단 해제 버튼 스타일 */
 .unblock-button {
-  padding: 5px 12px;
-  border: 1px solid #ffb3b3;
+  background-color: #e53935;
+  color: white;
+  border: none;
+  padding: 6px 12px;
   border-radius: 4px;
-  background-color: #ffe0e0;
-  color: #d9534f;
   cursor: pointer;
-  font-size: 0.85em;
-  transition: background-color 0.2s, color 0.2s;
-  /* 버튼 자체가 중앙에 오도록 td에 text-align: center가 적용됩니다. */
+  font-weight: bold;
+  transition: background-color 0.2s ease;
 }
 
 .unblock-button:hover {
-  background-color: #d9534f;
-  color: white;
-  border-color: #d9534f;
+  background-color: #c62828;
 }
+
 
 /* 사용자 아이디 열 스타일 (선택 사항) */
 .user-id-cell {

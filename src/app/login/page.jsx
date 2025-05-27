@@ -19,16 +19,27 @@ export default function LoginPage() {
     const login = async () => {
         const res = await fetch('http://localhost:80/login', {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({id, pw}),
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, pw }),
         });
 
         const data = await res.json();
+        console.log('로그인 응답 데이터:', data); // 응답 데이터 확인
 
         if (data.success) {
+            console.log('저장하려는 id:', data.id); // id 값 확인
+            console.log('저장하려는 token:', data.token); // token 값 확인
+
             sessionStorage.setItem('token', data.token);
-            dispatch(setUser({ id, token: data.token }));
-            window.location.href = '/';  // 홈('/')으로 이동
+            sessionStorage.setItem('id', id);
+
+            console.log('저장 후 sessionStorage 확인:', {
+                id: sessionStorage.getItem('id'),
+                token: sessionStorage.getItem('token')
+            }); // 저장 후 확인
+
+            dispatch(setUser({ id: data.id, token: data.token }));
+            router.push('/');
         } else {
             alert("로그인 실패: 아이디 또는 비밀번호 확인해주세요.");
         }
@@ -63,15 +74,15 @@ export default function LoginPage() {
                     }
                 }}
             />
-            <br/>
+            <br />
             <button onClick={login}>로그인</button>
-            <br/>
+            <br />
             <Link href="/login/join">
-            <button> 회원가입 </button>
+                <button> 회원가입 </button>
             </Link>
             <p>
                 <Link href="/login/find-id">아이디를 잊으셨나요?</Link>
-                <br/>
+                <br />
                 <Link href="/login/find-pw">비밀번호를 잊으셨나요?</Link>
             </p>
         </div>
