@@ -4,8 +4,8 @@ import React, { useEffect, useState } from "react";
 import "./profile.css";
 
 const mockUserData = {
-    username: "admin 🛡️",
-    role: "관리자 ",
+    username: "admin",
+    role: "관리자 🛡️",
     visitCount: 1,
     profileImage: "",
     intro: "소개글을 작성해주세요.",
@@ -21,6 +21,15 @@ export default function ProfilePage() {
     useEffect(() => {
         setUser(mockUserData);
     }, []);
+
+    const handleDeleteAccount = () => {
+        const confirmed = confirm("정말로 회원 탈퇴하시겠습니까?");
+        if (confirmed) {
+            // TODO: 실제 탈퇴 API 호출
+            alert("회원 탈퇴가 완료되었습니다.");
+            location.href = "/"; // 메인 페이지로 이동
+        }
+    };
 
     if (!user) return <div>로딩 중...</div>;
 
@@ -41,15 +50,22 @@ export default function ProfilePage() {
 
     return (
         <div className="main-profile">
+            {/* 오른쪽 상단 탈퇴 버튼 */}
+            <div className="top-right">
+                <button className="delete-btn" onClick={handleDeleteAccount}>
+                    회원 탈퇴하기
+                </button>
+            </div>
+
             <div className="profile-header">
                 <img
                     src={user.profileImage || "/icons/profile.svg"}
                     alt="프로필 사진"
-                    className="profile-img"
-                />
+                    className="profile-img"/>
                 <div>
                     <div className="username">{user.username}님</div>
                     <div className="intro-text">{user.intro}</div>
+
                 </div>
             </div>
 

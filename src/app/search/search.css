@@ -1,5 +1,5 @@
 .search-page {
-    max-width: 900px; /* 또는 1000px 정도 */
+    width: 900px; /* 또는 1000px 정도 */
     margin: 0 auto;
     padding: 20px;
 }
