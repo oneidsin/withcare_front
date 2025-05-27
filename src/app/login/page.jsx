@@ -27,16 +27,14 @@ export default function LoginPage() {
         console.log('로그인 응답 데이터:', data); // 응답 데이터 확인
 
         if (data.success) {
-            console.log('저장하려는 id:', data.id); // id 값 확인
-            console.log('저장하려는 token:', data.token); // token 값 확인
+            console.log('저장하려는 id:', data.id);
+            console.log('저장하려는 token:', data.token);
 
             sessionStorage.setItem('token', data.token);
             sessionStorage.setItem('id', id);
+            sessionStorage.setItem('loginSuccess', 'true'); // alert 용
 
-            console.log('저장 후 sessionStorage 확인:', {
-                id: sessionStorage.getItem('id'),
-                token: sessionStorage.getItem('token')
-            }); // 저장 후 확인
+            window.dispatchEvent(new Event("login")); // ✅ 이거 꼭 있어야 RootLayout에서 로그인 상태 반영됨
 
             dispatch(setUser({ id: data.id, token: data.token }));
             router.push('/');
