@@ -319,3 +319,18 @@
 .month-nav button:hover {
     background-color: #ccc;
 }
+
+/* 회원 정보 수정 버튼 */
+.edit-btn {
+    margin-left: 10px;
+    padding: 6px 12px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.edit-btn:hover {
+    background-color: #45a049;
+}
