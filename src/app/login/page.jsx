@@ -36,6 +36,13 @@ export default function LoginPage() {
 
             window.dispatchEvent(new Event("login")); // ✅ 이거 꼭 있어야 RootLayout에서 로그인 상태 반영됨
 
+            // SSE 연결 트리거
+            setTimeout(() => {
+                if (window.connectSSE) {
+                    window.connectSSE();
+                }
+            }, 100); // sessionStorage 저장 후 약간의 지연
+
             dispatch(setUser({ id: data.id, token: data.token }));
             router.push('/');
         } else {
