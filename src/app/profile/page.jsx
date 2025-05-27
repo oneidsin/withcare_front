@@ -19,7 +19,6 @@ export default function ProfilePage() {
             return;
         }
 
-        // 여기에 실제 API 호출을 대신해 mock 데이터 불러오기
         const mockUserData = {
             username: id,
             role: "사용자",
@@ -37,11 +36,16 @@ export default function ProfilePage() {
     const handleDeleteAccount = () => {
         const confirmed = confirm("정말로 회원 탈퇴하시겠습니까?");
         if (confirmed) {
-            // TODO: 실제 탈퇴 API 호출
             alert("회원 탈퇴가 완료되었습니다.");
-            sessionStorage.clear(); // 토큰 등 삭제
-            location.href = "/"; // 메인 페이지로 이동
+            sessionStorage.clear();
+            location.href = "/";
         }
+    };
+
+    // ✅ 수정 페이지로 이동
+    const handleEditProfile = () => {
+        router.push("/profile/update");
+        alert("회원정보 수정 페이지로 이동합니다.");
     };
 
     if (!user) return <div>로딩 중...</div>;
@@ -63,7 +67,6 @@ export default function ProfilePage() {
 
     return (
         <div className="main-profile">
-            {/* 오른쪽 상단 탈퇴 버튼 */}
             <div className="top-right">
                 <button className="delete-btn" onClick={handleDeleteAccount}>
                     회원 탈퇴하기
@@ -75,8 +78,14 @@ export default function ProfilePage() {
                     src={user.profileImage || "/icons/profile.svg"}
                     alt="프로필 사진"
                     className="profile-img"/>
-                <div>
-                    <div className="username">{user.username}님</div>
+                <div className="profile-header-info">
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                        <div className="username">{user.username}님</div>
+                        {/* 🔽 회원정보 수정 버튼 */}
+                        <button className="edit-btn" onClick={handleEditProfile}>
+                            회원정보 수정하기
+                        </button>
+                    </div>
                     <div className="intro-text">{user.intro}</div>
                 </div>
             </div>
