@@ -2,6 +2,7 @@
 
 import SidebarLayout from '@/components/layout/SidebarLayout';
 import Link from "next/link"; // Next.js 페이지 이동
+import { usePathname } from 'next/navigation';
 import { AiOutlineMail } from "react-icons/ai";
 import { AiOutlineInbox } from "react-icons/ai";
 import { AiOutlineSend } from "react-icons/ai";
@@ -16,6 +17,8 @@ import { AiOutlineEyeInvisible } from "react-icons/ai";
 // }
 
 export default function MsgLayout({ children }) {
+  const pathname = usePathname();
+
   // Redux store에서 사용자 정보 가져오기 (예시)
   // 실제 state 경로와 구조에 맞게 수정하세요.
   // const userInfo = useSelector(state => state.user.info);
@@ -32,22 +35,34 @@ export default function MsgLayout({ children }) {
   const sidebarContent = (
     <ul>
       <li>
-        <Link href="/msg">
+        <Link
+          href="/msg"
+          className={pathname === '/msg' ? 'active' : ''}
+        >
           <AiOutlineMail style={{ marginRight: '5px' }} />받은 쪽지함
         </Link>
       </li>
       <li>
-        <Link href="/msg/outbox">
+        <Link
+          href="/msg/outbox"
+          className={pathname === '/msg/outbox' ? 'active' : ''}
+        >
           <AiOutlineSend style={{ marginRight: '5px' }} />보낸 쪽지함
         </Link>
       </li>
       <li>
-        <Link href="/msg/box">
+        <Link
+          href="/msg/box"
+          className={pathname === '/msg/box' ? 'active' : ''}
+        >
           <AiOutlineInbox style={{ marginRight: '5px' }} />쪽지 보관함
         </Link>
       </li>
       <li>
-        <Link href="/msg/box">
+        <Link
+          href="/msg/block"
+          className={pathname === '/msg/block' ? 'active' : ''}
+        >
           <AiOutlineEyeInvisible style={{ marginRight: '5px' }} />차단한 사용자
         </Link>
       </li>

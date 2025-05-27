@@ -1,0 +1,199 @@
+.inbox-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  /* 부모(content-box)의 높이를 채우도록 설정 */
+  padding: 10px;
+  /* 내부 여백 추가 */
+  box-sizing: border-box;
+}
+
+/* 상단 헤더 */
+.inbox-header {
+  display: flex;
+  justify-content: space-between;
+  /* 양쪽 끝으로 정렬 */
+  align-items: center;
+  /* 세로 중앙 정렬 */
+  margin-bottom: 25px;
+  /* 테이블과의 간격 */
+  padding-bottom: 15px;
+  /* 아래쪽 테두리와의 간격 */
+  border-bottom: 2px solid #eee;
+  /* 아래쪽 구분선 */
+}
+
+.inbox-header h1 {
+  margin: 0;
+  /* 기본 마진 제거 */
+  font-size: 1.6em;
+  /* 글자 크기 조절 */
+  font-weight: 600;
+  color: #333;
+}
+
+.action-buttons button {
+  padding: 6px 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #f8f8f8;
+  cursor: pointer;
+  font-size: 0.85em;
+  margin-left: 8px;
+  /* 버튼 사이 간격 */
+  transition: background-color 0.2s;
+}
+
+.action-buttons button:hover {
+  background-color: #eee;
+}
+
+.action-buttons .delete-button {
+  background-color: #ffe0e0;
+  border-color: #ffb3b3;
+  color: #d9534f;
+}
+
+.action-buttons .delete-button:hover {
+  background-color: #ffcccc;
+}
+
+
+/* 쪽지 목록 테이블 */
+.message-table {
+  width: 100%;
+  border-collapse: collapse;
+  /* 테두리 겹침 제거 */
+  font-size: 0.9em;
+  color: #555;
+  flex-grow: 1;
+  /* 테이블 영역이 남은 공간을 채우도록 함 */
+}
+
+.message-table th,
+.message-table td {
+  padding: 12px 10px;
+  text-align: center;
+  /* 기본 중앙 정렬 */
+  border-bottom: 1px solid #f0f0f0;
+  /* 행 구분선 */
+  vertical-align: middle;
+  /* <<< 수직 정렬을 'middle'로 명시합니다. */
+}
+
+.message-table th {
+  background-color: #f9f9f9;
+  /* 헤더 배경색 */
+  font-weight: 600;
+  color: #333;
+  border-top: 1px solid #eee;
+  border-bottom: 2px solid #eee;
+}
+
+/* 제목 열은 왼쪽 정렬 */
+.message-table th:nth-child(3),
+.message-table td:nth-child(3) {
+  padding-left: 20px;
+}
+
+/* 읽지 않은 메시지 스타일 */
+.message-table .unread td {
+  font-weight: bold;
+  color: #333;
+}
+
+/* 체크박스 스타일 */
+.message-table input[type="checkbox"] {
+  cursor: pointer;
+  width: 15px;
+  height: 15px;
+}
+
+/* 아이콘 버튼 (삭제) */
+.icon-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  font-size: 1.1em;
+  color: #888;
+  transition: color 0.2s;
+}
+
+.icon-button:hover {
+  color: #d9534f;
+  /* 호버 시 빨간색 */
+}
+
+/* 하단 작성하기 버튼 */
+.compose-button-container {
+  display: flex;
+  justify-content: flex-end;
+  /* 오른쪽 정렬 */
+  padding-top: 20px;
+  /* 테이블과의 간격 */
+}
+
+.compose-button {
+  padding: 10px 25px;
+  background-color: #007bff;
+  /* 파란색 배경 */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background-color 0.2s;
+}
+
+.compose-button:hover {
+  background-color: #0056b3;
+}
+
+/* ... (기존 inbox.css 내용) ... */
+
+/* 차단 해제 버튼 스타일 */
+.unblock-button {
+  padding: 5px 12px;
+  border: 1px solid #ffb3b3;
+  border-radius: 4px;
+  background-color: #ffe0e0;
+  color: #d9534f;
+  cursor: pointer;
+  font-size: 0.85em;
+  transition: background-color 0.2s, color 0.2s;
+  /* 버튼 자체가 중앙에 오도록 td에 text-align: center가 적용됩니다. */
+}
+
+.unblock-button:hover {
+  background-color: #d9534f;
+  color: white;
+  border-color: #d9534f;
+}
+
+/* 사용자 아이디 열 스타일 (선택 사항) */
+.user-id-cell {
+  font-weight: 500;
+  color: #444;
+}
+
+/* 테이블의 특정 열 중앙 정렬 (필요 시 조정) */
+.message-table td:nth-child(2),
+/* 차단 날짜 */
+.message-table td:nth-child(3)
+
+/* 차단 해제 */
+  {
+  text-align: center;
+}
+
+.message-table th:nth-child(1),
+/* 사용자 아이디 헤더 */
+.message-table td:nth-child(1)
+
+/* 사용자 아이디 셀 */
+  {
+  text-align: left;
+  /* 사용자 아이디는 왼쪽 정렬 */
+  padding-left: 20px;
+}
