@@ -1,0 +1,117 @@
+.detail-container {
+    width: 90%;
+    margin: 0 auto;
+    padding: 32px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.detail-category {
+    font-size: 15px;
+    color: #666;
+}
+
+.recommend-box {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+}
+
+.detail-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.detail-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start; /* 이걸로 세로 정렬 */
+    margin-bottom: 12px;
+    font-size: 14px;
+    color: #666;
+    flex-wrap: wrap;
+}
+
+.meta-left {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.meta-author-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.meta-date-line {
+    font-size: 13px;
+    color: #999;
+}
+
+.detail-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.detail-body {
+    font-size: 16px;
+    line-height: 1.7;
+    white-space: pre-line;
+    margin-bottom: 24px;
+}
+
+/* 등록 버튼 포함 모든 버튼에 공통 스타일 */
+.detail-container button {
+    background-color: rgba(174, 226, 255, 0.4);
+    color: #2d2d2d;
+    border: 1px solid rgba(135, 209, 255, 0.5);
+    padding: 4px 10px;
+    font-size: 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.detail-container button:hover {
+    background-color: #ffffff;
+    transform: scale(1.02);
+}
+
+.detail-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #eee;
+    padding-top: 16px;
+}
+
+.comment-box {
+    margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.comment-input {
+    width: 100%;
+    height: 70px;
+    margin-bottom: 12px;
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.comment-submit button {
+    align-self: flex-end; /* 이걸로 등록 버튼 오른쪽 정렬 */
+}
+
+.comment-writer{
+    align-self: flex-start;
+}

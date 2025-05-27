@@ -57,10 +57,6 @@ export default function PostPage() {
         <div className="post-page">
             {/* L1: 정렬 */}
             <div className="post-header">
-                <select value={sort} onChange={e => setSort(e.target.value)}>
-                    <option value="latest">최신순</option>
-                    <option value="recommend">인기순</option>
-                </select>
                 <button className='write-button' onClick={() => router.push('/post/write')}>✏ 글쓰기</button>
             </div>
 
@@ -77,7 +73,7 @@ export default function PostPage() {
                 </thead>
                 <tbody>
                 {posts.map((item, index) => (
-                    <tr key={item.post.post_idx}>
+                    <tr key={item.post.post_idx} onClick={() => router.push(`/post/detail?post_idx=${item.post.post_idx}`)} style={{ cursor: 'pointer' }}>
                         <td>{item.post.post_idx}</td>
                         <td>
                             {item.post.post_blind_yn && '🔒 '}
@@ -112,6 +108,10 @@ export default function PostPage() {
                 }}
                 className="search-form"
             >
+                <select value={sort} onChange={e => setSort(e.target.value)}>
+                    <option value="latest">최신순</option>
+                    <option value="recommend">인기순</option>
+                </select>
                 <select value={searchType} onChange={(e) => setSearchType(e.target.value)}>
                     <option value="title">제목</option>
                     <option value="content">내용</option>
