@@ -2,23 +2,35 @@
 
 import React, { useEffect, useState } from "react";
 import "./profile.css";
-
-const mockUserData = {
-    username: "admin",
-    role: "관리자 🛡️",
-    visitCount: 1,
-    profileImage: "",
-    intro: "소개글을 작성해주세요.",
-    diagnosis: "관리자",
-    stage: "관리자",
-    isPublic: true,
-};
+import { useRouter } from "next/navigation";
 
 export default function ProfilePage() {
     const [user, setUser] = useState(null);
     const [tab, setTab] = useState("posts");
+    const router = useRouter();
 
     useEffect(() => {
+        const token = sessionStorage.getItem("token");
+        const id = sessionStorage.getItem("id");
+
+        if (!token || !id) {
+            alert("로그인이 필요합니다.");
+            router.push("/login");
+            return;
+        }
+
+        // 여기에 실제 API 호출을 대신해 mock 데이터 불러오기
+        const mockUserData = {
+            username: id,
+            role: "사용자",
+            visitCount: 1,
+            profileImage: "",
+            intro: "소개글을 작성해주세요.",
+            diagnosis: "미입력",
+            stage: "미입력",
+            isPublic: true,
+        };
+
         setUser(mockUserData);
     }, []);
 
@@ -27,6 +39,7 @@ export default function ProfilePage() {
         if (confirmed) {
             // TODO: 실제 탈퇴 API 호출
             alert("회원 탈퇴가 완료되었습니다.");
+            sessionStorage.clear(); // 토큰 등 삭제
             location.href = "/"; // 메인 페이지로 이동
         }
     };
@@ -65,7 +78,6 @@ export default function ProfilePage() {
                 <div>
                     <div className="username">{user.username}님</div>
                     <div className="intro-text">{user.intro}</div>
-
                 </div>
             </div>
 
