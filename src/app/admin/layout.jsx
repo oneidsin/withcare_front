@@ -9,7 +9,6 @@ import { AiOutlineBarChart } from "react-icons/ai";
 import { AiOutlinePieChart } from "react-icons/ai";
 import { usePathname } from 'next/navigation';
 import SidebarLayout from "@/components/layout/SidebarLayout";
-import BoardWrite from "./admin-board/page";
 import Link from "next/link";
 
 export default function AdminCrawl({ children }) {

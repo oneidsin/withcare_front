@@ -13,7 +13,7 @@ export default function PostDetailPage() {
     const [post, setPost] = useState(null);
 
     const boardIdxFromParam = searchParams.get('board_idx');
-    const boardIdx = boardIdxFromParam || post?.board_idx;
+    const effectiveBoardIdx = boardIdxFromParam || post?.board_idx;
 
     // 게시글 정보, 작성자 일치
     const [likes, setLikes] = useState(0);
@@ -208,7 +208,13 @@ export default function PostDetailPage() {
             <div className="detail-footer">
                 <button
                     className="list-button"
-                    onClick={() => router.push(`/post/list?board_idx=${boardIdx}`)}
+                    onClick={() => {
+                        if (effectiveBoardIdx) {
+                            router.push(`/post/?board_idx=${effectiveBoardIdx}`);
+                        } else {
+                            alert("게시판 정보가 없습니다.");
+                        }
+                    }}
                 >
                     ← 목록
                 </button>

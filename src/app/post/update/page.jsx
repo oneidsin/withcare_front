@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import axios from 'axios';
 import './update.css';
+import {fetchVisibleBoards} from "@/app/post/boardList";
 
 export default function PostUpdatePage() {
     const searchParams = useSearchParams();
@@ -21,8 +22,11 @@ export default function PostUpdatePage() {
     const [newFiles, setNewFiles] = useState([]);
     const [previewUrls, setPreviewUrls] = useState([]);
 
+    const [boards, setBoards] = useState([]); // 게시판 목록
+
     useEffect(() => {
         if (postIdx) fetchPost();
+        fetchVisibleBoards().then(setBoards);
     }, [postIdx]);
 
     const fetchPost = async () => {
@@ -34,7 +38,7 @@ export default function PostUpdatePage() {
             if (res.data?.post) {
                 setTitle(res.data.post.post_title);
                 setContent(res.data.post.post_content);
-                setBoard(res.data.post.board_name || '');
+                setBoard(String(res.data.post.board_idx || ''));
                 setAllowComment(res.data.post.allow_comment);
                 setPhotos(res.data.photos || []);
                 setKeepFileIdx(res.data.photos?.map(p => p.file_idx) || []);
@@ -158,11 +162,11 @@ export default function PostUpdatePage() {
                 <label>게시판</label>
                 <select value={board} onChange={(e) => setBoard(e.target.value)}>
                     <option value="">게시판을 선택해주세요</option>
-                    <option value="1">공지사항</option>
-                    <option value="2">자유 게시판</option>
-                    <option value="3">Q&A</option>
-                    <option value="4">정보 게시판</option>
-                    <option value="5">환우 게시판</option>
+                    {boards.map((b) => (
+                        <option key={b.board_idx} value={b.board_idx}>
+                            {b.board_name}
+                        </option>
+                    ))}
                 </select>
             </div>
 

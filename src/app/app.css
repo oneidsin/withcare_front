@@ -319,3 +319,55 @@ footer {
     line-height: 1;
     /* 간격 맞추기 위해 라인 높이 조절 */
 }
+
+/* 상단 nav 구조 */
+.top-nav {
+    display: flex;
+    justify-content: center;
+    background-color: #f6f6f6;
+    padding: 12px 24px;
+    border-bottom: 1px solid #e0e0e0;
+    position: relative;
+    z-index: 10;
+}
+
+.nav-item {
+    position: relative;
+    margin: 0 16px;
+}
+
+.nav-item > a {
+    text-decoration: none;
+    color: #444;
+    font-weight: 500;
+    padding: 8px 12px;
+    display: inline-block;
+}
+
+.nav-item:hover .dropdown {
+    display: block;
+}
+
+.dropdown {
+    display: none;
+    position: absolute;
+    top: 36px;
+    left: 0;
+    background-color: white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    border-radius: 6px;
+    min-width: 160px;
+    z-index: 99;
+}
+
+.dropdown a {
+    display: block;
+    padding: 8px 12px;
+    color: #333;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.dropdown a:hover {
+    background-color: #f0f0f0;
+}

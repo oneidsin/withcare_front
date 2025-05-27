@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import {useEffect, useState} from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import '../update/update.css';
+import {fetchVisibleBoards} from "@/app/post/boardList";
 
 export default function PostWritePage() {
     const router = useRouter();
@@ -15,6 +16,11 @@ export default function PostWritePage() {
 
     const [newFiles, setNewFiles] = useState([]);
     const [previewUrls, setPreviewUrls] = useState([]);
+
+    const [boards, setBoards] = useState([]);
+    useEffect(() => {
+        fetchVisibleBoards().then(setBoards);
+    }, []);
 
     const handleFileChange = (e) => {
         const files = Array.from(e.target.files);
@@ -94,11 +100,11 @@ export default function PostWritePage() {
                 <label>게시판</label>
                 <select value={board} onChange={(e) => setBoard(e.target.value)}>
                     <option value="">게시판을 선택해주세요</option>
-                    <option value="1">공지사항</option>
-                    <option value="2">자유 게시판</option>
-                    <option value="3">Q&A</option>
-                    <option value="4">정보 게시판</option>
-                    <option value="5">환우 게시판</option>
+                    {boards.map((b) => (
+                        <option key={b.board_idx} value={b.board_idx}>
+                            {b.board_name}
+                        </option>
+                    ))}
                 </select>
             </div>
 

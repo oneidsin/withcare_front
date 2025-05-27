@@ -8,11 +8,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { store } from "@/redux/store";
 import SSEClient from "@/components/SSEClient";
+import axios from "axios";
 
 export default function RootLayout({ children }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState("");
   const router = useRouter();
+  const [menuBoards, setMenuBoards] = useState([]);
 
   // 로그인/로그아웃 상태 동기화
   const syncLoginState = () => {
@@ -40,6 +42,29 @@ export default function RootLayout({ children }) {
     // 로그인 이벤트 수신 (수동 dispatch를 위한)
     const handleLogin = () => syncLoginState();
     window.addEventListener("login", handleLogin);
+
+    axios.get("http://localhost/board/list", {
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      },
+      params: {
+        t: new Date().getTime(), // 쿼리스트링으로 캐시 무효화
+      }
+    }).then((res) => {
+      console.log("불러온 게시판 목록:", res.data);
+      const boards = res.data;
+      const parents = boards.filter(b => b.parent_board_idx == null && String(b.blind_yn) !== "true");
+      const children = boards.filter(b => b.parent_board_idx != null && String(b.blind_yn) !== "true");
+
+      const structured = parents.map((parent) => ({
+        ...parent,
+        children: children.filter((child) => child.parent_board_idx === parent.board_idx),
+      }));
+
+      setMenuBoards(structured);
+    });
 
     return () => {
       window.removeEventListener("login", handleLogin);
@@ -104,13 +129,26 @@ export default function RootLayout({ children }) {
             </div>
           </header>
 
-          <nav>
-            <Link href="/post?board_idx=1">공지사항</Link>
-            <Link href="/post?board_idx=2">자유 게시판</Link>
-            <Link href="/post?board_idx=3">Q&A</Link>
-            <Link href="/post?board_idx=4">정보 게시판</Link>
-            <Link href="/post?board_idx=5">환우 게시판</Link>
-            <Link href="/post?board_idx=6">완치 후의 삶</Link>
+          <nav className="top-nav">
+            {menuBoards.map((parent) => (
+                <div key={parent.board_idx} className="nav-item">
+                  <Link href={`/post?board_idx=${parent.board_idx}`}>
+                    {parent.board_name}
+                  </Link>
+                  {parent.children.length > 0 && (
+                      <div className="dropdown">
+                        {parent.children.map((child) => (
+                            <Link
+                                key={child.board_idx}
+                                href={`/post?board_idx=${child.board_idx}`}
+                            >
+                              {child.board_name}
+                            </Link>
+                        ))}
+                      </div>
+                  )}
+                </div>
+            ))}
           </nav>
 
           <main className="container">{children}</main>
