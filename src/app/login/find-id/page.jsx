@@ -23,7 +23,7 @@ export default function FindIdPage() {
         }
 
         const res = await fetch(`http://localhost/find-id?name=${info.name}&year=${info.year}&email=${info.email}`);
-        const data = await res.text();
+        const data = await res.text(); // 서버로부터 받은 응답 텍스트로 변환
         
         setResult(res.ok ? `회원님의 아이디는 ${data} 입니다.` : (data || '일치하는 회원정보가 없습니다.'));
     };
