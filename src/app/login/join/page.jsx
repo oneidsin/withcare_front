@@ -52,7 +52,7 @@ export default function joinPage(){
     const handleJoin = async () => {
         // 필수 입력값 체크
         if (!info.id || !info.pw || !info.name || !info.year || !info.gender || !info.email) {
-            alert('모든 항목을 입력해주세요.');
+            alert('모든 필수 항목을 입력해주세요.');
             return;
         }
 
@@ -78,10 +78,16 @@ export default function joinPage(){
 
     return (
         <div className="login">
+            <h2>JOIN</h2>
+            <br/>
+            <h3>기본 정보</h3>
+            <hr/>
+            <p style={{textAlign:"right"}}><span style={{color: "red"}}> *</span> 필수 입력 사항</p>
+            <br/>
             <table>
                 <tbody>
                 <tr>
-                    <th>ID</th>
+                    <th>ID<span style={{color: "red"}}> *</span></th>
                     <td>
                         <input type="text" name="id" value={info.id} onChange={input}/>
                         <button type="button" id="overlay" onClick={overlay}>중복체크</button>
@@ -89,25 +95,25 @@ export default function joinPage(){
                     </td>
                 </tr>
                 <tr>
-                    <th>PW</th>
+                    <th>PW<span style={{color: "red"}}> *</span></th>
                     <td>
                         <input type="password" name="pw" value={info.pw} onChange={input}/>
                     </td>
                 </tr>
                 <tr>
-                    <th>NAME</th>
+                    <th>NAME<span style={{color: "red"}}> *</span></th>
                     <td>
                         <input type="text" name="name" value={info.name} onChange={input}/>
                     </td>
                 </tr>
                 <tr>
-                    <th>YEAR</th>
+                    <th>YEAR<span style={{color: "red"}}> *</span></th>
                     <td>
                         <input type="text" name="year" value={info.year} onChange={input}/>
                     </td>
                 </tr>
                 <tr>
-                    <th>GENDER</th>
+                    <th>GENDER<span style={{color: "red"}}> *</span></th>
                     <td>
                         <input type="radio" name="gender" value="남" onChange={input}/> 남
                         &nbsp;&nbsp;&nbsp;&nbsp;
@@ -115,7 +121,7 @@ export default function joinPage(){
                     </td>
                 </tr>
                 <tr>
-                    <th>EMAIL</th>
+                    <th>EMAIL<span style={{color: "red"}}> *</span></th>
                     <td>
                         <input type="text" name="email" value={info.email} onChange={input}/>
                     </td>
