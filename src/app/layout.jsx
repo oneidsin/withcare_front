@@ -7,6 +7,7 @@ import { Provider } from "react-redux";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { store } from "@/redux/store";
+import SSEClient from "@/components/SSEClient";
 
 export default function RootLayout({ children }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -58,63 +59,64 @@ export default function RootLayout({ children }) {
   };
 
   return (
-      <html lang="ko">
+    <html lang="ko">
       <head>
         <link rel="icon" href="/favicon.ico" type="image/x-icon" />
       </head>
       <body>
-      <Provider store={store}>
-        <header className="header">
-          <Link href="/">
-            <img src="/logo.png" alt="withcare 로고" className="logo" />
-          </Link>
+        <Provider store={store}>
+          <SSEClient />
+          <header className="header">
+            <Link href="/">
+              <img src="/logo.png" alt="withcare 로고" className="logo" />
+            </Link>
 
-          <div className="header-right">
-            {!isLoggedIn ? (
+            <div className="header-right">
+              {!isLoggedIn ? (
                 <Link href="/login">
                   <AiOutlineLogin
-                      style={{ fontSize: '28px', cursor: 'pointer', marginRight: '18px' }}
-                      title="로그인"
+                    style={{ fontSize: '28px', cursor: 'pointer', marginRight: '18px' }}
+                    title="로그인"
                   />
                 </Link>
-            ) : (
+              ) : (
                 <>
                   <span style={{ marginRight: '12px', fontWeight: 'bold' }}>{username}님</span>
                   <AiOutlineLogout
-                      style={{ fontSize: '28px', cursor: 'pointer', marginRight: '18px' }}
-                      onClick={handleLogout}
-                      title="로그아웃"
+                    style={{ fontSize: '28px', cursor: 'pointer', marginRight: '18px' }}
+                    onClick={handleLogout}
+                    title="로그아웃"
                   />
                 </>
-            )}
-            <Link href="/search">
-              <AiOutlineSearch style={{ color: 'black', fontSize: '28px', cursor: 'pointer', marginRight: '18px' }} title="검색" />
-            </Link>
-            <Link href="/msg">
-              <AiOutlineMail style={{ color: 'black', fontSize: '28px', cursor: 'pointer', marginRight: '18px' }} title="메일" />
-            </Link>
-            <Link href="/alert">
-              <AiOutlineBell style={{ color: 'black', fontSize: '28px', cursor: 'pointer', marginRight: '18px' }} title="알림" />
-            </Link>
-            <Link href="/profile">
-              <AiOutlineUser style={{ color: 'black', fontSize: '28px', cursor: 'pointer' }} title="프로필" />
-            </Link>
-          </div>
-        </header>
+              )}
+              <Link href="/search">
+                <AiOutlineSearch style={{ color: 'black', fontSize: '28px', cursor: 'pointer', marginRight: '18px' }} title="검색" />
+              </Link>
+              <Link href="/msg">
+                <AiOutlineMail style={{ color: 'black', fontSize: '28px', cursor: 'pointer', marginRight: '18px' }} title="메일" />
+              </Link>
+              <Link href="/alert">
+                <AiOutlineBell style={{ color: 'black', fontSize: '28px', cursor: 'pointer', marginRight: '18px' }} title="알림" />
+              </Link>
+              <Link href="/profile">
+                <AiOutlineUser style={{ color: 'black', fontSize: '28px', cursor: 'pointer' }} title="프로필" />
+              </Link>
+            </div>
+          </header>
 
-        <nav>
-          <Link href="/post?board_idx=1">공지사항</Link>
-          <Link href="/post?board_idx=2">자유 게시판</Link>
-          <Link href="/post?board_idx=3">Q&A</Link>
-          <Link href="/post?board_idx=4">정보 게시판</Link>
-          <Link href="/post?board_idx=5">환우 게시판</Link>
-          <Link href="/post?board_idx=6">완치 후의 삶</Link>
-        </nav>
+          <nav>
+            <Link href="/post?board_idx=1">공지사항</Link>
+            <Link href="/post?board_idx=2">자유 게시판</Link>
+            <Link href="/post?board_idx=3">Q&A</Link>
+            <Link href="/post?board_idx=4">정보 게시판</Link>
+            <Link href="/post?board_idx=5">환우 게시판</Link>
+            <Link href="/post?board_idx=6">완치 후의 삶</Link>
+          </nav>
 
-        <main className="container">{children}</main>
-        <footer>ⓒ 2025 withcare</footer>
-      </Provider>
+          <main className="container">{children}</main>
+          <footer>ⓒ 2025 withcare</footer>
+        </Provider>
       </body>
-      </html>
+    </html>
   );
 }
