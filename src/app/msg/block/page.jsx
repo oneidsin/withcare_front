@@ -32,6 +32,7 @@ export default function Block() {
       });
 
       const { loginYN, result } = response.data;
+      console.log(response.data);
 
       if (loginYN && result) {
         setList(result.list || []);
