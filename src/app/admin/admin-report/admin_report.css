@@ -23,18 +23,12 @@
   color: #333;
 }
 
-.action-buttons button {
-  padding: 6px 15px;
+/* 새 카테고리 입력창과 버튼 */
+.inbox-header input[type="text"] {
+  padding: 8px 12px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.85em;
-  margin-left: 8px;
-  transition: background-color 0.2s;
-}
-
-.action-buttons button:hover {
-  background-color: #eee;
+  font-size: 0.9em;
 }
 
 /* 신고 목록 테이블 */
@@ -78,9 +72,12 @@
 /* 신고 내용 열은 왼쪽 정렬 */
 .report-table th:nth-child(3),
 .report-table td:nth-child(3) {
-  text-align: left;
-  padding-left: 20px;
+  text-align: center;
+  /* 다시 중앙 정렬로 변경 */
+  padding-left: 10px;
+  /* 왼쪽 패딩 초기화 */
 }
+
 
 /* 처리 버튼 스타일 */
 .process-button {
@@ -140,22 +137,50 @@
   cursor: not-allowed;
 }
 
-/* 신고 카테고리 수정 버튼 스타일 */
+/* 신고 카테고리 저장/수정 버튼 스타일 */
 .report-cate-update {
-  background-color: #007bff;
+  background-color: #0070f3;
+  /* 초록색 계열 */
   color: white;
   border: none;
-  padding: 6px 12px;
+  padding: 8px 15px;
+  /* 패딩 조정 */
   border-radius: 4px;
   cursor: pointer;
   font-weight: 500;
+  font-size: 0.9em;
+  /* 폰트 크기 조정 */
 }
 
 .report-cate-update:hover {
-  background-color: #0056b3;
+  background-color: #0058c7;
   transition: background-color 0.2s ease;
 }
 
 .report-cate-update:active {
-  background-color: black;
+  background-color: #0046a6;
+}
+
+/* 이전 페이지로 버튼 스타일 */
+.report-cate-back {
+  background-color: #0070f3;
+  /* 파란색 계열 */
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  /* 패딩 조정 */
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.9em;
+  /* 폰트 크기 조정 */
+}
+
+.report-cate-back:hover {
+  background-color: #0058c7;
+  transition: background-color 0.2s ease;
+}
+
+.report-cate-back:active {
+  background-color: #0046a6;
 }

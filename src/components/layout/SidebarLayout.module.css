@@ -98,6 +98,6 @@
 }
 
 .sidebar-nav :global(a.active) {
-  background-color: skyblue;
+  background-color: #0070f3;
   color: white;
 }
