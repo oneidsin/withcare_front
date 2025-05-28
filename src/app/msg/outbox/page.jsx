@@ -8,15 +8,15 @@ import {Pagination, Stack} from "@mui/material"; // 받은 쪽지함과 동일�
 
 export default function Outbox() {
 
-  let page = useRef(1);
-  const [list,setList] = useState([]);
-  const [pages, setPages] = useState(1);
-  const [selectMsg, setSelectMsg] = useState(new Set());
+  let page = useRef(1); // 현재 페이지 번호 저장
+  const [list,setList] = useState([]); // 렌더링 할 쪽지 리스트
+  const [pages, setPages] = useState(1); // 전체 페이지 수
+  const [selectMsg, setSelectMsg] = useState(new Set()); // 선택한 쪽지 저장
 
   // 전체 선택/해제 핸들러
   const handleSelectAll = (e) => {
     if (e.target.checked) {
-      const allMessageIds = list.map(message => message.msg_idx);
+      const allMessageIds = list.map(message => message.msg_idx); // 전체 msg_idx 수집
       setSelectMsg(new Set(allMessageIds));
     } else {
       setSelectMsg(new Set());
@@ -27,63 +27,39 @@ export default function Outbox() {
   const handleSelectOne = (id) => {
     const newSelected = new Set(selectMsg);
     if (newSelected.has(id)) {
-      newSelected.delete(id);
+      newSelected.delete(id); // 이미 선택된 경우 해제
     } else {
-      newSelected.add(id);
+      newSelected.add(id); // 선택되지 않은 경우 추가
     }
     setSelectMsg(newSelected);
   };
 
   // 페이지 변경 핸들러
-  const handlePageChg = (e, page) => {
-    const currentUserId = sessionStorage.getItem('id');
-    if (currentUserId) {
-      dispatch(fetchInbox({ id: currentUserId, page }));
-    }
+  const handlePageChg = (e, newPage) => {
+    page.current = newPage;
+    callList(newPage); // ✅ 페이지 변경 시 쪽지 목록 다시 불러오기
   };
 
-  useEffect(() => {
+  useEffect(() => { // 쪽지 목록 불러오기
     callList(page.current);
   },[]);
 
-  const callList = async (p) => {
+  const callList = async (p) => { // 실제 데이터를 서버에서 받아오는 함수
     const id = sessionStorage.getItem("id");
     const token = sessionStorage.getItem("token");
     const {data} = await axios.get(`http://localhost:80/msg/outbox/${id}/${p}`,{headers:{Authorization:token}});
     console.log(data);
-    
+
     if (data.loginYN && data.outbox) {
       setPages(data.outbox.pages); // 보여줄 수 있는 페이지
       page.current = data.outbox.page; // 현재 페이지
 
       if (!data.outbox.list || data.outbox.list.length === 0) {
-        setList([<tr key="empty"><td colSpan={6}>보낸 쪽지가 없습니다.</td></tr>]);
+        setList([]);
         return;
       }
 
-      const content = data.outbox.list.map((item) => (
-        <tr key={item.msg_idx} className={!item.msg_read ? 'unread' : ''}>
-          <td>
-            <input
-              type="checkbox"
-              checked={selectMsg.has(item.msg_idx)}
-              onChange={() => handleSelectOne(item.msg_idx)}
-            />
-          </td>
-          <td>{item.receiver_id}</td>
-          <td className='subject-cell'>{item.msg_content}</td>
-          <td>{new Date(item.msg_sent_at).toLocaleDateString()}</td>
-          <td>{item.msg_read ? '읽음' : '읽지 않음'}</td>
-          <td>
-            <button className='icon-button'>
-              <BsTrash />
-            </button>
-          </td>
-        </tr>
-      ));
-      setList(content);
-    } else {
-      setList([<tr key="error"><td colSpan={6}>데이터를 불러올 수 없습니다.</td></tr>]);
+      setList(data.outbox.list); // 원본 데이터 저장
     }
   }
 
@@ -117,7 +93,27 @@ export default function Outbox() {
           </tr>
           </thead>
           <tbody>
-            {list}
+          {/* ✅ JSX는 여기서 렌더링: list.map(...) */}
+          {list.map((item) => (
+              <tr key={item.msg_idx} className={!item.msg_read ? 'unread' : ''}>
+                <td>
+                  <input
+                      type="checkbox"
+                      checked={selectMsg.has(item.msg_idx)}
+                      onChange={() => handleSelectOne(item.msg_idx)}
+                  />
+                </td>
+                <td>{item.receiver_id}</td>
+                <td className='subject-cell'>{item.msg_content}</td>
+                <td>{new Date(item.msg_sent_at).toLocaleDateString()}</td>
+                <td>{item.msg_read ? '읽음' : '읽지 않음'}</td>
+                <td>
+                  <button className='icon-button'>
+                    <BsTrash />
+                  </button>
+                </td>
+              </tr>
+          ))}
           </tbody>
         </table>
 
@@ -142,6 +138,4 @@ export default function Outbox() {
         </div>
       </div>
   );
-
-
 }
