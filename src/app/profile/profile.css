@@ -1,196 +1,290 @@
 .profile-page {
     display: flex;
-    gap: 24px;
-    padding: 24px;
-    background-color: #fdfaf6;
-    font-family: sans-serif;
-    width: 900px;       /* 전체 너비 제한 */
-    margin: 0 auto;
-}
-
-.sidebar {
-    width: 240px;
-    background-color: #fff;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    flex-direction: column;
+    height: 100%;
     padding: 20px;
+    box-sizing: border-box;
+    background-color: #fff;
 }
 
-.sidebar ul li {
-    cursor: pointer;
-    padding: 4px 8px;
+/* 사이드바 스타일 */
+.sidebar {
+    width: 250px;
+    background-color: #fff;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-.sidebar ul li.active {
-    font-weight: bold;
-    color: #0070f3; /* 강조 색상 */
+.sidebar-nav {
+    margin-top: 20px;
 }
 
-.user-info {
-    text-align: center;
-    margin-bottom: 24px;
-}
-
-.profile-img {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-bottom: 12px;
-    border: 1px solid #ccc;
-}
-
-.username {
-    font-size: 18px;
-    font-weight: bold;
-}
-
-.role {
-    color: #aa3333;
-    font-size: 14px;
-    margin-top: 4px;
-}
-
-.visit {
-    font-size: 12px;
-    color: #888;
-    margin-top: 4px;
-}
-
-.activity-box {
-    border-top: 1px solid #eee;
-    padding-top: 16px;
-    cursor: pointer;
-}
-
-.activity-box h4 {
-    margin-bottom: 12px;
-    font-size: 16px;
-    color: #333;
-}
-
-.activity-box ul {
+.sidebar-nav ul {
     list-style: none;
     padding: 0;
     margin: 0;
 }
 
-.activity-box li {
-    padding: 6px 0;
-    font-size: 14px;
-    color: #555;
+.sidebar-nav li {
+    margin-bottom: 12px;
 }
 
-
-.main-profile {
-    flex: 1;
-    width: 95%;
-    height: 95%;
-    background-color: #fff;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    padding: 24px;
-}
-
-.profile-header {
+.sidebar-nav a {
     display: flex;
     align-items: center;
-    gap: 16px;
-    margin-bottom: 24px;
+    padding: 10px 15px;
+    color: #555;
+    text-decoration: none;
+    font-size: 0.9em;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.sidebar-nav a:hover {
+    background-color: #f8f9fa;
+    color: #007bff;
+}
+
+.sidebar-nav a.active {
+    background-color: #e8f0fe;
+    color: #007bff;
+    font-weight: 500;
+}
+
+.sidebar-nav svg {
+    margin-right: 10px;
+    font-size: 1.2em;
+}
+
+/* 사이드바 프로필 영역 */
+.user-profile {
+    text-align: center;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 20px;
+}
+
+.profile-pic {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 12px;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.user-name {
+    font-size: 1.1em;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.user-role {
+    font-size: 0.85em;
+    color: #666;
+}
+
+/* 기존 스타일 유지 */
+.main-profile {
+    flex: 1;
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 24px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    position: relative;
+}
+
+/* 프로필 헤더 영역 */
+.profile-header {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 32px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    border: 1px solid #eee;
+}
+
+.profile-image {
+    flex-shrink: 0;
+}
+
+.profile-pic {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.profile-header-info {
+    flex: 1;
+}
+
+.profile-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #eee;
+}
+
+.profile-title h2 {
+    margin: 0;
+    font-size: 1.6em;
+    font-weight: 600;
+    color: #333;
 }
 
 .intro-text {
-    font-size: 14px;
-    color: #777;
+    font-size: 0.95em;
+    color: #666;
+    line-height: 1.5;
+}
+
+/* 프로필 상세 정보 */
+.profile-details {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    margin-bottom: 24px;
 }
 
 .profile-details p {
-    margin: 4px 0;
-    font-size: 14px;
+    margin: 12px 0;
+    font-size: 0.9em;
+    color: #555;
+    display: flex;
+    align-items: center;
 }
 
+.profile-details strong {
+    display: inline-block;
+    width: 140px;
+    color: #333;
+    font-weight: 600;
+}
+
+/* 탭 섹션 */
 .tab-section {
-    margin-top: 32px;
+    margin-top: 24px;
 }
 
 .tab-menu {
     display: flex;
-    gap: 16px;
-    margin-bottom: 16px;
-}
-
-.tab-content,
-.activity-content {
-    height: 120px;
-    transition: opacity 0.3s ease;
-    opacity: 1;
+    gap: 8px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
 }
 
 .tab-menu button {
-    padding: 8px 16px;
-    border: none;
-    background: #f4f4f4;
+    padding: 8px 20px;
+    border: 1px solid #ccc;
+    background-color: #f8f8f8;
+    font-size: 0.85em;
+    color: #555;
     cursor: pointer;
+    transition: all 0.2s;
     border-radius: 4px;
-    margin-right: 8px;
+}
+
+.tab-menu button:hover {
+    background-color: #eee;
 }
 
 .tab-menu button.active {
-    background: #0070f3;
+    background-color: #007bff;
     color: white;
-    font-weight: bold;
-}
-
-.tab-content {
-    padding: 20px;
-    background-color: #fafafa;
-    border-radius: 8px;
-    font-size: 14px;
-    color: #444;
-}
-
-.activity-tabs {
-    display: flex;
-    gap: 10px;
-    margin: 20px 0;
-}
-
-.activity-tab-button {
-    padding: 6px 14px;
-    background: #fafafa;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
+    border-color: #0056b3;
     font-weight: 500;
 }
 
-.activity-tab-button.active {
-    background-color: #007bff;
-    color: white;
+.tab-content {
+    background-color: #fff;
+    border-radius: 8px;
+    min-height: 200px;
 }
 
-/* 회원 탈퇴 */
-.top-right {
+/* 활동 리스트 */
+.activity-list {
     display: flex;
-    justify-content: flex-end;
-    padding: 1rem;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.activity-item {
+    padding: 16px;
+    background-color: #f9f9f9;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.activity-item:hover {
+    background-color: #f0f0f0;
+    transform: translateY(-2px);
+}
+
+.activity-item h4 {
+    margin: 0 0 8px 0;
+    color: #333;
+    font-size: 0.95em;
+    font-weight: 600;
+}
+
+.activity-item p {
+    margin: 4px 0;
+    color: #666;
+    font-size: 0.85em;
+}
+
+/* 버튼 스타일 */
+.edit-btn {
+    padding: 6px 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85em;
+    transition: background-color 0.2s;
+    position: relative;
+    left: -150px;
+}
+
+.edit-btn:hover {
+    background-color: #0056b3;
 }
 
 .delete-btn {
-    background-color: #ff4d4f;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    padding: 6px 15px;
+    background-color: #ffe0e0;
+    color: #d9534f;
+    border: 1px solid #ffb3b3;
+    border-radius: 4px;
     cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.1s;
+    font-size: 0.85em;
+    transition: all 0.2s;
 }
 
 .delete-btn:hover {
-    background-color: #d9363e;
+    background-color: #ffcccc;
 }
-
 
 /* 타임라인 페이지 *//* 전체 레이아웃 */
 .timeline-page {
@@ -318,19 +412,4 @@
 
 .month-nav button:hover {
     background-color: #ccc;
-}
-
-/* 회원 정보 수정 버튼 */
-.edit-btn {
-    margin-left: 10px;
-    padding: 6px 12px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.edit-btn:hover {
-    background-color: #45a049;
 }

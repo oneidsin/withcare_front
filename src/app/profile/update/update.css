@@ -1,0 +1,131 @@
+.update-container {
+    max-width: 800px;
+    margin: 2em auto;
+    padding: 2em;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.update-container h2 {
+    margin-bottom: 1.5em;
+    color: #333;
+    font-size: 1.5em;
+    font-weight: 600;
+    text-align: center;
+    padding-bottom: 0.5em;
+    border-bottom: 2px solid #eee;
+}
+
+.update-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5em;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+}
+
+.form-group label {
+    font-size: 0.9em;
+    font-weight: 500;
+    color: #555;
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group select,
+.form-group textarea {
+    padding: 0.75em;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9em;
+    transition: border-color 0.2s;
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="email"]:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+.form-group input[type="file"] {
+    padding: 0.5em;
+    border: 1px dashed #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.form-group textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.profile-preview {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin: 1em 0;
+    border: 2px solid #eee;
+}
+
+.button-group {
+    display: flex;
+    gap: 1em;
+    margin-top: 1em;
+    justify-content: center;
+}
+
+.button-group button {
+    padding: 0.75em 2em;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.9em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.button-group button[type="submit"] {
+    background-color: #007bff;
+    color: white;
+}
+
+.button-group button[type="submit"]:hover {
+    background-color: #0056b3;
+}
+
+.button-group button[type="button"] {
+    background-color: #6c757d;
+    color: white;
+}
+
+.button-group button[type="button"]:hover {
+    background-color: #5a6268;
+}
+
+.form-group input[disabled] {
+    background-color: #f8f9fa;
+    cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+    .update-container {
+        margin: 1em;
+        padding: 1.5em;
+    }
+
+    .button-group {
+        flex-direction: column;
+    }
+
+    .button-group button {
+        width: 100%;
+    }
+} 
