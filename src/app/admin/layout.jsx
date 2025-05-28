@@ -65,6 +65,12 @@ export default function AdminCrawl({ children }) {
                     <AiOutlinePieChart style={{ marginRight: 5 }} />크롤링 관리
                 </Link>
             </li>
+            <li>
+                <Link href="/admin/admin-level"
+                      className={pathname === '/admin/admin-level' ? 'active' : ''}>
+                    <AiOutlinePieChart style={{ marginRight: 5 }} />레벨 관리
+                </Link>
+            </li>
 
         </ul>
     );
