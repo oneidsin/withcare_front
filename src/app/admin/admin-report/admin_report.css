@@ -1,0 +1,161 @@
+.inbox-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+/* 상단 헤더 */
+.inbox-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #eee;
+}
+
+.inbox-header h1 {
+  margin: 0;
+  font-size: 1.6em;
+  font-weight: 600;
+  color: #333;
+}
+
+.action-buttons button {
+  padding: 6px 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85em;
+  margin-left: 8px;
+  transition: background-color 0.2s;
+}
+
+.action-buttons button:hover {
+  background-color: #eee;
+}
+
+/* 신고 목록 테이블 */
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9em;
+  color: #555;
+  flex-grow: 1;
+}
+
+.report-table th,
+.report-table td {
+  padding: 12px 10px;
+  text-align: center;
+  border-bottom: 1px solid #f0f0f0;
+  vertical-align: middle;
+}
+
+.report-table th {
+  background-color: #f9f9f9;
+  font-weight: 600;
+  color: #333;
+  border-top: 1px solid #eee;
+  border-bottom: 2px solid #eee;
+}
+
+/* 미처리 신고 스타일 */
+.report-table .unprocessed td {
+  font-weight: bold;
+  color: #333;
+}
+
+/* 처리 완료 신고 스타일 */
+.report-table .processed td {
+  font-weight: normal;
+  color: #999;
+  opacity: 0.8;
+}
+
+/* 신고 내용 열은 왼쪽 정렬 */
+.report-table th:nth-child(3),
+.report-table td:nth-child(3) {
+  text-align: left;
+  padding-left: 20px;
+}
+
+/* 처리 버튼 스타일 */
+.process-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.process-button:hover {
+  background-color: #0069d9;
+}
+
+/* 처리 완료 버튼 스타일 */
+.processed-button {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: not-allowed;
+}
+
+/* 페이지네이션 스타일 */
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  gap: 10px;
+}
+
+.pagination button {
+  padding: 5px 10px;
+  border: 1px solid #ddd;
+  background-color: white;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.pagination button:hover:not(.active) {
+  background-color: #f1f1f1;
+}
+
+.pagination button.active {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.pagination button:disabled {
+  color: #ccc;
+  cursor: not-allowed;
+}
+
+/* 신고 카테고리 수정 버튼 스타일 */
+.report-cate-update {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.report-cate-update:hover {
+  background-color: #0056b3;
+  transition: background-color 0.2s ease;
+}
+
+.report-cate-update:active {
+  background-color: black;
+}

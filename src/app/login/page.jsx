@@ -27,6 +27,7 @@ export default function LoginPage() {
         console.log('로그인 응답 데이터:', data); // 응답 데이터 확인
 
         if (data.success) {
+            console.log('저장하려는 id:', data);
             console.log('저장하려는 id:', data.id);
             console.log('저장하려는 token:', data.token);
 
