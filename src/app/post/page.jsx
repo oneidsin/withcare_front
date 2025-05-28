@@ -29,7 +29,7 @@ export default function PostPage() {
     }, [boardIdx, page, sort]);
 
     useEffect(() => {
-        if (keyword === '') {
+        if (keyword.trim() === '' && posts.length === 0) {
             fetchPosts(boardIdx, 1, sort, searchType, '');
             setPage(1);
         }
@@ -121,6 +121,7 @@ export default function PostPage() {
                             e.preventDefault();
                             setPage(1);
                             fetchPosts(boardIdx, 1, sort, searchType, keyword);
+                            setKeyword('');
                         }}
                         className="search-form"
                     >
