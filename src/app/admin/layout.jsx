@@ -36,8 +36,8 @@ export default function AdminCrawl({ children }) {
                 </Link>
             </li>
             <li>
-                <Link href="/admin/admin-user"
-                    className={pathname === '/admin/admin-user' ? 'active' : ''}>
+                <Link href="/admin/admin-member"
+                    className={pathname === '/admin/admin-member' ? 'active' : ''}>
                     <AiOutlineProfile style={{ marginRight: 5 }} />회원 관리
                 </Link>
             </li>
