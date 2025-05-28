@@ -42,7 +42,7 @@ export default function ProfilePage() {
         }
     };
 
-    // ✅ 수정 페이지로 이동
+    // 수정 페이지로 이동
     const handleEditProfile = () => {
         router.push("/profile/update");
         alert("회원정보 수정 페이지로 이동합니다.");
@@ -81,7 +81,7 @@ export default function ProfilePage() {
                 <div className="profile-header-info">
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                         <div className="username">{user.username}님</div>
-                        {/* 🔽 회원정보 수정 버튼 */}
+                        {/* 회원정보 수정 버튼 */}
                         <button className="edit-btn" onClick={handleEditProfile}>
                             회원정보 수정하기
                         </button>

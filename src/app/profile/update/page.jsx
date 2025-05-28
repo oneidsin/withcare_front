@@ -3,6 +3,7 @@
 import "../../login/login.css";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import {id} from "date-fns/locale";
 
 export default function UpdatePage() {
     const [info, setInfo] = useState({
@@ -13,17 +14,20 @@ export default function UpdatePage() {
         cancer: null,
         stage: null,
         profile_yn: 'Y',
-        intro: ''
+        intro: '',
+        profile_photo: '' // 기존 이미지 경로 저장
     });
 
     const [profileImage, setProfileImage] = useState(null); // 프로필 사진
+    const [previewImage, setPreviewImage] = useState(null); // 미리보기용 URL
     const [cancerList, setCancerList] = useState([]);
     const [stageList, setStageList] = useState([]);
 
     useEffect(() => {
         const fetchUserInfo = async () => {
             try {
-                const res = await axios.get("http://localhost/profile/{id}");
+                const id = sessionStorage.getItem("id");
+                const res = await axios.get(`http://localhost/profile/${id}`);
                 const data = res.data;
                 setInfo({
                     name: data.name || '',
@@ -72,7 +76,11 @@ export default function UpdatePage() {
     };
 
     const handleFileChange = (e) => {
-        setProfileImage(e.target.files[0]);
+        const file = e.target.files[0];
+        setProfileImage(file);
+        if (file) {
+            setPreviewImage(URL.createObjectURL(file)); // 업로드 미리보기
+        }
     };
 
     const handleUpdate = async () => {
@@ -82,14 +90,30 @@ export default function UpdatePage() {
             return;
         }
 
+        const token = localStorage.getItem("token");
+
+        // ✅ profile_yn 문자열 → boolean 변환
+        const infoToSend = {
+            ...info,
+            profile_yn: info.profile_yn === "Y" || info.profile_yn === true  // 문자열 or boolean 대응
+        };
+        delete infoToSend.profile_photo;
+        console.log(infoToSend)
         const formData = new FormData();
-        Object.entries(info).forEach(([key, val]) => {
-            if (val !== null && val !== "") formData.append(key, val);
+        const infoBlob = new Blob([JSON.stringify(infoToSend)], {
+            type: "application/json"
         });
+        formData.append("info", infoBlob);
 
         if (profileImage) {
             formData.append("profile_image", profileImage);
         }
+
+        await axios.put("http://localhost/profile/update", formData, {
+            headers: {
+                Authorization: token
+            }
+        });
 
         try {
             const token = localStorage.getItem("token");
@@ -97,7 +121,7 @@ export default function UpdatePage() {
             const res = await axios.put("http://localhost/profile/update", formData, {
                 headers: {
                     Authorization: token,
-                    "Content-Type": "multipart/form-data"
+                    // Content-Type은 자동 설정되므로 지정하지 마세요
                 }
             });
 
