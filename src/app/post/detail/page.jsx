@@ -59,6 +59,11 @@ export default function PostDetailPage() {
             const res = await axios.get(`http://localhost/post/detail/hitup/${postIdx}`, {
                 headers: { Authorization: token }
             });
+            if (res.data.success === false) {
+                alert(res.data.message || "게시글을 볼 수 있는 권한이 없습니다.");
+                router.push(`/post?board_idx=${effectiveBoardIdx}`);
+                return;
+            }
             if (res.data) {
                 setPost(res.data.post);
                 setLikes(res.data.likes);
@@ -68,6 +73,7 @@ export default function PostDetailPage() {
             }
         } catch (err) {
             alert("게시글 조회 실패");
+            router.push(`/post?board_idx=${effectiveBoardIdx}`);
         }
     };
 
@@ -78,6 +84,11 @@ export default function PostDetailPage() {
             const res = await axios.get(`http://localhost/post/detail/${postIdx}`, {
                 headers: { Authorization: token }
             });
+            if (res.data.success === false) {
+                alert(res.data.message || "게시글을 볼 수 있는 권한이 없습니다.");
+                router.push(`/post?board_idx=${effectiveBoardIdx}`);
+                return;
+            }
             if (res.data) {
                 setPost(res.data.post);
                 setLikes(res.data.likes);
@@ -86,6 +97,7 @@ export default function PostDetailPage() {
             }
         } catch (err) {
             console.error("조회 실패", err);
+            router.push(`/post?board_idx=${effectiveBoardIdx}`);
         }
     };
 
