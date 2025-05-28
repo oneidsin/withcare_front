@@ -2,44 +2,33 @@
 
 import React, { useState } from 'react';
 import { BsTrash } from 'react-icons/bs';
-import '../msg.css'; // 받은 쪽지함과 동일한 CSS 사용
-
-// 보낸 쪽지함용 샘플 데이터 (받는이, 수신확인 여부 등으로 수정)
-const sentMessages = [
-  { id: 1, recipient: 'test01', subject: '집에 보내 주세요. (보냄)', date: '2025/05/12', read: true },
-  { id: 2, recipient: 'user02', subject: '회의 자료 보냈습니다.', date: '2025/05/12', read: false },
-  { id: 3, recipient: 'admin', subject: 'Re: 공지사항 확인했습니다.', date: '2025/05/11', read: true },
-  { id: 4, recipient: 'friend', subject: '이번 주말 약속!', date: '2025/05/11', read: true },
-  { id: 5, recipient: 'customer', subject: '견적서 발송드립니다.', date: '2025/05/10', read: false },
-  { id: 6, recipient: 'test01', subject: '요청하신 파일 전달', date: '2025/05/10', read: true },
-  { id: 7, recipient: 'team_lead', subject: '프로젝트 진행 상황 공유', date: '2025/05/09', read: true },
-  { id: 8, recipient: 'service', subject: '문의 드립니다.', date: '2025/05/09', read: false },
-  { id: 9, recipient: 'test01', subject: '점심 약속 제안', date: '2025/05/08', read: true },
-  { id: 10, recipient: 'hr', subject: '휴가 신청서 제출', date: '2025/05/08', read: true },
-];
+import '../msg.css';
+import {useDispatch, useSelector} from "react-redux"; // 받은 쪽지함과 동일한 CSS 사용
 
 export default function Outbox() {
-  const [selectedMessages, setSelectedMessages] = useState(new Set());
+  const dispatch = useDispatch();
+  const [selectMsg, setSelectMsg] = useState(new Set());
+  const { list, pages } = useSelector(state => state.msg);
 
   // 전체 선택/해제 핸들러
-  const handleSelectAll = (event) => {
-    if (event.target.checked) {
-      const allMessageIds = sentMessages.map(msg => msg.id);
-      setSelectedMessages(new Set(allMessageIds));
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      const allMessageIds = list.map(message => message.msg_idx);
+      setSelectMsg(new Set(allMessageIds));
     } else {
-      setSelectedMessages(new Set());
+      setSelectMsg(new Set());
     }
   };
 
   // 개별 선택 핸들러
   const handleSelectOne = (id) => {
-    const newSelected = new Set(selectedMessages);
+    const newSelected = new Set(selectMsg);
     if (newSelected.has(id)) {
       newSelected.delete(id);
     } else {
       newSelected.add(id);
     }
-    setSelectedMessages(newSelected);
+    setSelectMsg(newSelected);
   };
 
   return (

@@ -4,52 +4,52 @@ import React, { useEffect, useState } from 'react';
 import { BsTrash } from 'react-icons/bs';
 import './msg.css';
 import { useDispatch, useSelector } from "react-redux";
-import { Pagination, Stack } from "@mui/material";
+import {Pagination, Stack} from "@mui/material";
 import { fetchInbox } from "@/redux/msgSlice";
 
 export default function Inbox() {
   const dispatch = useDispatch();
-  const { list, pages } = useSelector(state => state.msg);
-  const [selectedMessages, setSelectedMessages] = useState(new Set());
+  const { list, pages, currentPage} = useSelector(state => state.msg);
+  const [selectMsg, setSelectMsg] = useState(new Set());
 
   // 전체 선택/해제 핸들러
-  const handleSelectAll = (event) => {
-    if (event.target.checked) {
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
       const allMessageIds = list.map(message => message.msg_idx);
-      setSelectedMessages(new Set(allMessageIds));
+      setSelectMsg(new Set(allMessageIds));
     } else {
-      setSelectedMessages(new Set());
+      setSelectMsg(new Set());
     }
   };
 
   // 개별 선택 핸들러
   const handleSelectOne = (id) => {
-    const newSelected = new Set(selectedMessages);
+    const newSelected = new Set(selectMsg);
     if (newSelected.has(id)) {
       newSelected.delete(id);
     } else {
       newSelected.add(id);
     }
-    setSelectedMessages(newSelected);
+    setSelectMsg(newSelected);
   };
 
   // 페이지 변경 핸들러
-  const handlePageChange = (e, page) => {
+  const handlePageChg = (e, page) => {
     const currentUserId = sessionStorage.getItem('id');
     if (currentUserId) {
-      dispatch(fetchInbox({ id: currentUserId }));
+      dispatch(fetchInbox({ id: currentUserId, page }));
     }
   };
 
   useEffect(() => {
     const currentUserId = sessionStorage.getItem('id');
     if (currentUserId) {
-      dispatch(fetchInbox({ id: currentUserId }));
+      dispatch(fetchInbox({ id: currentUserId, page: 1 }));
     }
-  }, [dispatch]);
+  }, [dispatch]); // 초기 로딩시에는 1페이지 표출
 
   // MessageList 컴포넌트
-  const MessageList = () => {
+  const MsgList = () => {
 
     if (!list || list.length === 0) {
       return <tr><td colSpan={6}>받은 쪽지가 없습니다.</td></tr>;
@@ -62,7 +62,7 @@ export default function Inbox() {
             <td>
               <input
                 type="checkbox"
-                checked={selectedMessages.has(item.msg_idx)}
+                checked={selectMsg.has(item.msg_idx)}
                 onChange={() => handleSelectOne(item.msg_idx)}
               />
             </td>
@@ -77,14 +77,6 @@ export default function Inbox() {
             </td>
           </tr>
         ))}
-
-        <tr>
-          <th colSpan={6}>
-            <Stack spacing={2}>
-              <Pagination count={pages} onChange={handlePageChange} />
-            </Stack>
-          </th>
-        </tr>
       </>
     );
   };
@@ -108,7 +100,7 @@ export default function Inbox() {
               <input
                   type="checkbox"
                   onChange={handleSelectAll}
-                  checked={selectedMessages.size === list.length && list.length > 0}
+                  checked={selectMsg.size === list.length && list.length > 0}
               />
             </th>
             <th>보낸이</th>
@@ -119,9 +111,24 @@ export default function Inbox() {
           </tr>
           </thead>
           <tbody>
-          <MessageList />
+          <MsgList/>
           </tbody>
         </table>
+
+        {pages > 1 && (
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+              <Stack spacing={2} alignItems="center">
+                <Pagination
+                    count={pages}
+                    page={currentPage}
+                    onChange={handlePageChg}
+                    color="primary"
+                    showFirstButton
+                    showLastButton
+                />
+              </Stack>
+            </div>
+        )}
 
         {/* 하단 작성하기 버튼 */}
         <div className='write-container'>
