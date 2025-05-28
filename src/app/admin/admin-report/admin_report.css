@@ -140,16 +140,24 @@
 /* 신고 카테고리 저장/수정 버튼 스타일 */
 .report-cate-update {
   background-color: #0070f3;
-  /* 초록색 계열 */
   color: white;
   border: none;
   padding: 8px 15px;
-  /* 패딩 조정 */
   border-radius: 4px;
   cursor: pointer;
   font-weight: 500;
   font-size: 0.9em;
-  /* 폰트 크기 조정 */
+}
+
+.report-cate-input {
+  margin-left: 20px;
+  padding: 6px 10px;
+  border: 1px solid;
+  border-radius: 5px;
+}
+
+.report-cate-input:focus {
+  outline: 1px solid #0070f3;
 }
 
 .report-cate-update:hover {
@@ -182,5 +190,56 @@
 }
 
 .report-cate-back:active {
+  background-color: #0046a6;
+}
+
+.report-cate-status-select {
+  padding: 5px 10px;
+  border: 1px solid black;
+  border-radius: 5px;
+}
+
+.report-cate-status-select:focus {
+  border-color: #aaa;
+  box-shadow: 0 0 1px 3px #0070f3;
+  outline: none;
+}
+
+/* 취소 버튼 스타일 */
+.report-cate-cancel {
+  background-color: rgb(179, 0, 0);
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.9em;
+}
+
+.report-cate-cancel:hover {
+  background-color: black;
+  color: white;
+  transition: background-color 0.2s ease;
+}
+
+/* 수정 버튼 스타일 */
+.report-cate-edit-btn {
+  background-color: #0070f3;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.9em;
+}
+
+.report-cate-edit-btn:hover {
+  background-color: #0058c7;
+  transition: background-color 0.2s ease;
+}
+
+.report-cate-edit-btn:active {
   background-color: #0046a6;
 }
