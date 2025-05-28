@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect, useState} from 'react';
-import { useRouter } from 'next/navigation';
+import {useRouter, useSearchParams} from 'next/navigation';
 import axios from 'axios';
 import '../update/update.css';
 import {fetchVisibleBoards} from "@/app/post/boardList";
@@ -9,18 +9,59 @@ import {fetchVisibleBoards} from "@/app/post/boardList";
 export default function PostWritePage() {
     const router = useRouter();
 
+    // 게시글 작성 시 게시판 자동 입력
+    const searchParams = useSearchParams();
+    const boardIdxFromURL = searchParams.get('board_idx');
+
+    // 게시판 익명 여부 확인
+    const [isAnonymousBoard, setIsAnonymousBoard] = useState(false);
+
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
-    const [board, setBoard] = useState('');
+    const [board, setBoard] = useState(boardIdxFromURL || '');
     const [allowComment, setAllowComment] = useState(true);
+
+    const [writer, setWriter] = useState('');
 
     const [newFiles, setNewFiles] = useState([]);
     const [previewUrls, setPreviewUrls] = useState([]);
 
     const [boards, setBoards] = useState([]);
+
+    const applyBoardSettings = (board_idx_str, boardList) => {
+        const selected = boardList.find(b => b.board_idx.toString() === board_idx_str);
+        if (!selected) return;
+
+        setBoard(selected.board_idx.toString());
+        setIsAnonymousBoard(selected.anony_yn === true);
+
+        // 🔥 작성자 설정은 여기서만 하고 절대 다른 데선 안 건드리기
+        if (selected.anony_yn === true) {
+            setWriter('익명');
+        } else {
+            const id = sessionStorage.getItem('id');
+            setWriter(id || '');
+        }
+    };
+
     useEffect(() => {
-        fetchVisibleBoards().then(setBoards);
+        console.log('👀 현재 writer 값:', writer);
+    }, [writer]);
+
+    useEffect(() => {
+        fetchVisibleBoards().then((boards) => {
+            setBoards(boards);
+            console.log(boards)
+            if (boardIdxFromURL) {
+                applyBoardSettings(boardIdxFromURL, boards);
+            }
+        });
     }, []);
+
+    const handleBoardChange = (e) => {
+        const value = e.target.value;
+        applyBoardSettings(value, boards);
+    };
 
     const handleFileChange = (e) => {
         const files = Array.from(e.target.files);
@@ -46,11 +87,19 @@ export default function PostWritePage() {
         if (!title || !content || !board) return alert('모든 항목을 입력하세요');
 
         const token = sessionStorage.getItem('token');
+        if (!token) {
+            alert("로그인이 필요합니다.");
+            return router.push('/login');
+        }
+
         const postRes = await axios.post('http://localhost/post/write', {
             post_title: title,
             post_content: content,
             board_idx: parseInt(board),
-            allow_comment: allowComment,
+            com_yn: allowComment,
+            anony_yn: isAnonymousBoard,
+            post_blind_yn: false,
+            id: writer,
         }, {
             headers: { Authorization: token },
         });
@@ -85,7 +134,11 @@ export default function PostWritePage() {
 
             <div className="form-row">
                 <label>작성자</label>
-                <input type="text" value="admin" readOnly />
+                <input
+                    type="text"
+                    value={isAnonymousBoard ? '익명' : writer}
+                    readOnly
+                />
             </div>
 
             <div className="form-row">
@@ -98,7 +151,7 @@ export default function PostWritePage() {
 
             <div className="form-row">
                 <label>게시판</label>
-                <select value={board} onChange={(e) => setBoard(e.target.value)}>
+                <select value={board} onChange={handleBoardChange}>
                     <option value="">게시판을 선택해주세요</option>
                     {boards.map((b) => (
                         <option key={b.board_idx} value={b.board_idx}>

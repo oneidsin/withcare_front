@@ -10,7 +10,8 @@ export default function BoardWrite() {
         lv_idx: '',
         anony_yn: false,
         blind_yn: false,
-        view_level: '', // 추가
+        view_level: '',
+        parent_board_idx: '',
     });
 
     const [boardList, setBoardList] = useState([]);
@@ -97,8 +98,14 @@ export default function BoardWrite() {
 
     const handleNewBoardCreate = () => {
         if (!newBoardName.trim()) return;
-        setForm({ ...form, board_name: newBoardName });
-        setSelectedIdx(null);
+
+        setForm(prev => ({
+            ...prev,
+            board_name: newBoardName,
+            parent_board_idx: '',
+            view_level: '',
+        }));
+        setSelectedIdx(0);
     };
 
     return (
@@ -127,7 +134,26 @@ export default function BoardWrite() {
                 <section className="board-form">
                     <div className="form-group">
                         <label>게시판 명</label>
-                        <input className="board-name" type="text" name="board_name" value={form.board_name} onChange={handleChange} />
+                        <input
+                            className="board-name"
+                            type="text"
+                            name="board_name"
+                            value={form.board_name}
+                            onChange={handleChange}
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label>부모 게시판 선택</label>
+                        <select name="parent_board_idx" value={form.parent_board_idx} onChange={handleChange}>
+                            <option value="">없음 (최상위 게시판)</option>
+                            {boardList
+                                .filter(board => board.board_idx !== selectedIdx) // 자기 자신은 제외
+                                .map(board => (
+                                    <option key={board.board_idx} value={board.board_idx}>
+                                        {board.board_name}
+                                    </option>
+                                ))}
+                        </select>
                     </div>
 
                     <div className="form-group">
