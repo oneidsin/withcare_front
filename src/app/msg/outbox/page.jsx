@@ -1,14 +1,17 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import { BsTrash } from 'react-icons/bs';
 import '../msg.css';
-import {useDispatch, useSelector} from "react-redux"; // 받은 쪽지함과 동일한 CSS 사용
+import axios from "axios";
+import {Pagination, Stack} from "@mui/material"; // 받은 쪽지함과 동일한 CSS 사용
 
 export default function Outbox() {
-  const dispatch = useDispatch();
+
+  let page = useRef(1);
+  const [list,setList] = useState([]);
+  const [pages, setPages] = useState(1);
   const [selectMsg, setSelectMsg] = useState(new Set());
-  const { list, pages } = useSelector(state => state.msg);
 
   // 전체 선택/해제 핸들러
   const handleSelectAll = (e) => {
@@ -31,64 +34,114 @@ export default function Outbox() {
     setSelectMsg(newSelected);
   };
 
-  return (
-    <div className='inbox-container'> {/* 동일한 클래스명 사용 */}
-      {/* 상단 헤더: 제목 + 버튼 */}
-      <div className='inbox-header'> {/* 동일한 클래스명 사용 */}
-        <h1>보낸 쪽지함</h1> {/* 제목 변경 */}
-        <div className='action-buttons'> {/* 동일한 클래스명 사용 */}
-          {/* 보낸 쪽지함에서는 '차단' 버튼이 보통 없으므로 '삭제' 버튼만 남깁니다. */}
-          <button className='delete-button'>삭제</button>
-        </div>
-      </div>
+  // 페이지 변경 핸들러
+  const handlePageChg = (e, page) => {
+    const currentUserId = sessionStorage.getItem('id');
+    if (currentUserId) {
+      dispatch(fetchInbox({ id: currentUserId, page }));
+    }
+  };
 
-      {/* 쪽지 목록 테이블 */}
-      <table className='message-table'> {/* 동일한 클래스명 사용 */}
-        <thead>
+  useEffect(() => {
+    callList(page.current);
+  },[]);
+
+  const callList = async (p) => {
+    const id = sessionStorage.getItem("id");
+    const token = sessionStorage.getItem("token");
+    const {data} = await axios.get(`http://localhost:80/msg/outbox/${id}/${p}`,{headers:{Authorization:token}});
+    console.log(data);
+    
+    if (data.loginYN && data.outbox) {
+      setPages(data.outbox.pages); // 보여줄 수 있는 페이지
+      page.current = data.outbox.page; // 현재 페이지
+
+      if (!data.outbox.list || data.outbox.list.length === 0) {
+        setList([<tr key="empty"><td colSpan={6}>보낸 쪽지가 없습니다.</td></tr>]);
+        return;
+      }
+
+      const content = data.outbox.list.map((item) => (
+        <tr key={item.msg_idx} className={!item.msg_read ? 'unread' : ''}>
+          <td>
+            <input
+              type="checkbox"
+              checked={selectMsg.has(item.msg_idx)}
+              onChange={() => handleSelectOne(item.msg_idx)}
+            />
+          </td>
+          <td>{item.receiver_id}</td>
+          <td className='subject-cell'>{item.msg_content}</td>
+          <td>{new Date(item.msg_sent_at).toLocaleDateString()}</td>
+          <td>{item.msg_read ? '읽음' : '읽지 않음'}</td>
+          <td>
+            <button className='icon-button'>
+              <BsTrash />
+            </button>
+          </td>
+        </tr>
+      ));
+      setList(content);
+    } else {
+      setList([<tr key="error"><td colSpan={6}>데이터를 불러올 수 없습니다.</td></tr>]);
+    }
+  }
+
+  return (
+      <div className='inbox-container'>
+        {/* 상단 헤더 */}
+        <div className='inbox-header'>
+          <h1>보낸 쪽지함</h1>
+          <div className='action-buttons'>
+            <button className='block-button'>차단</button>
+            <button className='delete-button'>삭제</button>
+          </div>
+        </div>
+
+        {/* 쪽지 목록 테이블 */}
+        <table className='message-table'>
+          <thead>
           <tr>
             <th>
               <input
-                type="checkbox"
-                onChange={handleSelectAll}
-                checked={selectedMessages.size === sentMessages.length && sentMessages.length > 0}
+                  type="checkbox"
+                  onChange={handleSelectAll}
+                  checked={selectMsg.size === list.length && list.length > 0}
               />
             </th>
-            <th>받는이</th> {/* '보낸이' -> '받는이' 변경 */}
+            <th>받은 사용자</th>
             <th>제 목</th>
             <th>날 짜</th>
-            <th>수신확인</th> {/* '확인' -> '수신확인' 변경 */}
+            <th>확인</th>
             <th>삭제</th>
           </tr>
-        </thead>
-        <tbody>
-          {sentMessages.map((msg) => (
-            // 수신확인 여부에 따라 스타일을 다르게 할 수 있습니다 (예: 'unread' 클래스 활용)
-            <tr key={msg.id} className={!msg.read ? 'unread' : ''}>
-              <td>
-                <input
-                  type="checkbox"
-                  checked={selectedMessages.has(msg.id)}
-                  onChange={() => handleSelectOne(msg.id)}
-                />
-              </td>
-              <td>{msg.recipient}</td> {/* 받는이 표시 */}
-              <td className='subject-cell'>{msg.subject}</td>
-              <td>{msg.date}</td>
-              <td>{msg.read ? '읽음' : '읽지 않음'}</td> {/* 수신확인 상태 표시 */}
-              <td>
-                <button className='icon-button'>
-                  <BsTrash />
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {list}
+          </tbody>
+        </table>
 
-      {/* 하단 작성하기 버튼 */}
-      <div className='compose-button-container'> {/* 동일한 클래스명 사용 */}
-        <button className='compose-button'>작성하기</button>
+        {pages > 1 && (
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+              <Stack spacing={2} alignItems="center">
+                <Pagination
+                    count={pages}
+                    page={page.current}
+                    onChange={handlePageChg}
+                    color="primary"
+                    showFirstButton
+                    showLastButton
+                />
+              </Stack>
+            </div>
+        )}
+
+        {/* 하단 작성하기 버튼 */}
+        <div className='write-container'>
+          <button className='write-button'>작성하기</button>
+        </div>
       </div>
-    </div>
   );
+
+
 }
