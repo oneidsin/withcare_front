@@ -137,7 +137,7 @@ export default function AdminReport() {
     <div className="inbox-container">
       <div className="inbox-header">
         <h1>신고 관리</h1>
-        <Link href="/admin/report/category">
+        <Link href="/admin/admin-report/category">
           <button className="report-cate-update">신고 카테고리 수정</button>
         </Link>
       </div>
