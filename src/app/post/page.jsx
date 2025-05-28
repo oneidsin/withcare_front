@@ -87,7 +87,7 @@ export default function PostPage() {
                         </thead>
                         <tbody>
                         {posts.map((item) => (
-                            <tr key={item.post.post_idx} onClick={() => router.push(`/post/detail?post_idx=${item.post.post_idx}`)} style={{ cursor: 'pointer' }}>
+                            <tr key={`${item.post.board_idx}-${item.post.post_idx}`} onClick={() => router.push(`/post/detail?post_idx=${item.post.post_idx}`)} style={{ cursor: 'pointer' }}>
                                 <td>{item.post.post_idx}</td>
                                 <td>
                                     {item.post.post_blind_yn && '🔒 '}
