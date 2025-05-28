@@ -74,10 +74,6 @@ export default function ProfilePage() {
             </div>
 
             <div className="profile-header">
-                <img
-                    src={user.profileImage || "/icons/profile.svg"}
-                    alt="프로필 사진"
-                    className="profile-img"/>
                 <div className="profile-header-info">
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                         <div className="username">{user.username}님</div>

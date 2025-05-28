@@ -33,12 +33,6 @@ export default function RootLayout({ children }) {
   useEffect(() => {
     syncLoginState();
 
-    // 로그인 성공 alert
-    if (sessionStorage.getItem("loginSuccess") === "true") {
-      alert("로그인되었습니다.");
-      sessionStorage.removeItem("loginSuccess");
-    }
-
     // 로그인 이벤트 수신 (수동 dispatch를 위한)
     const handleLogin = () => syncLoginState();
     window.addEventListener("login", handleLogin);
@@ -79,7 +73,6 @@ export default function RootLayout({ children }) {
     sessionStorage.removeItem("id");
     setIsLoggedIn(false);
     setUsername("");
-    alert("로그아웃되었습니다.");
     router.push("/");
   };
 
@@ -95,7 +88,6 @@ export default function RootLayout({ children }) {
             <Link href="/">
               <img src="/logo.png" alt="withcare 로고" className="logo" />
             </Link>
-
             <div className="header-right">
               {!isLoggedIn ? (
                 <Link href="/login">
