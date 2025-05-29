@@ -67,7 +67,7 @@ export default function Outbox() {
       <div className='inbox-container'>
         {/* 상단 헤더 */}
         <div className='inbox-header'>
-          <h1>보낸 쪽지함</h1>
+          <h1> 📭 보낸 쪽지함 </h1>
           <div className='action-buttons'>
             <button className='block-button'>차단</button>
             <button className='delete-button'>삭제</button>
@@ -85,7 +85,7 @@ export default function Outbox() {
                   checked={selectMsg.size === list.length && list.length > 0}
               />
             </th>
-            <th>받은이</th>
+            <th>받는 사람</th>
             <th>내 용</th>
             <th>날 짜</th>
             <th>확인</th>

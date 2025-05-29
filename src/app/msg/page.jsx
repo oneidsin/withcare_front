@@ -139,14 +139,14 @@ export default function Inbox() {
     <div className='inbox-container'>
       {/* 상단 헤더 */}
       <div className='inbox-header'>
-        <h1>받은 쪽지함</h1>
+        <h1> 📬 받은 쪽지함 </h1>
         <div className='action-buttons'>
           <button className='block-button' onClick={() => { userBlock() }}>차단</button>
           <button className='delete-button'>삭제</button>
         </div>
       </div>
 
-      {/* 쪽지 목록 테이블 */}
+      {/* 쪽지 테이블 */}
       <table className='message-table'>
         <thead>
           <tr>
@@ -157,7 +157,7 @@ export default function Inbox() {
                 checked={selectMsg.size === list.length && list.length > 0}
               />
             </th>
-            <th>보낸이</th>
+            <th>보낸 사람</th>
             <th>내 용</th>
             <th>날 짜</th>
             <th>확인</th>
