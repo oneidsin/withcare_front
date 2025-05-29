@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useSearchParams } from "next/navigation";
 import "../../admin_report.css";
+import "./history-detail.css";
+import Link from "next/link";
 
 export default function AdminReportHistoryDetail() {
   const searchParams = useSearchParams();
@@ -32,7 +34,7 @@ export default function AdminReportHistoryDetail() {
     setLoading(true);
     try {
       const res = await axios.get(`http://localhost/admin/report/history/detail`, {
-        params: { id, rep_list_idx: rep_list_idx },
+        params: { id: id, rep_list_idx: rep_list_idx },
         headers: { Authorization: token }
       });
 
@@ -64,6 +66,15 @@ export default function AdminReportHistoryDetail() {
   };
 
   return (
-    <div>page</div>
+    <div className="inbox-container">
+      <div className="inbox-header">
+        <h1>신고 히스토리 상세보기</h1>
+        <div className="action-buttons">
+          <Link href="/admin/admin-report/history">
+            <button className="back-button">뒤로가기</button>
+          </Link>
+        </div>
+      </div>
+    </div>
   );
 }

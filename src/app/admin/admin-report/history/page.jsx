@@ -5,9 +5,12 @@ import axios from "axios"; // HTTP 요청을 보내기 위한 axios 라이브러
 import { Pagination, Stack } from '@mui/material'; // 페이지네이션 UI를 위한 Material-UI 컴포넌트를 가져옵니다.
 import "../admin_report.css"; // 이 컴포넌트에 적용될 CSS 파일을 가져옵니다.
 import "./admin-history.css";
+import { useRouter } from "next/navigation";
 
 // AdminReportHistory 컴포넌트를 정의하고 내보냅니다.
 export default function AdminReportHistory() {
+  const router = useRouter();
+
   // === 상태 관리 ===
   // useState 훅을 사용하여 컴포넌트의 상태 변수들을 정의합니다.
 
@@ -165,7 +168,7 @@ export default function AdminReportHistory() {
    */
   const handleDetailView = (rep_list_idx) => {
     // 신고 상세보기 페이지로 이동 (새 탭에서 열기)
-    window.open(`/admin/admin-report/history/detail?rep_list_idx=${rep_list_idx}`, '_blank');
+    router.push(`/admin/admin-report/history/detail?rep_list_idx=${rep_list_idx}`);
   };
 
   /**
