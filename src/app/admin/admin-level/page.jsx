@@ -77,12 +77,15 @@ export default function LevelManagePage() {
             alert('레벨 번호와 이름은 필수입니다.');
             return false;
         }
-        if (isNaN(form.lv_no) || form.lv_no < 1) {
-            alert('레벨 번호는 1 이상의 숫자여야 합니다.');
+        if (isNaN(form.lv_no) || form.lv_no < 0) {
+            alert('레벨 번호는 0 이상의 숫자여야 합니다.');
             return false;
         }
-        if (!form.post_cnt || !form.com_cnt || !form.like_cnt || !form.time_cnt || !form.access_cnt) {
-            alert('모든 조건값을 입력해주세요.');
+        if (isNaN(form.post_cnt) || isNaN(form.com_cnt) || isNaN(form.like_cnt) || 
+            isNaN(form.time_cnt) || isNaN(form.access_cnt) ||
+            form.post_cnt < 0 || form.com_cnt < 0 || form.like_cnt < 0 || 
+            form.time_cnt < 0 || form.access_cnt < 0) {
+            alert('조건값은 0 이상의 숫자여야 합니다.');
             return false;
         }
         return true;
@@ -106,17 +109,23 @@ export default function LevelManagePage() {
             data.append('time_cnt', parseInt(form.time_cnt));
             data.append('access_cnt', parseInt(form.access_cnt));
             
-            // Only append file if it exists
+            // 파일 업로드 디버깅
             if (form.file) {
+                console.log('File type:', form.file.type);
+                console.log('File name:', form.file.name);
+                console.log('File size:', form.file.size);
                 data.append('file', form.file);
             }
 
+            console.log('Sending request to server...');
             const res = await axios.post('http://localhost:80/admin/level/save', data, {
                 headers: {
                     Authorization: token,
                     'Content-Type': 'multipart/form-data'
                 }
             });
+
+            console.log('Server response:', res.data);
 
             if (res.data.success) {
                 alert('저장 완료');
@@ -129,7 +138,8 @@ export default function LevelManagePage() {
             }
         } catch (error) {
             console.error('Save error:', error);
-            alert('저장 중 오류가 발생했습니다.');
+            console.error('Error response:', error.response?.data);
+            alert('저장 중 오류가 발생했습니다: ' + (error.response?.data?.msg || error.message));
         }
     };
 
@@ -177,7 +187,7 @@ export default function LevelManagePage() {
                             name="lv_no"
                             value={form.lv_no}
                             onChange={handleFormChange}
-                            min="1"
+                            min="0"
                         />
                     </div>
                     <div className="form-group">

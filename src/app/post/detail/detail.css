@@ -14,10 +14,78 @@
 
 .recommend-box {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
+    flex-direction: row;
+    gap: 20px;
     justify-content: center;
     align-items: center;
+    margin: 40px 0;
+    padding: 20px;
+    border-radius: 12px;
+}
+
+.recommend-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 32px;
+    border-radius: 8px;
+    background: white;
+    border: 1px solid rgba(135, 209, 255, 0.3);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 120px;
+}
+
+.recommend-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: rgba(135, 209, 255, 0.8);
+}
+
+.recommend-button:active {
+    transform: translateY(0);
+}
+
+.recommend-button .like,
+.recommend-button .dislike {
+    font-size: 1.2em;
+    font-weight: 500;
+    color: #2d2d2d;
+}
+
+.recommend-button span:last-child {
+    font-size: 1.4em;
+    font-weight: bold;
+    color: #0066cc;
+}
+
+/* 추천/비추천 활성화 상태 */
+.recommend-button.active {
+    background: rgba(174, 226, 255, 0.2);
+    border-color: rgba(135, 209, 255, 0.8);
+}
+
+.recommend-button.active .like {
+    color: #0066cc;
+}
+
+.recommend-button.active .dislike {
+    color: #cc0000;
+}
+
+/* 추천/비추천 아이콘 애니메이션 */
+.recommend-button .emoji {
+    font-size: 1.8em;
+    transition: transform 0.2s ease;
+}
+
+.recommend-button:hover .emoji {
+    transform: scale(1.2);
+}
+
+.recommend-button.active .emoji {
+    transform: scale(1.1);
 }
 
 .detail-title {

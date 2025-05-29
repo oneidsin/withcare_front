@@ -147,7 +147,11 @@ export default function BoardWrite() {
                     </div>
                     <div className="form-group">
                         <label>부모 게시판 선택</label>
-                        <select name="parent_board_idx" value={form.parent_board_idx} onChange={handleChange}>
+                        <select 
+                            name="parent_board_idx" 
+                            value={form.parent_board_idx} 
+                            onChange={handleChange}
+                        >
                             <option value="">없음 (최상위 게시판)</option>
                             {boardList
                                 .filter(board => board.board_idx !== selectedIdx) // 자기 자신은 제외
@@ -161,7 +165,11 @@ export default function BoardWrite() {
 
                     <div className="form-group">
                         <label>열람 제한 레벨</label>
-                        <select name="lv_idx" value={form.lv_idx} onChange={handleChange}>
+                        <select 
+                            name="lv_idx" 
+                            value={form.lv_idx} 
+                            onChange={handleChange}
+                        >
                             <option value="">선택</option>
                             <option value="1">레벨 1 이상</option>
                             <option value="2">레벨 2 이상</option>

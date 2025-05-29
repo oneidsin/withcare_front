@@ -16,7 +16,8 @@
 .board-inner {
     display: flex;
     gap: 60px;
-    align-items: flex-start;
+    align-items: stretch;
+    min-height: 600px;
 }
 
 /* 좌측 게시판 트리 */
@@ -26,6 +27,8 @@
     padding: 16px;
     border-radius: 6px;
     min-width: 260px;
+    display: flex;
+    flex-direction: column;
 }
 
 .section-label {
@@ -39,6 +42,8 @@
     padding-left: 0;
     font-size: 14px;
     margin-bottom: 12px;
+    flex: 1;
+    overflow-y: auto;
 }
 
 .tree-list ul {
@@ -48,11 +53,34 @@
 }
 
 .tree-input {
-    width: 96%;
+    width: 94%;
     padding: 6px 8px;
+    margin-bottom: 20px;
     font-size: 13px;
     border: 1px solid #bbb;
     border-radius: 4px;
+}
+
+.tree-add{
+    background-color: rgba(174, 226, 255, 0.4); /* 연한 하늘 배경 */
+    color: #2d2d2d;
+    border: 1px solid rgba(135, 209, 255, 0.5); /* 연한 테두리 */
+    padding: 4px 10px; /* 버튼 내부 여백 */
+    font-size: 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04); /* 약한 그림자 */
+}
+
+.tree-add:hover {
+    background-color: #ffffff;
+    transform: scale(1.02); /* 살짝 커짐 */
+}
+
+.tree-add:active {
+    box-shadow: 0 0 12px 8px rgba(135, 209, 255, 0.5); /* 밝은 효과 */
+    transform: scale(0.98); /* 눌리는 효과 */
 }
 
 /* 우측 게시판 설정 */
@@ -81,6 +109,28 @@
     font-size: 14px;
     border: 1px solid #bbb;
     border-radius: 4px;
+}
+
+.form-group select {
+    width: 100%;
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+    background-color: white;
+    cursor: pointer;
+}
+
+.form-group select:hover {
+    border-color: #999;
+}
+
+.form-group select option {
+    padding: 8px;
+}
+
+.form-group select option:hover {
+    background-color: #f0f0f0;
 }
 
 .form-radio {

@@ -25,11 +25,24 @@ export default function PostDetailPage() {
     // 게시판 이름
     const [boardName, setBoardName] = useState('');
 
+    const [userLikeStatus, setUserLikeStatus] = useState(0); // 0: 없음, 1: 추천, -1: 비추천
+
     useEffect(() => {
         const token = sessionStorage.getItem('token');
         if (token) {
             const parsed = JSON.parse(atob(token.split('.')[1]));
             setLoginId(parsed.id);
+
+            // lv_idx와 함께 사용자의 추천 상태도 가져오기
+            axios.get(`http://localhost/post/like/status/${postIdx}`, {
+                headers: { Authorization: token }
+            }).then(res => {
+                if (res.data.success) {
+                    setUserLikeStatus(res.data.likeStatus || 0);
+                }
+            }).catch(err => {
+                console.error("추천 상태 확인 실패", err);
+            });
 
             // lv_idx는 따로 불러오기
             axios.get('http://localhost/member/info', {
@@ -138,16 +151,25 @@ export default function PostDetailPage() {
     //추천
     const handleRecommend = async (type) => {
         const token = sessionStorage.getItem('token');
+        if (!token) {
+            alert('로그인이 필요한 기능입니다.');
+            return;
+        }
+
         try {
+            // 현재 상태와 같은 버튼을 클릭하면 취소로 처리
+            const newType = userLikeStatus === type ? 0 : type;
+            
             const res = await axios.post('http://localhost/post/like', {
                 post_idx: post.post_idx,
-                like_type: type,
+                like_type: newType,
             }, {
                 headers: { Authorization: token },
             });
 
             if (res.data.success) {
-                fetchPostWithoutHit(); // 여기선 조회수 안 올림
+                setUserLikeStatus(newType);
+                fetchPostWithoutHit();
             } else {
                 alert('추천 실패');
             }
@@ -201,13 +223,21 @@ export default function PostDetailPage() {
             </div>
 
             <div className="recommend-box">
-                <div className="recommend-button" onClick={() => handleRecommend(1)}>
-                    <span className="like">👍 추천</span>
-                    <span> {likes}</span>
+                <div 
+                    className={`recommend-button ${userLikeStatus === 1 ? 'active' : ''}`} 
+                    onClick={() => handleRecommend(1)}
+                >
+                    <span className="emoji">👍</span>
+                    <span className="like">추천</span>
+                    <span>{likes}</span>
                 </div>
-                <div className="recommend-button" onClick={() => handleRecommend(-1)}>
-                    <span className="dislike">👎 비추천</span>
-                    <span> {dislikes}</span>
+                <div 
+                    className={`recommend-button ${userLikeStatus === -1 ? 'active' : ''}`} 
+                    onClick={() => handleRecommend(-1)}
+                >
+                    <span className="emoji">👎</span>
+                    <span className="dislike">비추천</span>
+                    <span>{dislikes}</span>
                 </div>
             </div>
 
