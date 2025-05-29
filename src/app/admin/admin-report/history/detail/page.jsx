@@ -8,47 +8,34 @@ import Link from "next/link";
 
 export default function AdminReportHistoryDetail() {
   const searchParams = useSearchParams();
+  const [reportDetail, setReportDetail] = useState(null);
 
   useEffect(() => {
     const id = sessionStorage.getItem("id");
     const token = sessionStorage.getItem("token");
     const rep_list_idx = searchParams.get("rep_list_idx");
+    console.log("rep_list_idx : ", rep_list_idx);
 
-    if (!id) {
+    if (id) {
+      getReportHistoryDetail(id, token, rep_list_idx);
+    } else {
       alert("관리자 로그인이 필요합니다.");
       window.location.href = '/login';
       return;
     }
-
-    if (!rep_list_idx) {
-      alert("유효하지 않은 접근입니다.");
-      window.location.href = '/admin/admin-report/history';
-      return;
-    }
-
-    getReportHistoryDetail(id, token, rep_list_idx);
   }, [searchParams]);
 
   // 신고 히스토리 상세보기 불러오기
   const getReportHistoryDetail = async (id, token, rep_list_idx) => {
-    setLoading(true);
     try {
-      const res = await axios.get(`http://localhost/admin/report/history/detail`, {
-        params: { id: id, rep_list_idx: rep_list_idx },
-        headers: { Authorization: token }
-      });
-
-      if (res.data.loginYN) {
-        setReportDetail(res.data.result);
-      } else {
-        alert("관리자 로그인이 필요합니다.");
-        window.location.href = '/login';
-      }
+      const res = await axios.post(`http://localhost/admin/report/history/detail`,
+        { id: id, rep_list_idx: rep_list_idx },
+        { headers: { Authorization: token } }
+      );
+      console.log("res : ", res.data);
+      setReportDetail(res.data);
     } catch (error) {
       console.log("신고 히스토리 상세정보 불러오기 실패 : ", error);
-      alert("신고 히스토리 상세정보 불러오기 실패");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -73,6 +60,40 @@ export default function AdminReportHistoryDetail() {
           <Link href="/admin/admin-report/history">
             <button className="back-button">뒤로가기</button>
           </Link>
+        </div>
+      </div>
+      <div className="inbox-content">
+        <input type="text" placeholder="신고 대상자 ID" />
+        <input type="text" placeholder="신고 사유" />
+        <button>처리 완료</button>
+      </div>
+
+      {/* 신고 히스토리 내용 */}
+      <div className="report-history-box">
+        <h3>신고 히스토리 내용</h3>
+        <div className="content-box">
+          {reportDetail ? (
+            <div>
+              <p><strong>신고자 ID:</strong> {reportDetail.reporter_id || '-'}</p>
+              <p><strong>신고 대상자 ID:</strong> {reportDetail.reported_id || '-'}</p>
+              <p><strong>신고 사유:</strong> {reportDetail.report_reason || '-'}</p>
+              <p><strong>신고 내용:</strong> {reportDetail.report_content || '-'}</p>
+              <p><strong>신고 일시:</strong> {formatDate(reportDetail.report_date)}</p>
+              <p><strong>신고 상태:</strong> {reportDetail.report_status || '-'}</p>
+            </div>
+          ) : (
+            <p>로딩 중...</p>
+          )}
+        </div>
+      </div>
+
+      {/* 신고 처리 사유 */}
+      <div className="report-process-box">
+        <h3>신고 처리 사유</h3>
+        <div className="content-box">
+          <div>
+
+          </div>
         </div>
       </div>
     </div>
