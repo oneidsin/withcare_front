@@ -1,13 +1,74 @@
 .search-page {
-    width: 900px; /* 또는 1000px 정도 */
-    margin: 0 auto;
     padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 .search-bar {
+    background-color: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.search-form {
     display: flex;
-    gap: 12px;
-    margin-bottom: 24px;
+    gap: 10px;
+    align-items: center;
+}
+
+.search-form select,
+.search-form input {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.search-form input {
+    flex: 1;
+    min-width: 200px;
+}
+
+.search-form button {
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.search-form button:hover {
+    background-color: #0056b3;
+}
+
+.board-select,
+.sort-select {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-right: 10px;
+    font-size: 14px;
+}
+
+/* 게시글 목록 스타일 */
+.post-list {
+    margin-top: 20px;
+}
+
+.post-item {
+    background-color: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.post-item:hover {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 }
 
 .tags {
