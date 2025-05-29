@@ -1,8 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AiOutlineLogin, AiOutlineSearch, AiOutlineMail, AiOutlineBell, AiOutlineUser, AiOutlineLogout } from "react-icons/ai";
 import './app.css';
+import LoginOutlinedIcon from '@mui/icons-material/LoginOutlined';
+import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
+import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
+import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
+import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
+import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import { Provider } from "react-redux";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -73,7 +78,7 @@ export default function RootLayout({ children }) {
     sessionStorage.removeItem("id");
     setIsLoggedIn(false);
     setUsername("");
-    router.push("/");
+    location.href = "/";
   };
 
   return (
@@ -91,55 +96,53 @@ export default function RootLayout({ children }) {
             <div className="header-right">
               {!isLoggedIn ? (
                 <Link href="/login">
-                  <AiOutlineLogin
-                    style={{ fontSize: '28px', cursor: 'pointer', marginRight: '18px' }}
+                  <LoginOutlinedIcon className="top-nav-icon"
                     title="로그인"
                   />
                 </Link>
               ) : (
                 <>
-                  <span style={{ marginRight: '12px', fontWeight: 'bold' }}>{username}님</span>
-                  <AiOutlineLogout
-                    style={{ fontSize: '28px', cursor: 'pointer', marginRight: '18px' }}
+                  <span className="username-text">{username}님</span>
+                  <LogoutOutlinedIcon className="top-nav-icon"
                     onClick={handleLogout}
                     title="로그아웃"
                   />
                 </>
               )}
               <Link href="/search">
-                <AiOutlineSearch style={{ color: 'black', fontSize: '28px', cursor: 'pointer', marginRight: '18px' }} title="검색" />
+                <SearchOutlinedIcon className="top-nav-icon" title="검색" />
               </Link>
               <Link href="/msg">
-                <AiOutlineMail style={{ color: 'black', fontSize: '28px', cursor: 'pointer', marginRight: '18px' }} title="메일" />
+                <EmailOutlinedIcon className="top-nav-icon" title="메일" />
               </Link>
               <Link href="/alert">
-                <AiOutlineBell style={{ color: 'black', fontSize: '28px', cursor: 'pointer', marginRight: '18px' }} title="알림" />
+                <NotificationsOutlinedIcon className="top-nav-icon" title="알림" />
               </Link>
               <Link href="/profile">
-                <AiOutlineUser style={{ color: 'black', fontSize: '28px', cursor: 'pointer' }} title="프로필" />
+                <AccountCircleOutlinedIcon className="top-nav-icon" title="프로필" />
               </Link>
             </div>
           </header>
 
           <nav className="top-nav">
             {menuBoards.map((parent) => (
-                <div key={parent.board_idx} className="nav-item">
-                  <Link href={`/post?board_idx=${parent.board_idx}`}>
-                    {parent.board_name}
-                  </Link>
-                  {parent.children.length > 0 && (
-                      <div className="dropdown">
-                        {parent.children.map((child) => (
-                            <Link
-                                key={child.board_idx}
-                                href={`/post?board_idx=${child.board_idx}`}
-                            >
-                              {child.board_name}
-                            </Link>
-                        ))}
-                      </div>
-                  )}
-                </div>
+              <div key={parent.board_idx} className="nav-item">
+                <Link href={`/post?board_idx=${parent.board_idx}`}>
+                  {parent.board_name}
+                </Link>
+                {parent.children.length > 0 && (
+                  <div className="dropdown">
+                    {parent.children.map((child) => (
+                      <Link
+                        key={child.board_idx}
+                        href={`/post?board_idx=${child.board_idx}`}
+                      >
+                        {child.board_name}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
             ))}
           </nav>
 
