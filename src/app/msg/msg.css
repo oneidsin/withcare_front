@@ -357,3 +357,27 @@
     justify-content: center;
     gap: 10px;
 }
+
+.textarea-container {
+    position: relative;
+    width: 100%;
+}
+
+.char-count {
+    position: absolute;
+    bottom: 5px;
+    right: 10px;
+    font-size: 0.8em;
+    color: #666;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 2px 5px;
+    border-radius: 3px;
+}
+
+.form-textarea {
+    width: 100%;
+    min-height: 150px;
+    padding: 10px;
+    padding-bottom: 25px;
+    box-sizing: border-box;
+}

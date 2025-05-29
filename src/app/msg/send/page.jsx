@@ -9,10 +9,14 @@ import Link from 'next/link';
 export default function SendPage(){
 
     const [info, setInfo] = useState({id:'',receiver_id:'',msg_content:''});
+    const [charCount, setCharCount] = useState(0);
     const id = sessionStorage.getItem("id");
     const token = sessionStorage.getItem("token");
 
     const input=(e)=>{
+        if (e.target.name === 'msg_content') {
+            setCharCount(e.target.value.length);
+        }
         setInfo({...info, [e.target.name]: e.target.value});
     }
 
@@ -78,12 +82,18 @@ export default function SendPage(){
                 <tr>
                     <th>내용</th>
                     <td>
-                        <textarea 
-                            name="msg_content" 
-                            onChange={input} 
-                            value={info.msg_content}
-                            className="form-textarea"
-                        ></textarea>
+                        <div className="textarea-container">
+                            <textarea 
+                                name="msg_content" 
+                                onChange={input} 
+                                value={info.msg_content}
+                                className="form-textarea"
+                                maxLength={200}
+                            ></textarea>
+                            <div className="char-count">
+                                {charCount}/200자
+                            </div>
+                        </div>
                     </td>
                 </tr>
                 </tbody>

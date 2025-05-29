@@ -104,7 +104,11 @@ export default function Outbox() {
                   />
                 </td>
                 <td>{item.receiver_id}</td>
-                <td className='subject-cell'>{item.msg_content}</td>
+                <td className='subject-cell'>
+                  {item.msg_content.length > 30 
+                    ? `${item.msg_content.substring(0, 30)}...` 
+                    : item.msg_content}
+                </td>
                 <td>{new Date(item.msg_sent_at).toLocaleDateString()}</td>
                 <td>{item.msg_read ? '읽음' : '읽지 않음'}</td>
                 <td>
