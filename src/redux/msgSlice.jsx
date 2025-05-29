@@ -1,5 +1,6 @@
 import {createSlice, createAsyncThunk} from "@reduxjs/toolkit";
 import axios from "axios";
+import {store} from "@/redux/store";
 
 // 받은 쪽지함 조회 액션
 export const fetchInbox = createAsyncThunk(
@@ -46,8 +47,19 @@ const msgSlice = createSlice({
             Object.keys(action.payload).forEach((key) => {
                 state[key] = action.payload[key];
             });
-        }
-    },
+        },
+        del(state, action) {
+            axios.delete(`http://localhost:80/msg/${state.id}/${action.payload.id}`, {
+                headers: {Authorization: state.token}
+            }).then(({data}) => {
+                console.log(data);
+                if (data.message) {
+                    console.log('삭제 성공 리스트 재 호출');
+                    store.dispatch({type: 'msg/del', payload: 1});
+                }
+            });
+            }
+        },
     extraReducers: (builder) => {
         builder
             .addCase(fetchInbox.fulfilled, (state, action) => {

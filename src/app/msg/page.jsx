@@ -10,6 +10,7 @@ import axios from 'axios';
 import Link from 'next/link';
 
 export default function Inbox() {
+
   const dispatch = useDispatch();
   const { list, pages, currentPage } = useSelector(state => state.msg);
   const [selectMsg, setSelectMsg] = useState(new Set());
@@ -96,6 +97,53 @@ export default function Inbox() {
     }
   };
 
+  // 선택한 쪽지 삭제
+  const handleDelete = async () => {
+    const id = sessionStorage.getItem('id');
+    const token = sessionStorage.getItem('token');
+
+    if (selectMsg.size === 0) {
+      alert('삭제할 쪽지를 선택해주세요.');
+      return;
+    }
+
+    if (!window.confirm('선택한 쪽지를 삭제하시겠습니까?')) {
+      return;
+    }
+
+    // 선택된 모든 쪽지 삭제
+    for (const msgId of selectMsg) {
+      await axios.put(
+        `http://localhost/msg/delete/inbox/${id}/${msgId}`,
+        {},
+        { headers: { Authorization: token } }
+      );
+    }
+
+    // 삭제 후 목록 새로고침
+    setSelectMsg(new Set());
+    dispatch(fetchInbox({ id: id, page: currentPage }));
+  };
+
+  // 단일 쪽지 삭제
+  const handleSingleDelete = async (msgId) => {
+    const id = sessionStorage.getItem('id');
+    const token = sessionStorage.getItem('token');
+
+    if (!window.confirm('이 쪽지를 삭제하시겠습니까?')) {
+      return;
+    }
+
+    await axios.put(
+      `http://localhost/msg/delete/inbox/${id}/${msgId}`,
+      {},
+      { headers: { Authorization: token } }
+    );
+
+    // 삭제 후 목록 새로고침
+    dispatch(fetchInbox({ id: id, page: currentPage }));
+  };
+
   useEffect(() => {
     const currentUserId = sessionStorage.getItem('id');
     if (currentUserId) {
@@ -132,7 +180,7 @@ export default function Inbox() {
             <td>{new Date(item.msg_sent_at).toLocaleDateString()}</td>
             <td>{item.msg_read ? '읽음' : '읽지 않음'}</td>
             <td>
-              <button className='icon-button'>
+              <button className='icon-button' onClick={() => handleSingleDelete(item.msg_idx)}>
                 <BsTrash />
               </button>
             </td>
@@ -149,7 +197,7 @@ export default function Inbox() {
         <h1> 📬 받은 쪽지함 </h1>
         <div className='action-buttons'>
           <button className='block-button' onClick={() => { userBlock() }}>차단</button>
-          <button className='delete-button'>삭제</button>
+          <button className='delete-button' onClick={handleDelete}>삭제</button>
         </div>
       </div>
 
@@ -176,7 +224,7 @@ export default function Inbox() {
         </tbody>
       </table>
 
-      {pages > 1 && (
+      {pages >= 1 && (
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
           <Stack spacing={2} alignItems="center">
             <Pagination
