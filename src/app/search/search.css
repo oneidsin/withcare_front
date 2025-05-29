@@ -10,12 +10,18 @@
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
 }
 
 .search-form {
     display: flex;
     gap: 10px;
     align-items: center;
+    flex: 1;
+    min-width: 300px;
 }
 
 .search-form select,
@@ -24,6 +30,7 @@
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 14px;
+    height: 38px;
 }
 
 .search-form input {
@@ -39,10 +46,36 @@
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.2s;
+    height: 38px;
+    min-width: 40px;
 }
 
 .search-form button:hover {
     background-color: #0056b3;
+}
+
+.recent-searches-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 10px 0;
+    max-width: 100%;
+}
+
+.search-term {
+    background-color: #f0f0f0;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px; /* 최대 너비 설정 */
+    cursor: pointer;
+}
+
+.search-term:hover {
+    background-color: #e0e0e0;
 }
 
 .board-select,
@@ -52,6 +85,8 @@
     border-radius: 4px;
     margin-right: 10px;
     font-size: 14px;
+    min-width: 150px;
+    height: 38px;
 }
 
 /* 게시글 목록 스타일 */
@@ -96,6 +131,7 @@
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
+    table-layout: fixed;
 }
 
 .post-table th,
@@ -103,6 +139,29 @@
     border-bottom: 1px solid #ddd;
     padding: 12px;
     text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 칼럼별 너비 조정 */
+.post-table th:nth-child(1), .post-table td:nth-child(1) { /* 글번호 */
+    width: 8%;
+}
+.post-table th:nth-child(2), .post-table td:nth-child(2) { /* 제목 */
+    width: 50%;
+}
+.post-table th:nth-child(3), .post-table td:nth-child(3) { /* 작성자 */
+    width: 10%;
+}
+.post-table th:nth-child(4), .post-table td:nth-child(4) { /* 조회 */
+    width: 8%;
+}
+.post-table th:nth-child(5), .post-table td:nth-child(5) { /* 추천 */
+    width: 8%;
+}
+.post-table th:nth-child(6), .post-table td:nth-child(6) { /* 날짜 */
+    width: 16%;
 }
 
 /* 정렬 옵션 */
@@ -110,7 +169,7 @@
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    margin-bottom: 16px;
+    margin-bottom: 0;
     gap: 8px;
 }
 
@@ -119,9 +178,32 @@
     color: #444;
 }
 
-.sort-box select {
-    padding: 6px 10px;
+/* 모든 select 요소에 공통 스타일 적용 */
+.search-form select,
+.board-select,
+.sort-select,
+.sort-box select,
+.search-form input {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
     font-size: 14px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
+    height: 38px;
+    min-width: 150px;
+    background-color: white;
+    box-sizing: border-box;
+    vertical-align: middle;
+}
+
+/* select 요소에만 적용할 스타일 */
+.search-form select,
+.board-select,
+.sort-select,
+.sort-box select {
+    appearance: auto;
+}
+
+.search-form input {
+    flex: 1;
+    min-width: 200px;
 }

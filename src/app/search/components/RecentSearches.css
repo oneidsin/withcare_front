@@ -18,11 +18,28 @@
 }
 
 .search-term {
-    padding: 4px 8px;
+    padding: 6px 12px;
     background-color: #e9ecef;
-    border-radius: 4px;
+    border-radius: 16px;
     color: #495057;
     font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+    display: inline-block;
+    min-width: 40px;
+}
+
+.search-term:hover {
+    background-color: #dee2e6;
+}
+
+.search-term:nth-child(-n+3) {
+    font-weight: bold;
+    background-color: #e2e6ea;
 }
 
 .search-count {

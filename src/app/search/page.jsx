@@ -71,11 +71,7 @@ export default function SearchPage() {
     const loadInitialPosts = async (selectedBoardIdx, pageNum = 1) => {
         try {
             const token = sessionStorage.getItem('token');
-            if (!token) {
-                window.location.href = '/login';
-                return;
-            }
-
+            
             console.log('초기 게시글 로딩 요청:', {
                 board_idx: selectedBoardIdx,
                 page: pageNum,
@@ -93,35 +89,46 @@ export default function SearchPage() {
             };
 
             console.log('API 요청 데이터:', requestData);
+            
+            // API 요청 헤더 설정 (토큰이 있는 경우에만 포함)
+            const headers = {};
+            if (token) {
+                headers['Authorization'] = token;
+            }
 
-            const res = await api.post('/search', requestData, {
-                headers: {
-                    'Authorization': token
-                }
-            });
+            try {
+                const res = await api.post('/search', requestData, {
+                    headers: headers,
+                    timeout: 5000 // 5초 타임아웃 설정
+                });
 
-            console.log('초기 게시글 로딩 응답:', res.data);
+                console.log('초기 게시글 로딩 응답:', res.data);
 
-            if (!res.data.success) {
-                if (res.data.redirect) {
-                    window.location.href = res.data.redirect;
+                if (!res.data.success) {
+                    if (res.data.redirect) {
+                        console.warn('리다이렉트 요청이 있지만 무시합니다:', res.data.redirect);
+                    }
+                    console.warn('API 응답 실패:', res.data.message);
+                    // 실패해도 빈 배열 설정
+                    setPosts([]);
+                    setTotalPages(1);
+                    if (pageNum === 1) setPage(1);
                     return;
                 }
-                throw new Error(res.data.message || '게시글 로딩 실패');
+
+                setPosts(res.data.data || []);
+                setTotalPages(res.data.totalPages || 1);
+                if (pageNum === 1) setPage(1); // 게시판 변경 시에만 페이지를 1로 초기화
+
+            } catch (err) {
+                console.error("초기 게시글 로딩 실패", err);
+                setPosts([]);
+                setTotalPages(1);
             }
-
-            setPosts(res.data.data || []);
-            setTotalPages(res.data.totalPages || 1);
-            if (pageNum === 1) setPage(1); // 게시판 변경 시에만 페이지를 1로 초기화
-
-        } catch (err) {
-            console.error("초기 게시글 로딩 실패", err);
+        } catch (outerErr) {
+            console.error("치명적인 오류 발생", outerErr);
             setPosts([]);
-            if (err.response && err.response.status === 401) {
-                window.location.href = '/login';
-            } else {
-                alert(err.message || "게시글을 불러오는데 실패했습니다.");
-            }
+            setTotalPages(1);
         }
     };
 
@@ -148,7 +155,7 @@ export default function SearchPage() {
         // 검색어가 없는 경우는 유효한 것으로 처리 (초기 목록 보기 용도)
         if (!keyword || keyword.trim().length === 0) {
             return true;
-        }
+                }
         
         if (keyword.trim().length < SEARCH_CONSTANTS.MIN_LENGTH) {
             alert('검색어를 입력해주세요.');
@@ -192,47 +199,47 @@ export default function SearchPage() {
 
         try {
             const token = sessionStorage.getItem('token');
-            if (!token) {
-                window.location.href = '/login';
-                return;
+            
+            // API 요청 헤더 설정 (토큰이 있는 경우에만 포함)
+            const headers = {};
+            if (token) {
+                headers['Authorization'] = token;
             }
 
-            const res = await api.post('/search', {
-                sch_keyword: keywordToSearch.trim(),
-                sch_type: SEARCH_CONSTANTS.TYPE_MAP[searchType],
-                board_idx: boardIdx,
-                page: pageNum,
-                pageSize: SEARCH_CONSTANTS.PAGE_SIZE,
-                offset: calculateOffset(pageNum, SEARCH_CONSTANTS.PAGE_SIZE)
-            }, {
-                headers: {
-                    'Authorization': token
-                }
-            });
+            try {
+                const res = await api.post('/search', {
+                    sch_keyword: keywordToSearch.trim(),
+                    sch_type: SEARCH_CONSTANTS.TYPE_MAP[searchType],
+                    board_idx: boardIdx,
+                    page: pageNum,
+                    pageSize: SEARCH_CONSTANTS.PAGE_SIZE,
+                    offset: calculateOffset(pageNum, SEARCH_CONSTANTS.PAGE_SIZE)
+                }, {
+                    headers: headers,
+                    timeout: 5000 // 5초 타임아웃 설정
+                });
 
-            console.log('검색 결과:', res.data);
-            
-            if (!res.data.success) {
-                if (res.data.redirect) {
-                    window.location.href = res.data.redirect;
+                console.log('검색 결과:', res.data);
+                
+                if (!res.data.success) {
+                    if (res.data.redirect) {
+                        console.warn('리다이렉트 요청이 있지만 무시합니다:', res.data.redirect);
+                    }
+                    console.warn('API 검색 응답 실패:', res.data.message);
+                    // 실패해도 기존 게시글 유지
                     return;
                 }
-                alert(res.data.message || '검색 결과를 가져오는데 실패했습니다.');
-                setPosts([]);
-                return;
-            }
 
-            setPosts(res.data.data || []);
-            setTotalPages(res.data.totalPages || 1);
-            setPage(pageNum); // 검색 시 현재 페이지 업데이트
-            
-            if (res.data.searchSaved === false) {
-                console.warn('검색어 저장에 실패했습니다.');
+                setPosts(res.data.data || []);
+                setTotalPages(res.data.totalPages || 1);
+                setPage(pageNum); // 검색 시 현재 페이지 업데이트
+                
+            } catch (err) {
+                console.error("검색 요청 실패", err);
+                // 에러 발생해도 기존 게시글 유지
             }
-        } catch (err) {
-            console.error("검색 실패", err);
-            alert(err.message || "검색 중 오류가 발생했습니다.");
-            setPosts([]);
+        } catch (outerErr) {
+            console.error("치명적인 검색 오류", outerErr);
         }
     };
 
@@ -242,11 +249,7 @@ export default function SearchPage() {
         
         try {
             const token = sessionStorage.getItem('token');
-            if (!token) {
-                window.location.href = '/login';
-                return;
-            }
-
+            
             console.log('페이지 변경:', {
                 currentPage: page,
                 newPage: newPage,
@@ -267,30 +270,38 @@ export default function SearchPage() {
 
             console.log('API 요청 데이터:', requestData);
 
-            const res = await api.post('/search', requestData, {
-                headers: {
-                    'Authorization': token
-                }
-            });
-
-            console.log('페이지 변경 응답:', res.data);
-
-            if (!res.data.success) {
-                if (res.data.redirect) {
-                    window.location.href = res.data.redirect;
-                    return;
-                }
-                throw new Error(res.data.message || '데이터 로딩 실패');
+            // API 요청 헤더 설정 (토큰이 있는 경우에만 포함)
+            const headers = {};
+            if (token) {
+                headers['Authorization'] = token;
             }
 
-            // 데이터 업데이트
-            setPosts(res.data.data || []);
-            setTotalPages(res.data.totalPages || 1);
-            setPage(newPage); // 페이지 상태 업데이트
+            try {
+                const res = await api.post('/search', requestData, {
+                    headers: headers,
+                    timeout: 5000 // 5초 타임아웃 설정
+                });
 
-        } catch (err) {
-            console.error("페이지 변경 실패:", err);
-            alert("페이지 데이터를 불러오는데 실패했습니다.");
+                console.log('페이지 변경 응답:', res.data);
+
+                if (!res.data.success) {
+                    if (res.data.redirect) {
+                        console.warn('리다이렉트 요청이 있지만 무시합니다:', res.data.redirect);
+                    }
+                    console.warn('페이지 변경 실패:', res.data.message);
+                    return;
+                }
+
+                // 데이터 업데이트
+                setPosts(res.data.data || []);
+                setTotalPages(res.data.totalPages || 1);
+                setPage(newPage); // 페이지 상태 업데이트
+
+            } catch (err) {
+                console.error("페이지 변경 요청 실패:", err);
+            }
+        } catch (outerErr) {
+            console.error("치명적인 페이지 변경 오류:", outerErr);
         }
     };
 
@@ -326,6 +337,28 @@ export default function SearchPage() {
         }
     });
 
+    // 게시글 행 렌더링
+    const renderPostRow = (post) => {
+        return (
+            <tr
+                key={post.post_idx}
+                onClick={() => {
+                    router.push(`/post/detail?post_idx=${post.post_idx}&board_idx=${post.board_idx}`);
+                }}
+                style={{ cursor: "pointer" }}
+            >
+                <td>{post.post_idx}</td>
+                <td>
+                    {post.title}
+                </td>
+                <td>{post.writer || "익명"}</td>
+                <td>{post.post_view_cnt || 0}</td>
+                <td>{post.like_count || 0}</td>
+                <td>{post.created_date?.slice(0, 10)}</td>
+            </tr>
+        );
+    };
+
     return (
         <div className="search-page">
             <div className="search-bar">
@@ -351,7 +384,7 @@ export default function SearchPage() {
                         className="sort-select"
                     >
                         <option value="latest">최신순</option>
-                        <option value="popular">인기순</option>
+                        <option value="popular">추천순</option>
                     </select>
                 </div>
 
@@ -373,11 +406,11 @@ export default function SearchPage() {
                         onChange={handleKeywordChange}
                         maxLength={SEARCH_CONSTANTS.MAX_LENGTH}
                     />
-                    <button type="submit" className="search-button">🔍</button>
+                    <button type="submit" className="search-button">검색</button>
                 </form>
             </div>
 
-            {/* 인기 검색어 컴포넌트 */}
+            {/* 최신 검색어 컴포넌트 */}
             <RecentSearches onSearchClick={handleSearchTermClick} />
 
             {/* 게시글 리스트 */}
@@ -398,30 +431,7 @@ export default function SearchPage() {
                             <td colSpan="6" style={{ textAlign: "center" }}>게시글이 없습니다.</td>
                         </tr>
                     ) : (
-                        sortedPosts.map(post => (
-                            <tr
-                                key={post.post_idx}
-                                onClick={() => {
-                                    const token = sessionStorage.getItem('token');
-                                    if (!token) {
-                                        alert('로그인이 필요한 서비스입니다.');
-                                        router.push('/login');
-                                        return;
-                                    }
-                                    router.push(`/post/detail?post_idx=${post.post_idx}&board_idx=${post.board_idx}`);
-                                }}
-                                style={{ cursor: "pointer" }}
-                            >
-                                <td>{post.post_idx}</td>
-                                <td>
-                                    {post.title}
-                                </td>
-                                <td>{post.writer || "익명"}</td>
-                                <td>{post.post_view_cnt || 0}</td>
-                                <td>{post.like_count || 0}</td>
-                                <td>{post.created_date?.slice(0, 10)}</td>
-                            </tr>
-                        ))
+                        sortedPosts.map(post => renderPostRow(post))
                     )}
                 </tbody>
             </table>
@@ -524,7 +534,7 @@ export default function SearchPage() {
 
                     {/* 마지막 페이지로 이동 */}
                     {page < totalPages && (
-                        <button 
+                        <button
                             onClick={() => handlePageChange(totalPages)}
                             style={{
                                 padding: '8px 12px',
