@@ -7,36 +7,30 @@
 
 .recent-searches h3 {
     margin: 0 0 15px 0;
-    font-size: 16px;
-    color: #333;
+    color: #495057;
+    font-size: 1.1rem;
 }
 
 .search-terms {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 10px;
 }
 
-.search-term-tag {
-    padding: 6px 12px;
-    background-color: white;
-    border: 1px solid #e1e1e1;
-    border-radius: 20px;
-    font-size: 14px;
-    color: #555;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.search-term-tag:hover {
-    background-color: #f0f0f0;
-    border-color: #ccc;
+.search-term {
+    padding: 4px 8px;
+    background-color: #e9ecef;
+    border-radius: 4px;
+    color: #495057;
+    font-size: 0.9rem;
 }
 
 .search-count {
-    margin-left: 4px;
-    font-size: 12px;
-    color: #888;
+    font-size: 0.8rem;
+    color: #6c757d;
+    background-color: #fff;
+    padding: 2px 6px;
+    border-radius: 10px;
 }
 
 .error-message {
@@ -49,4 +43,34 @@
     color: #666;
     font-size: 14px;
     font-style: italic;
+}
+
+.recent-searches.error {
+    color: #dc3545;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.recent-searches p {
+    color: #6c757d;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/* 상위 3개 순위 강조 */
+.popular-term-row:nth-child(1) .rank {
+    background-color: #ffd700;
+    color: #fff;
+}
+
+.popular-term-row:nth-child(2) .rank {
+    background-color: #c0c0c0;
+    color: #fff;
+}
+
+.popular-term-row:nth-child(3) .rank {
+    background-color: #cd7f32;
+    color: #fff;
 } 

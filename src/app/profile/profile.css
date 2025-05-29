@@ -1,10 +1,19 @@
+.inbox-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    /* 부모(content-box)의 높이를 채우도록 설정 */
+    padding: 10px;
+    /* 내부 여백 추가 */
+    box-sizing: border-box;
+  }
+
 .profile-page {
     display: flex;
     flex-direction: column;
     height: 100%;
-    padding: 20px;
+    padding: 100px;
     box-sizing: border-box;
-    background-color: #fff;
 }
 
 /* 사이드바 스타일 */
