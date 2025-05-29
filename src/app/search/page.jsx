@@ -29,6 +29,11 @@ const api = axios.create({
     }
 });
 
+// offset 계산 함수 추가
+const calculateOffset = (page, pageSize) => {
+    return (page - 1) * pageSize;
+};
+
 export default function SearchPage() {
     const router = useRouter();
 
@@ -63,7 +68,7 @@ export default function SearchPage() {
     }, []);
 
     // 초기 게시글 목록 불러오기 함수
-    const loadInitialPosts = async (selectedBoardIdx) => {
+    const loadInitialPosts = async (selectedBoardIdx, pageNum = 1) => {
         try {
             const token = sessionStorage.getItem('token');
             if (!token) {
@@ -71,36 +76,51 @@ export default function SearchPage() {
                 return;
             }
 
-            const res = await api.post('/search', {
+            console.log('초기 게시글 로딩 요청:', {
                 board_idx: selectedBoardIdx,
-                page: 1,
+                page: pageNum,
                 pageSize: SEARCH_CONSTANTS.PAGE_SIZE,
+                offset: calculateOffset(pageNum, SEARCH_CONSTANTS.PAGE_SIZE)
+            });
+
+            const requestData = {
+                board_idx: selectedBoardIdx,
+                page: pageNum,
+                pageSize: SEARCH_CONSTANTS.PAGE_SIZE,
+                offset: calculateOffset(pageNum, SEARCH_CONSTANTS.PAGE_SIZE),
                 sch_type: SEARCH_CONSTANTS.TYPE_MAP[searchType],
-                sch_keyword: '' // 빈 검색어로 초기 목록 불러오기
-            }, {
+                sch_keyword: keyword ? keyword.trim() : '' // 현재 검색어 유지
+            };
+
+            console.log('API 요청 데이터:', requestData);
+
+            const res = await api.post('/search', requestData, {
                 headers: {
                     'Authorization': token
                 }
             });
+
+            console.log('초기 게시글 로딩 응답:', res.data);
 
             if (!res.data.success) {
                 if (res.data.redirect) {
                     window.location.href = res.data.redirect;
                     return;
                 }
-                console.error('초기 게시글 로딩 실패:', res.data.message);
-                setPosts([]);
-                return;
+                throw new Error(res.data.message || '게시글 로딩 실패');
             }
 
             setPosts(res.data.data || []);
             setTotalPages(res.data.totalPages || 1);
-            setPage(1); // 게시판 변경 시 페이지를 1로 초기화
+            if (pageNum === 1) setPage(1); // 게시판 변경 시에만 페이지를 1로 초기화
+
         } catch (err) {
             console.error("초기 게시글 로딩 실패", err);
             setPosts([]);
             if (err.response && err.response.status === 401) {
                 window.location.href = '/login';
+            } else {
+                alert(err.message || "게시글을 불러오는데 실패했습니다.");
             }
         }
     };
@@ -109,39 +129,19 @@ export default function SearchPage() {
     const handleKeywordChange = (e) => {
         const newKeyword = e.target.value;
         setKeyword(newKeyword);
-
-        // 이전 타이머가 있다면 취소
-        if (searchTimer) {
-            clearTimeout(searchTimer);
-        }
-
-        // 새로운 타이머 설정 (300ms 후에 검색 실행)
-        const timer = setTimeout(() => {
-            if (newKeyword.trim().length >= SEARCH_CONSTANTS.MIN_LENGTH) {
-                if (!boardIdx) {
-                    alert('게시판을 선택해주세요.');
-                    return;
-                }
-                handleSearch(null, newKeyword);
-            } else if (newKeyword.trim().length === 0) {
-                // 검색어가 비어있을 때 현재 선택된 게시판의 초기 게시글 목록 불러오기
-                if (boardIdx) {
-                    loadInitialPosts(boardIdx);
-                }
-            }
-        }, 300);
-
-        setSearchTimer(timer);
     };
 
-    // 컴포넌트가 언마운트될 때 타이머 정리
-    useEffect(() => {
-        return () => {
-            if (searchTimer) {
-                clearTimeout(searchTimer);
-            }
-        };
-    }, [searchTimer]);
+    // 검색어 클릭 핸들러
+    const handleSearchTermClick = (searchKeyword) => {
+        if (!boardIdx) {
+            alert('게시판을 선택해주세요.');
+            return;
+        }
+        console.log('검색어 클릭:', searchKeyword);
+        setKeyword(searchKeyword);
+        setPage(1);
+        handleSearch(null, searchKeyword, 1);
+    };
 
     // 검색어 유효성 검사
     const validateSearchKeyword = (keyword) => {
@@ -163,20 +163,8 @@ export default function SearchPage() {
         return true;
     };
 
-    // 검색어 클릭 핸들러
-    const handleSearchTermClick = (searchKeyword) => {
-        if (!boardIdx) {
-            alert('게시판을 선택해주세요.');
-            return;
-        }
-        console.log('검색어 클릭:', searchKeyword);
-        setKeyword(searchKeyword);
-        setPage(1);
-        handleSearch(null, searchKeyword);
-    };
-
     // 검색 처리 함수
-    const handleSearch = async (e, searchKeyword = null) => {
+    const handleSearch = async (e, searchKeyword = null, pageNum = 1) => {
         if (e) {
             e.preventDefault();
         }
@@ -198,7 +186,8 @@ export default function SearchPage() {
             mappedType: SEARCH_CONSTANTS.TYPE_MAP[searchType],
             boardIdx,
             sortOption,
-            page
+            page: pageNum,
+            offset: calculateOffset(pageNum, SEARCH_CONSTANTS.PAGE_SIZE)
         });
 
         try {
@@ -212,8 +201,9 @@ export default function SearchPage() {
                 sch_keyword: keywordToSearch.trim(),
                 sch_type: SEARCH_CONSTANTS.TYPE_MAP[searchType],
                 board_idx: boardIdx,
-                page: page,
-                pageSize: SEARCH_CONSTANTS.PAGE_SIZE
+                page: pageNum,
+                pageSize: SEARCH_CONSTANTS.PAGE_SIZE,
+                offset: calculateOffset(pageNum, SEARCH_CONSTANTS.PAGE_SIZE)
             }, {
                 headers: {
                     'Authorization': token
@@ -232,10 +222,9 @@ export default function SearchPage() {
                 return;
             }
 
-            // 검색 결과가 현재 선택된 게시판의 것인지 확인
-            const filteredPosts = res.data.data.filter(post => post.board_idx === parseInt(boardIdx));
-            setPosts(filteredPosts || []);
-            setTotalPages(Math.ceil(filteredPosts.length / SEARCH_CONSTANTS.PAGE_SIZE) || 1);
+            setPosts(res.data.data || []);
+            setTotalPages(res.data.totalPages || 1);
+            setPage(pageNum); // 검색 시 현재 페이지 업데이트
             
             if (res.data.searchSaved === false) {
                 console.warn('검색어 저장에 실패했습니다.');
@@ -248,22 +237,9 @@ export default function SearchPage() {
     };
 
     // 페이지 변경 핸들러
-    const handlePageChange = (newPage) => {
+    const handlePageChange = async (newPage) => {
         if (newPage === page) return; // 같은 페이지면 무시
         
-        setPage(newPage);
-        
-        // 검색어가 있는 경우와 없는 경우를 구분하여 처리
-        if (keyword && keyword.trim()) {
-            handleSearch(null, keyword);
-        } else {
-            // 검색어가 없는 경우 일반 게시글 목록 조회
-            loadBoardPosts(newPage);
-        }
-    };
-
-    // 일반 게시글 목록 조회
-    const loadBoardPosts = async (pageNum) => {
         try {
             const token = sessionStorage.getItem('token');
             if (!token) {
@@ -271,52 +247,72 @@ export default function SearchPage() {
                 return;
             }
 
-            const res = await api.post('/search', {
+            console.log('페이지 변경:', {
+                currentPage: page,
+                newPage: newPage,
+                keyword: keyword,
+                boardIdx: boardIdx,
+                offset: calculateOffset(newPage, SEARCH_CONSTANTS.PAGE_SIZE)
+            });
+
+            // API 요청 데이터 준비
+            const requestData = {
                 board_idx: boardIdx,
-                page: pageNum,
+                page: newPage,
                 pageSize: SEARCH_CONSTANTS.PAGE_SIZE,
+                offset: calculateOffset(newPage, SEARCH_CONSTANTS.PAGE_SIZE),
                 sch_type: SEARCH_CONSTANTS.TYPE_MAP[searchType],
-                sch_keyword: '' // 빈 검색어로 초기 목록 불러오기
-            }, {
+                sch_keyword: keyword.trim() // 검색어가 있는 경우 포함
+            };
+
+            console.log('API 요청 데이터:', requestData);
+
+            const res = await api.post('/search', requestData, {
                 headers: {
                     'Authorization': token
                 }
             });
+
+            console.log('페이지 변경 응답:', res.data);
 
             if (!res.data.success) {
                 if (res.data.redirect) {
                     window.location.href = res.data.redirect;
                     return;
                 }
-                console.error('게시글 로딩 실패:', res.data.message);
-                setPosts([]);
-                return;
+                throw new Error(res.data.message || '데이터 로딩 실패');
             }
 
+            // 데이터 업데이트
             setPosts(res.data.data || []);
             setTotalPages(res.data.totalPages || 1);
+            setPage(newPage); // 페이지 상태 업데이트
+
         } catch (err) {
-            console.error("게시글 로딩 실패", err);
-            setPosts([]);
-            if (err.response && err.response.status === 401) {
-                window.location.href = '/login';
-            }
+            console.error("페이지 변경 실패:", err);
+            alert("페이지 데이터를 불러오는데 실패했습니다.");
         }
     };
 
     // 게시판 변경 처리
     const handleBoardChange = (selectedBoardIdx) => {
-        console.log('게시판 변경:', selectedBoardIdx);
+        console.log('게시판 변경:', {
+            selectedBoardIdx,
+            currentKeyword: keyword,
+            currentSearchType: searchType
+        });
+
         if (!selectedBoardIdx) {
             setPosts([]);
             setBoardIdx(null);
             return;
         }
-        
+
         // 문자열을 숫자로 변환
         const boardIdxNum = parseInt(selectedBoardIdx);
         setBoardIdx(boardIdxNum);
         setPage(1);
+
         // 게시판 변경 시 해당 게시판의 게시글 목록 불러오기
         loadInitialPosts(boardIdxNum);
     };
@@ -377,7 +373,7 @@ export default function SearchPage() {
                         onChange={handleKeywordChange}
                         maxLength={SEARCH_CONSTANTS.MAX_LENGTH}
                     />
-                    <button type="submit">🔍</button>
+                    <button type="submit" className="search-button">🔍</button>
                 </form>
             </div>
 
@@ -546,7 +542,7 @@ export default function SearchPage() {
 
             {/* 페이지 정보 표시 */}
             {totalPages > 0 && (
-                <div className="page-info" style={{ textAlign: 'center', marginTop: '10px' }}>
+                <div className="page-info" style={{ textAlign: 'center', marginTop: '10px', color: '#6c757d' }}>
                     {page} / {totalPages} 페이지
                 </div>
             )}
