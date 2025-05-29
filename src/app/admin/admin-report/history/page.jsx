@@ -1,144 +1,221 @@
-"use client";
-import { useState, useEffect } from "react";
-import axios from "axios";
-import { Pagination, Stack } from '@mui/material';
-import "../admin_report.css";
+"use client"; // Next.js 13+ App Router 환경에서 클라이언트 컴포넌트임을 명시합니다.
 
+import { useState, useEffect } from "react"; // React의 상태(useState) 및 생명주기/부수효과(useEffect) 훅을 가져옵니다.
+import axios from "axios"; // HTTP 요청을 보내기 위한 axios 라이브러리를 가져옵니다.
+import { Pagination, Stack } from '@mui/material'; // 페이지네이션 UI를 위한 Material-UI 컴포넌트를 가져옵니다.
+import "../admin_report.css"; // 이 컴포넌트에 적용될 CSS 파일을 가져옵니다.
+import "./admin-history.css";
+
+// AdminReportHistory 컴포넌트를 정의하고 내보냅니다.
 export default function AdminReportHistory() {
-  // 상태 관리
+  // === 상태 관리 ===
+  // useState 훅을 사용하여 컴포넌트의 상태 변수들을 정의합니다.
+
+  // 신고 히스토리 목록을 저장할 상태 변수. 초기값은 빈 배열입니다.
   const [historyList, setHistoryList] = useState([]);
+  // 현재 페이지 번호를 저장할 상태 변수. 초기값은 1입니다.
   const [currentPage, setCurrentPage] = useState(1);
+  // 전체 페이지 수를 저장할 상태 변수. 초기값은 1입니다.
   const [totalPages, setTotalPages] = useState(1);
+  // 카테고리 목록(필터 드롭다운용)을 저장할 상태 변수. 초기값은 빈 배열입니다.
   const [categoryList, setCategoryList] = useState([]);
+  // 검색 필터 값들을 저장할 상태 변수. 객체 형태로 관리합니다.
   const [filters, setFilters] = useState({
-    reporterId: '',
-    reportedId: '',
-    category: '',
-    reportType: '',
-    sortOrder: 'desc'
+    reporterId: '', // 신고자 ID 필터
+    reportedId: '', // 신고 대상 ID 필터
+    category: '',     // 카테고리 ID 필터
+    reportType: '',   // 신고 유형 필터
+    sortOrder: 'desc' // 정렬 순서 필터 (기본값: 최신순)
   });
+  // 한 페이지에 보여줄 항목의 수. 상수로 정의합니다.
   const pageSize = 10;
 
+  // === 부수 효과 관리 ===
+  // useEffect 훅을 사용하여 컴포넌트 렌더링 후 특정 작업을 수행합니다.
+  // [currentPage, filters] 배열은 의존성 배열로, 이 값들이 변경될 때마다 useEffect 안의 함수가 실행됩니다.
   useEffect(() => {
+    // 세션 스토리지에서 관리자 ID와 토큰을 가져옵니다.
     const id = sessionStorage.getItem("id");
     const token = sessionStorage.getItem("token");
 
+    // 관리자 ID가 있는지 확인합니다.
     if (id) {
+      // ID가 있으면, 현재 페이지와 필터에 맞는 신고 히스토리 목록을 가져옵니다.
       getReportHistory(currentPage, id, token);
-      getCategoryList(id, token); // 카테고리 목록도 함께 가져오기
+      // 카테고리 목록이 아직 로드되지 않았다면 가져옵니다 (드롭다운 채우기용).
+      if (categoryList.length === 0) {
+        getCategoryList(id, token);
+      }
     } else {
+      // ID가 없으면 (로그인되지 않았으면), 경고창을 띄우고 로그인 페이지로 이동합니다.
       alert("관리자 로그인이 필요합니다.");
       window.location.href = '/login';
     }
-  }, [currentPage, filters]);
+  }, [currentPage, filters]); // currentPage 또는 filters 상태가 변경될 때마다 이 useEffect를 다시 실행합니다.
 
-  // 카테고리 목록 가져오기
+  // === API 호출 함수 ===
+
+  /**
+   * 백엔드에서 신고 카테고리 목록을 가져오는 비동기 함수입니다.
+   * 필터 드롭다운을 채우는 데 사용됩니다.
+   * @param {string} id - 관리자 ID
+   * @param {string} token - 인증 토큰
+   */
   const getCategoryList = async (id, token) => {
     try {
+      // axios를 사용하여 GET 요청을 보냅니다.
       const res = await axios.get(`http://localhost/admin/report-manage/report-cate-list`, {
-        params: { id },
-        headers: { Authorization: token }
+        params: { id }, // 요청 파라미터로 id를 전달합니다.
+        headers: { Authorization: token } // 요청 헤더에 인증 토큰을 포함합니다.
       });
 
+      // 요청이 성공하고 결과 데이터가 있으면
       if (res.data.result) {
+        // categoryList 상태를 업데이트합니다.
         setCategoryList(res.data.result);
-        console.log('카테고리 목록:', res.data.result);
+        console.log('카테고리 목록:', res.data.result); // 콘솔에 로그를 남깁니다.
       }
     } catch (error) {
+      // 에러 발생 시 콘솔에 에러 로그를 남깁니다.
       console.error("카테고리 목록 가져오기 실패:", error);
     }
   };
 
-  // 신고 히스토리 목록 불러오기
+  /**
+   * 백엔드에서 신고 히스토리 목록을 가져오는 비동기 함수입니다.
+   * 현재 페이지와 설정된 필터 값을 기반으로 데이터를 요청합니다.
+   * @param {number} page - 요청할 페이지 번호
+   * @param {string} id - 관리자 ID
+   * @param {string} token - 인증 토큰
+   */
   const getReportHistory = async (page, id, token) => {
     try {
+      // 요청에 포함할 파라미터 객체를 생성합니다.
       const params = {
         id: id,
         page: page,
         pageSize: pageSize,
-        ...filters
+        ...filters // 현재 설정된 모든 필터 값을 복사하여 포함합니다.
       };
 
-      // 빈 값인 필터는 제거
+      // 파라미터 객체에서 값이 비어있는 필드는 제거합니다.
+      // (백엔드에서 불필요한 빈 값 처리를 줄이기 위함)
       Object.keys(params).forEach(key => {
         if (params[key] === '') {
           delete params[key];
         }
       });
 
+      // axios를 사용하여 GET 요청을 보냅니다.
       const res = await axios.get(`http://localhost/admin/report/history`, {
-        params: params,
+        params: params, // 동적으로 생성된 파라미터를 전달합니다.
         headers: {
-          Authorization: token
+          Authorization: token // 요청 헤더에 인증 토큰을 포함합니다.
         }
       });
 
-      console.log('response:', res);
+      console.log('response:', res); // 백엔드 응답을 콘솔에 출력합니다.
 
+      // 응답에서 loginYN (로그인 여부)를 확인합니다.
       if (res.data.loginYN) {
+        // 로그인 상태가 정상이면, 응답 데이터를 사용하여 상태를 업데이트합니다.
         const result = res.data.result;
-        setHistoryList(result.list || []);
-        setTotalPages(result.totalPage || 1);
-        setCurrentPage(result.page || page);
-        console.log('result:', result);
+        setHistoryList(result.list || []); // 신고 목록 업데이트
+        setTotalPages(result.totalPage || 1); // 전체 페이지 수 업데이트
+        setCurrentPage(result.page || page); // 현재 페이지 번호 업데이트
+        console.log('result:', result); // 결과 데이터를 콘솔에 출력합니다.
       } else {
+        // 로그인 상태가 아니면 경고창을 띄우고 로그인 페이지로 이동합니다.
         alert('관리자 로그인이 필요합니다.');
         window.location.href = '/login';
       }
     } catch (error) {
+      // 에러 발생 시 콘솔에 에러 로그를 남기고 사용자에게 알립니다.
       console.error("신고 히스토리 목록 불러오기 실패:", error);
       alert("신고 히스토리 목록을 불러오는데 실패했습니다.");
     }
   };
 
-  // 날짜 포맷팅 함수
+  // === 헬퍼(Helper) 함수 ===
+
+  /**
+   * 날짜/시간 문자열을 'YYYY.MM.DD. HH:MM' 형식으로 포맷팅하는 함수입니다.
+   * @param {string} dateString - 포맷팅할 날짜/시간 문자열
+   * @returns {string} 포맷팅된 문자열 또는 '-'
+   */
   const formatDate = (dateString) => {
-    if (!dateString) return '-';
-    const date = new Date(dateString);
+    if (!dateString) return '-'; // 입력값이 없으면 '-' 반환
+    const date = new Date(dateString); // Date 객체 생성
+    // 한국 시간 기준으로 날짜 부분 포맷팅 (YYYY.MM.DD.)
     const datePart = date.toLocaleDateString('ko-KR').replace(/ /g, '');
+    // 한국 시간 기준으로 시간 부분 포맷팅 (HH:MM)
     const timePart = date.toLocaleTimeString('ko-KR', {
       hour: '2-digit',
       minute: '2-digit',
       hour12: false
     });
-    return `${datePart} ${timePart}`;
+    return `${datePart} ${timePart}`; // 날짜와 시간 결합하여 반환
   };
 
-  // 카테고리 번호를 카테고리 이름으로 변환하는 함수
-  const getCategoryName = (cateIdx) => {
-    if (!cateIdx) return '-';
-    const category = categoryList.find(cat => cat.rep_cate_idx === cateIdx);
-    return category ? category.rep_cate_name : cateIdx;
+  // === 이벤트 핸들러 ===
+
+  /**
+   * 신고 상세보기 페이지로 이동하는 함수입니다.
+   * @param {number} repIdx - 신고 번호
+   */
+  const handleDetailView = (repIdx) => {
+    // 신고 상세보기 페이지로 이동 (새 탭에서 열기)
+    window.open(`/admin/admin-report/history/detail?rep_idx=${repIdx}`, '_blank');
   };
 
-  // 필터 변경 핸들러
+  /**
+   * 필터 입력 값(input, select)이 변경될 때 호출되는 핸들러입니다.
+   * 변경된 필터 키와 값을 받아 filters 상태를 업데이트합니다.
+   * @param {string} key - 변경된 필터의 키 (예: 'reporterId', 'category')
+   * @param {string} value - 변경된 필터의 값
+   */
   const handleFilterChange = (key, value) => {
+    // setFilters를 사용하여 이전 상태를 기반으로 새로운 상태를 만듭니다.
     setFilters(prev => ({
-      ...prev,
-      [key]: value
+      ...prev,   // 이전 필터 값들을 그대로 유지하고,
+      [key]: value // 변경된 키에 해당하는 값만 업데이트합니다.
     }));
-    setCurrentPage(1); // 필터 변경 시 첫 페이지로 이동
+    setCurrentPage(1); // 필터가 변경되면 검색 결과가 달라지므로, 첫 페이지(1)로 이동합니다.
   };
 
-  // 필터 초기화
+  /**
+   * '필터 초기화' 버튼 클릭 시 호출되는 핸들러입니다.
+   * 모든 필터 값을 초기 상태로 되돌립니다.
+   */
   const resetFilters = () => {
     setFilters({
       reporterId: '',
       reportedId: '',
       category: '',
       reportType: '',
-      sortOrder: 'desc'
+      sortOrder: 'desc' // 정렬 순서는 기본값(최신순)으로 설정합니다.
     });
-    setCurrentPage(1);
+    setCurrentPage(1); // 필터 초기화 시에도 첫 페이지로 이동합니다.
   };
 
-  // 페이지 변경 핸들러
+  /**
+   * 페이지네이션 컴포넌트에서 페이지 번호를 클릭할 때 호출되는 핸들러입니다.
+   * 클릭된 페이지 번호로 currentPage 상태를 업데이트합니다.
+   * @param {object} event - 이벤트 객체 (Material-UI Pagination에서 제공)
+   * @param {number} page - 선택된 페이지 번호
+   */
   const handlePageChange = (event, page) => {
-    setCurrentPage(page);
+    setCurrentPage(page); // currentPage 상태를 업데이트하면, useEffect가 실행되어 해당 페이지 데이터를 다시 불러옵니다.
   };
 
-  // 히스토리 목록 렌더링
+  // === 렌더링 함수 ===
+
+  /**
+   * 신고 히스토리 목록(테이블의 tbody 내용)을 렌더링하는 함수입니다.
+   * @returns {JSX.Element} 테이블 행(<tr>)들의 JSX 요소
+   */
   const renderHistoryList = () => {
+    // historyList가 비어있으면 "없음" 메시지를 표시하는 행을 반환합니다.
     if (historyList.length === 0) {
       return (
         <tr>
@@ -149,32 +226,52 @@ export default function AdminReportHistory() {
       );
     }
 
+    // historyList 배열을 map() 함수로 순회하면서 각 신고 항목을 테이블 행(<tr>)으로 변환합니다.
     return historyList.map((history) => (
-      <tr key={history.rep_idx}>
+      <tr key={history.rep_idx}> {/* 각 행의 고유 key로 rep_idx를 사용합니다. */}
         <td>{history.rep_idx}</td>
         <td>{history.reporter_id}</td>
-        <td>{history.reported_id}</td>
-        <td>{getCategoryName(history.rep_cate_idx)}</td>
+        <td>
+          {/* reported_id를 클릭 가능한 링크로 만들어 상세보기 페이지로 이동 */}
+          <span
+            className="detail-link"
+            onClick={() => handleDetailView(history.rep_idx)}
+            title="상세보기"
+          >
+            {history.reported_id}
+          </span>
+        </td>
+        {/*
+          카테고리 이름을 표시합니다.
+          백엔드에서 받은 `history.cate_name`을 직접 사용합니다.
+          만약 `cate_name`이 없으면 `rep_cate_idx`를, 그것도 없으면 '-'를 표시합니다.
+        */}
+        <td>{history.cate_name || history.rep_cate_idx || '-'}</td>
         <td>{history.rep_item_type}</td>
-        <td>{formatDate(history.report_at)}</td>
-        <td>{formatDate(history.process_date)}</td>
+        <td>{formatDate(history.report_at)}</td> {/* 날짜 포맷팅 함수 사용 */}
+        <td>{formatDate(history.process_date)}</td> {/* 날짜 포맷팅 함수 사용 */}
         <td>{history.rep_admin_id}</td>
       </tr>
     ));
   };
 
-  // 페이지네이션 렌더링
+  /**
+   * 페이지네이션 컴포넌트를 렌더링하는 함수입니다.
+   * @returns {JSX.Element | null} 페이지네이션 JSX 요소 또는 null
+   */
   const renderPagination = () => {
+    // historyList가 비어있으면 페이지네이션을 표시하지 않습니다.
     if (historyList.length === 0) return null;
 
+    // Material-UI의 Pagination 컴포넌트를 사용하여 페이지네이션 UI를 렌더링합니다.
     return (
       <tr>
-        <td colSpan="8">
-          <Stack spacing={2} sx={{ alignItems: 'center', mt: 2, mb: 2 }}>
+        <td colSpan="8"> {/* 테이블 전체 너비를 차지하도록 colSpan 설정 */}
+          <Stack spacing={2} sx={{ alignItems: 'center', mt: 2, mb: 2 }}> {/* 가운데 정렬 및 여백 설정 */}
             <Pagination
-              count={totalPages}
-              page={currentPage}
-              onChange={handlePageChange}
+              count={totalPages}    // 전체 페이지 수
+              page={currentPage}    // 현재 페이지 번호
+              onChange={handlePageChange} // 페이지 변경 시 호출될 핸들러
             />
           </Stack>
         </td>
@@ -182,86 +279,93 @@ export default function AdminReportHistory() {
     );
   };
 
+  // === 컴포넌트 JSX 반환 ===
+  // 이 컴포넌트가 실제로 화면에 그려낼 HTML 구조를 반환합니다.
   return (
     <div className="inbox-container">
       <div className="inbox-header">
         <h1>신고 히스토리</h1>
       </div>
 
-      {/* 필터 섹션 */}
-      <div className="filter-section" style={{ marginBottom: '20px', padding: '20px', backgroundColor: '#f5f5f5', borderRadius: '8px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px', marginBottom: '15px' }}>
-          <div>
+      {/* 필터 섹션 (className 적용) */}
+      <div className="filter-section">
+        {/* --- 첫 번째 줄 필터 --- */}
+        <div className="filter-grid">
+          {/* 신고자 ID 필터 */}
+          <div className="filter-item"> {/* 각 필터를 .filter-item 으로 감쌉니다. */}
             <label>신고자 ID:</label>
             <input
               type="text"
               value={filters.reporterId}
               onChange={(e) => handleFilterChange('reporterId', e.target.value)}
               placeholder="신고자 ID 입력"
-              style={{ width: '100%', padding: '8px', marginTop: '5px' }}
+            // style 속성 제거
             />
           </div>
-          <div>
+          {/* 신고 대상 ID 필터 */}
+          <div className="filter-item">
             <label>신고 대상 ID:</label>
             <input
               type="text"
               value={filters.reportedId}
               onChange={(e) => handleFilterChange('reportedId', e.target.value)}
               placeholder="신고 대상 ID 입력"
-              style={{ width: '100%', padding: '8px', marginTop: '5px' }}
+            // style 속성 제거
             />
           </div>
-          <div>
+          {/* 카테고리 필터 */}
+          <div className="filter-item">
             <label>카테고리:</label>
             <select
               value={filters.category}
               onChange={(e) => handleFilterChange('category', e.target.value)}
-              style={{ width: '100%', padding: '8px', marginTop: '5px' }}
+            // style 속성 제거
             >
               <option value="">선택</option>
               {categoryList.map((category) => (
                 <option key={category.rep_cate_idx} value={category.rep_cate_idx}>
-                  {category.rep_cate_name}
+                  {category.cate_name}
                 </option>
               ))}
             </select>
           </div>
-          <div>
+        </div> {/* --- 첫 번째 줄 필터 끝 --- */}
+
+        {/* --- 두 번째 줄 필터 --- */}
+        <div className="filter-grid">
+          {/* 신고 유형 필터 */}
+          <div className="filter-item">
             <label>신고 유형:</label>
             <input
               type="text"
               value={filters.reportType}
               onChange={(e) => handleFilterChange('reportType', e.target.value)}
               placeholder="신고 유형 입력"
-              style={{ width: '100%', padding: '8px', marginTop: '5px' }}
+            // style 속성 제거
             />
           </div>
-          <div>
+          {/* 정렬 순서 필터 */}
+          <div className="filter-item">
             <label>정렬 순서:</label>
             <select
               value={filters.sortOrder}
               onChange={(e) => handleFilterChange('sortOrder', e.target.value)}
-              style={{ width: '100%', padding: '8px', marginTop: '5px' }}
+            // style 속성 제거
             >
               <option value="desc">최신순</option>
               <option value="asc">오래된순</option>
             </select>
           </div>
-        </div>
+        </div> {/* --- 두 번째 줄 필터 끝 --- */}
+
+        {/* 필터 초기화 버튼 */}
         <button
           onClick={resetFilters}
-          style={{
-            padding: '10px 20px',
-            backgroundColor: '#6c757d',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
+          className="reset-button" // className 적용, style 속성 제거
         >
           필터 초기화
         </button>
-      </div>
+      </div> {/* --- 필터 섹션 끝 --- */}
 
       {/* 테이블 */}
       <table className="report-table">
@@ -279,7 +383,20 @@ export default function AdminReportHistory() {
         </thead>
         <tbody>
           {renderHistoryList()}
-          {renderPagination()}
+          {/* 페이지네이션 (MUI Stack 대신 div와 CSS 클래스 사용) */}
+          {historyList.length > 0 && ( // historyList가 있을 때만 렌더링
+            <tr>
+              <td colSpan="8">
+                <div className="pagination-container"> {/* 중앙 정렬용 컨테이너 */}
+                  <Pagination
+                    count={totalPages}
+                    page={currentPage}
+                    onChange={handlePageChange}
+                  />
+                </div>
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
     </div>
