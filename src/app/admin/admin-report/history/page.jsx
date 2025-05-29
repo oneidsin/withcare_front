@@ -161,11 +161,11 @@ export default function AdminReportHistory() {
 
   /**
    * 신고 상세보기 페이지로 이동하는 함수입니다.
-   * @param {number} repIdx - 신고 번호
+   * @param {number} rep_list_idx - 신고 번호
    */
-  const handleDetailView = (repIdx) => {
+  const handleDetailView = (rep_list_idx) => {
     // 신고 상세보기 페이지로 이동 (새 탭에서 열기)
-    window.open(`/admin/admin-report/history/detail?rep_idx=${repIdx}`, '_blank');
+    window.open(`/admin/admin-report/history/detail?rep_list_idx=${rep_list_idx}`, '_blank');
   };
 
   /**
@@ -228,14 +228,14 @@ export default function AdminReportHistory() {
 
     // historyList 배열을 map() 함수로 순회하면서 각 신고 항목을 테이블 행(<tr>)으로 변환합니다.
     return historyList.map((history) => (
-      <tr key={history.rep_idx}> {/* 각 행의 고유 key로 rep_idx를 사용합니다. */}
-        <td>{history.rep_idx}</td>
+      <tr key={history.rep_list_idx}> {/* 각 행의 고유 key로 rep_idx를 사용합니다. */}
+        <td>{history.rep_list_idx}</td>
         <td>{history.reporter_id}</td>
         <td>
           {/* reported_id를 클릭 가능한 링크로 만들어 상세보기 페이지로 이동 */}
           <span
             className="detail-link"
-            onClick={() => handleDetailView(history.rep_idx)}
+            onClick={() => handleDetailView(history.rep_list_idx)}
             title="상세보기"
           >
             {history.reported_id}

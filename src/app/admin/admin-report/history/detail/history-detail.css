@@ -1,0 +1,148 @@
+/* 신고 상세 보기 컨테이너 */
+.report-detail-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #fff;
+}
+
+/* 제목 스타일 */
+.report-detail-title {
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 30px;
+  padding: 10px 15px;
+  background-color: #fbe8dc;
+  border-radius: 5px;
+  color: #333;
+}
+
+/* 섹션 스타일 */
+.report-detail-section {
+  display: flex;
+  margin-bottom: 25px;
+  position: relative;
+}
+
+/* 숫자 원 스타일 */
+.section-number {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: #c10000;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin-right: 15px;
+  flex-shrink: 0;
+}
+
+/* 섹션 내용 스타일 */
+.section-content {
+  flex-grow: 1;
+  border: 1px solid #e0e0e0;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+/* 정보 행 스타일 */
+.info-row {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+/* 정보 항목 스타일 */
+.info-item {
+  flex: 1;
+  min-width: 200px;
+  padding: 10px 15px;
+}
+
+.info-item label {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 5px;
+  color: #666;
+}
+
+.info-item input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  background-color: #f9f9f9;
+}
+
+/* 신고 내용 박스 스타일 */
+.report-content-box {
+  padding: 15px;
+  min-height: 100px;
+  background-color: #fff;
+}
+
+.report-content-box p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* 신고자 목록 스타일 */
+.reporter-list {
+  padding: 10px 15px;
+}
+
+.reporter-item {
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.reporter-item:last-child {
+  border-bottom: none;
+}
+
+.reporter-item p {
+  margin: 5px 0;
+}
+
+.reporter-item p:first-child {
+  font-weight: bold;
+  color: #333;
+}
+
+.reporter-comment {
+  color: #666;
+}
+
+/* 버튼 컨테이너 스타일 */
+.report-detail-buttons {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 30px;
+}
+
+/* 뒤로 가기 버튼 스타일 */
+.back-button {
+  background-color: #0070f3;
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  margin-left: 15px;
+}
+
+.back-button:hover {
+  background-color: #0058c7;
+}
+
+/* 로딩 상태 스타일 */
+.loading {
+  text-align: center;
+  padding: 30px;
+  font-size: 16px;
+  color: #666;
+}
