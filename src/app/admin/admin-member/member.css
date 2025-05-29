@@ -114,3 +114,22 @@
     font-weight: 600;
     border: none;
 }
+
+.select-bar{
+    padding: 3px;
+    font-size: 14px;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+}
+
+.select-bar:hover {
+    border-color: #999;
+}
+
+.select-bar option {
+    padding: 3px;
+}
+
+.select-bar option:hover {
+    background-color: #f0f0f0;
+}

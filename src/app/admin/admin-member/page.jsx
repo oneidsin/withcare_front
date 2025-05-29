@@ -85,17 +85,17 @@ export default function AdminMemberPage() {
                     <h2>유저 리스트</h2>
                     <div>
 
-                        <select value={sortField} onChange={e => setSortField(e.target.value)}>
+                        <select className="select-bar" value={sortField} onChange={e => setSortField(e.target.value)}>
                             <option value="">정렬 기준 선택</option>
                             <option value="join_date">가입일</option>
                             <option value="access_date">최근접속일</option>
                         </select>
-
-                        <select value={sortOrder} onChange={e => setSortOrder(e.target.value)}>
+                        &nbsp;&nbsp;
+                        <select className="select-bar" value={sortOrder} onChange={e => setSortOrder(e.target.value)}>
                             <option value="DESC">내림차순</option>
                             <option value="ASC">오름차순</option>
                         </select>
-
+                        &nbsp;&nbsp;
                         <input
                             type="text"
                             value={searchId}
@@ -119,14 +119,14 @@ export default function AdminMemberPage() {
                     <tr>
                         <th>회원 ID</th>
                         <th>
-                            <select value={adminFilter} onChange={e => setAdminFilter(e.target.value)}>
+                            <select className="select-bar" value={adminFilter} onChange={e => setAdminFilter(e.target.value)}>
                                 <option value="">회원 전체</option>
                                 <option value="Y">관리자만</option>
                                 <option value="N">일반회원만</option>
                             </select>
                         </th>
                         <th>
-                            <select value={blockFilter} onChange={e => setBlockFilter(e.target.value)}>
+                            <select className="select-bar" value={blockFilter} onChange={e => setBlockFilter(e.target.value)}>
                                 <option value="">차단 여부 전체</option>
                                 <option value="Y">차단된 유저</option>
                                 <option value="N">차단 안됨</option>
@@ -135,7 +135,7 @@ export default function AdminMemberPage() {
                         <th>차단 시작일</th>
                         <th>차단 종료일</th>
                         <th>
-                            <select value={delFilter} onChange={e => setDelFilter(e.target.value)}>
+                            <select className="select-bar" value={delFilter} onChange={e => setDelFilter(e.target.value)}>
                                 <option value="">탈퇴 여부 전체</option>
                                 <option value="Y">탈퇴한 유저</option>
                                 <option value="N">탈퇴 안함</option>
