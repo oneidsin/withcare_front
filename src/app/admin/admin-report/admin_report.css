@@ -23,6 +23,13 @@
   color: #333;
 }
 
+/* 버튼 그룹 스타일 */
+.inbox-header>div {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
 /* 새 카테고리 입력창과 버튼 */
 .inbox-header input[type="text"] {
   padding: 8px 12px;
@@ -242,4 +249,25 @@
 
 .report-cate-edit-btn:active {
   background-color: #0046a6;
+}
+
+/* 신고 히스토리 버튼 스타일 */
+.report-history-btn {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.9em;
+}
+
+.report-history-btn:hover {
+  background-color: #218838;
+  transition: background-color 0.2s ease;
+}
+
+.report-history-btn:active {
+  background-color: #1e7e34;
 }
