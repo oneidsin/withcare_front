@@ -12,6 +12,7 @@ export default function BoardWrite() {
         blind_yn: false,
         view_level: '',
         parent_board_idx: '',
+        com_yn: true  // 기본값은 댓글 허용
     });
 
     const [boardList, setBoardList] = useState([]);
@@ -84,7 +85,8 @@ export default function BoardWrite() {
                     board_name: '',
                     lv_idx: '',
                     anony_yn: false,
-                    blind_yn: false
+                    blind_yn: false,
+                    com_yn: true
                 });
                 setSelectedIdx(null);
                 setNewBoardName('');
@@ -104,6 +106,7 @@ export default function BoardWrite() {
             board_name: newBoardName,
             parent_board_idx: '',
             view_level: '',
+            com_yn: true
         }));
         setSelectedIdx(0);
     };
@@ -183,6 +186,14 @@ export default function BoardWrite() {
                         <div className="form-radio">
                             <label><input type="radio" name="blind_yn" checked={form.blind_yn === true} onChange={() => handleRadioChange("blind_yn", true)} /> 활성화</label>
                             <label><input type="radio" name="blind_yn" checked={form.blind_yn === false} onChange={() => handleRadioChange("blind_yn", false)} /> 비활성화</label>
+                        </div>
+                    </div>
+
+                    <div className="form-group">
+                        <label>댓글 허용</label>
+                        <div className="form-radio">
+                            <label><input type="radio" name="com_yn" checked={form.com_yn === true} onChange={() => handleRadioChange("com_yn", true)} /> 허용</label>
+                            <label><input type="radio" name="com_yn" checked={form.com_yn === false} onChange={() => handleRadioChange("com_yn", false)} /> 비허용</label>
                         </div>
                     </div>
 

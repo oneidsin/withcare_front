@@ -172,7 +172,7 @@ export default function PostDetailPage() {
                 <div className="meta-left">
                     <div className="meta-author-line">
                         {/*<img className="avatar" src="/default-avatar.png" alt="avatar" />*/}  {/*프로필 사진 나오게 해야 함!*/}
-                        <span>{post.id}</span>
+                        <span>{post.id || '익명'}</span>
                         <span className="badge">관리자</span> {/*배지 나오게 해야 함!*/}
                     </div>
                     <div className="meta-date-line">

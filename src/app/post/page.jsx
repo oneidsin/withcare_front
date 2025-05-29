@@ -95,6 +95,7 @@ export default function PostPage() {
                 <tr>
                     <th>글번호</th>
                     <th>제목</th>
+                    <th>작성자</th>
                     <th>조회</th>
                     <th>추천</th>
                     <th>날짜</th>
@@ -107,8 +108,9 @@ export default function PostPage() {
                         <td>
                             {item.post.post_blind_yn && '🔒 '}
                             {item.post.post_title}
-                            {item.post.com_yn && <span> 🖼</span>}
+                            {item.photos && item.photos.length > 0 && <span> 📷</span>}
                         </td>
+                        <td>{item.post.id || '익명'}</td>
                         <td>{item.post.post_view_cnt}</td>
                         <td>{item.likes || 0}</td>
                         <td>{item.post.post_create_date?.slice(0, 10)}</td>
