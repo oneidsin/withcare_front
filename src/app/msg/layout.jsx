@@ -7,6 +7,8 @@ import { AiOutlineMail } from "react-icons/ai";
 import { AiOutlineInbox } from "react-icons/ai";
 import { AiOutlineSend } from "react-icons/ai";
 import { AiOutlineEyeInvisible } from "react-icons/ai";
+import React from "react";
+import styles from '@/components/layout/SidebarLayout.module.css';
 
 // 사용자 정보 타입 정의 (예시)
 // 실제 Redux store 구조에 맞게 수정하세요.
@@ -32,7 +34,17 @@ export default function MsgLayout({ children }) {
   const isLoggedIn = true; // 로그인 상태 예시
   // ---------------------------------------------------------
 
-  const sidebarContent = (
+  const writeBtn = (
+    <div className={styles['write-button-container']}>
+      <button className={styles['write-button']}>
+        쪽지쓰기
+      </button>
+    </div>
+  );
+
+    const sidebarContent = (
+    <div>
+
     <ul>
       <li>
         <Link
@@ -67,15 +79,18 @@ export default function MsgLayout({ children }) {
         </Link>
       </li>
     </ul>
+    </div>
   );
 
   return (
     <SidebarLayout
       profileImage={userInfo.profilePicUrl}
       userName={userInfo.name}
+      writeButton={writeBtn}
       sidebarContent={sidebarContent}
     >
-      {children}
+
+        {children}
     </SidebarLayout>
   );
 }

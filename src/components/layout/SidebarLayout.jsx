@@ -6,6 +6,7 @@ export default function SidebarLayout({
   children,
   profileImage = '/defaultProfileImg.png',
   userName = '',
+  writeButton,
   sidebarContent
 }) {
   return (
@@ -21,6 +22,9 @@ export default function SidebarLayout({
           />
           <div className={styles['user-name']}>{userName}</div>
         </div>
+
+        {/* 작성하기 버튼 */}
+        {writeButton}
 
         {/* 사이드바 내용 */}
         <nav className={styles['sidebar-nav']}>

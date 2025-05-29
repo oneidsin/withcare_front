@@ -85,8 +85,8 @@ export default function Outbox() {
                   checked={selectMsg.size === list.length && list.length > 0}
               />
             </th>
-            <th>받은 사용자</th>
-            <th>제 목</th>
+            <th>받은이</th>
+            <th>내 용</th>
             <th>날 짜</th>
             <th>확인</th>
             <th>삭제</th>
@@ -131,11 +131,6 @@ export default function Outbox() {
               </Stack>
             </div>
         )}
-
-        {/* 하단 작성하기 버튼 */}
-        <div className='write-container'>
-          <button className='write-button'>작성하기</button>
-        </div>
       </div>
   );
 }
