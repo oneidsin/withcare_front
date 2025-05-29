@@ -6,6 +6,7 @@ import axios from 'axios'
 
 export default function HomePage() {
     const [rankingList, setRankingList] = useState([]);
+    const [isAdmin, setIsAdmin] = useState(false);
 
     useEffect(() => {
         // 랭킹 정보 가져오기
@@ -16,6 +17,28 @@ export default function HomePage() {
             .catch(err => {
                 console.error('랭킹 정보 로딩 실패:', err);
             });
+
+        const checkAdminPrivilege = async () => {
+            const token = sessionStorage.getItem('token');
+            if (!token) return;
+
+            try {
+                const response = await fetch('http://localhost:80/admin/check', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': token
+                    }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    setIsAdmin(data.isAdmin);
+                }
+            } catch (error) {
+                console.error('Error checking admin privilege:', error);
+            }
+        };
+
+        checkAdminPrivilege();
     }, []);
 
     return (
@@ -67,12 +90,14 @@ export default function HomePage() {
                 <p>봐도 됩니다</p>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <Link href="admin/admin-board">
-                    <button className="button">관리자 페이지로 이동</button>
-                </Link>
-            </div>
-
+            {/* 관리자 페이지 이동 버튼 - 조건부 렌더링 */}
+            {sessionStorage.getItem('loginSuccess') && isAdmin && (
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <Link href="/admin">
+                        <button className="button">관리자 페이지로 이동</button>
+                    </Link>
+                </div>
+            )}
         </div>
     );
 }
