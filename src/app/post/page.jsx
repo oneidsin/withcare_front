@@ -76,7 +76,7 @@ export default function PostPage() {
             setPosts(res.data.list || []);
             setTotalPages(res.data.totalPages || 1);
         } catch (e) {
-            alert("게시글 로딩 실패");
+            // 알림 필요 없음
         }
     };
 

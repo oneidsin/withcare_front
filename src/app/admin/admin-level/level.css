@@ -64,6 +64,7 @@
 .level-actions {
     display: flex;
     gap: 0.5rem;
+    margin-top: auto;
 }
 
 .level-button {
@@ -87,7 +88,7 @@
 
 .level-add-button {
     width: 190px;
-    height: 300px;
+    height: 345px;
     display: flex;
     align-items: center;
     justify-content: center;
