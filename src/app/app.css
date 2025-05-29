@@ -397,5 +397,39 @@ footer {
     align-items: center;
     height: 28px;
     font-weight: bold;
-    margin-right: 12px;
+    margin-right: 18px;
+}
+
+.ranking-item-small {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: center;
+    gap: 40px;
+    padding: 8px 20px;
+    font-size: 0.9em;
+    justify-content: center;
+}
+
+.member-name {
+    height: 28px;
+    color: #333;
+    font-weight: bold;
+    text-align: center;
+}
+
+.level-name {
+    color: #0066cc;
+    align-items: flex-start;
+    height: 28px;
+    text-align: center;
+}
+
+.level-info {
+    display: flex;
+    justify-content: center;
+    width: 100px;
+}
+
+.level-icon{
+    width: 24px;
 }

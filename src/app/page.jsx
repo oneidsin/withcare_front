@@ -1,8 +1,23 @@
 "use client"
 
 import Link from 'next/link'
+import { useState, useEffect } from 'react'
+import axios from 'axios'
 
 export default function HomePage() {
+    const [rankingList, setRankingList] = useState([]);
+
+    useEffect(() => {
+        // 랭킹 정보 가져오기
+        axios.get('http://localhost/ranking')
+            .then(res => {
+                setRankingList(res.data);
+            })
+            .catch(err => {
+                console.error('랭킹 정보 로딩 실패:', err);
+            });
+    }, []);
+
     return (
         <div className="main-layout">
             <div className="top-row">
@@ -26,8 +41,21 @@ export default function HomePage() {
                     <div className="card small-card">
                         <h2>승급자</h2>
                         <hr style={{ border: 'none', borderTop: '1px solid #ccc', margin: '10px 0' }} />
-                        <p>안녕하세요 🔥</p>
-                        <p>안녕하겠나요 🥈</p>
+                        {rankingList.slice(0, 3).map((member, idx) => (
+                            <div key={idx} className="ranking-item-small">
+                                <span className="member-name">{member.id}</span>
+                                    <span className="level-name">{member.lv_name}</span>
+                                <div className="level-info">
+                                    {member.lv_icon && (
+                                        <img
+                                            src={member.lv_icon}
+                                            alt="레벨 아이콘"
+                                            className="level-icon"
+                                        />
+                                    )}
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>

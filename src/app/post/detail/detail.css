@@ -30,8 +30,8 @@
     gap: 8px;
     padding: 16px 32px;
     border-radius: 8px;
-    background: white;
-    border: 1px solid rgba(135, 209, 255, 0.3);
+    background-color: white;
+    border: 1px solid #e0e0e0;
     cursor: pointer;
     transition: all 0.2s ease;
     min-width: 120px;
@@ -134,7 +134,9 @@
 }
 
 /* 등록 버튼 포함 모든 버튼에 공통 스타일 */
-.detail-container button {
+.detail-button,
+.comment-submit,
+.list-button{
     background-color: rgba(174, 226, 255, 0.4);
     color: #2d2d2d;
     border: 1px solid rgba(135, 209, 255, 0.5);
@@ -146,7 +148,9 @@
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
-.detail-container button:hover {
+.detail-button:hover,
+.comment-submit:hover,
+.list-button:hover{
     background-color: #ffffff;
     transform: scale(1.02);
 }
