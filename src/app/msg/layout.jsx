@@ -36,16 +36,17 @@ export default function MsgLayout({ children }) {
 
   const writeBtn = (
     <div className={styles['write-button-container']}>
-      <button className={styles['write-button']}>
-        쪽지쓰기
-      </button>
+      <Link href="/msg/send" className={styles['write-link']}>
+        <button className={styles['write-button']}>
+          쪽지 쓰기
+        </button>
+      </Link>
     </div>
   );
 
     const sidebarContent = (
     <div>
-
-    <ul>
+      <ul>
       <li>
         <Link
           href="/msg"

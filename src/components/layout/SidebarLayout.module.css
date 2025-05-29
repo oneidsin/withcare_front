@@ -125,6 +125,13 @@
   background-color: rgba(156, 206, 255, 0.8); /* hover 시 살짝 더 진하게 */
 }
 
+/* 쪽지쓰기 링크 스타일 */
+.write-link {
+  text-decoration: none;
+  width: 100%;
+  display: block;
+}
+
 
 
 
