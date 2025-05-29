@@ -5,6 +5,7 @@ import { BsTrash } from 'react-icons/bs';
 import '../msg.css';
 import axios from "axios";
 import {Pagination, Stack} from "@mui/material"; // 받은 쪽지함과 동일한 CSS 사용
+import Link from 'next/link';
 
 export default function Outbox() {
 
@@ -69,7 +70,6 @@ export default function Outbox() {
         <div className='inbox-header'>
           <h1> 📭 보낸 쪽지함 </h1>
           <div className='action-buttons'>
-            <button className='block-button'>차단</button>
             <button className='delete-button'>삭제</button>
           </div>
         </div>
@@ -105,9 +105,11 @@ export default function Outbox() {
                 </td>
                 <td>{item.receiver_id}</td>
                 <td className='subject-cell'>
-                  {item.msg_content.length > 30 
-                    ? `${item.msg_content.substring(0, 30)}...` 
-                    : item.msg_content}
+                  <Link href={`/msg/detail?id=${item.msg_idx}&type=outbox`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                    {item.msg_content.length > 30 
+                      ? `${item.msg_content.substring(0, 30)}...` 
+                      : item.msg_content}
+                  </Link>
                 </td>
                 <td>{new Date(item.msg_sent_at).toLocaleDateString()}</td>
                 <td>{item.msg_read ? '읽음' : '읽지 않음'}</td>
