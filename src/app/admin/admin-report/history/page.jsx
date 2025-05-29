@@ -164,10 +164,11 @@ export default function AdminReportHistory() {
 
   /**
    * 신고 상세보기 페이지로 이동하는 함수입니다.
-   * @param {number} rep_list_idx - 신고 번호
+   * @param {number} rep_list_idx - 신고 리스트 번호
    */
   const handleDetailView = (rep_list_idx) => {
     // 신고 상세보기 페이지로 이동 (새 탭에서 열기)
+    console.log('rep_list_idx:', rep_list_idx);
     router.push(`/admin/admin-report/history/detail?rep_list_idx=${rep_list_idx}`);
   };
 
@@ -218,7 +219,6 @@ export default function AdminReportHistory() {
    * @returns {JSX.Element} 테이블 행(<tr>)들의 JSX 요소
    */
   const renderHistoryList = () => {
-    // historyList가 비어있으면 "없음" 메시지를 표시하는 행을 반환합니다.
     if (historyList.length === 0) {
       return (
         <tr>
@@ -229,13 +229,11 @@ export default function AdminReportHistory() {
       );
     }
 
-    // historyList 배열을 map() 함수로 순회하면서 각 신고 항목을 테이블 행(<tr>)으로 변환합니다.
     return historyList.map((history) => (
-      <tr key={history.rep_list_idx}> {/* 각 행의 고유 key로 rep_idx를 사용합니다. */}
+      <tr key={history.rep_list_idx}>
         <td>{history.rep_list_idx}</td>
         <td>{history.reporter_id}</td>
         <td>
-          {/* reported_id를 클릭 가능한 링크로 만들어 상세보기 페이지로 이동 */}
           <span
             className="detail-link"
             onClick={() => handleDetailView(history.rep_list_idx)}
@@ -244,15 +242,10 @@ export default function AdminReportHistory() {
             {history.reported_id}
           </span>
         </td>
-        {/*
-          카테고리 이름을 표시합니다.
-          백엔드에서 받은 `history.cate_name`을 직접 사용합니다.
-          만약 `cate_name`이 없으면 `rep_cate_idx`를, 그것도 없으면 '-'를 표시합니다.
-        */}
         <td>{history.cate_name || history.rep_cate_idx || '-'}</td>
         <td>{history.rep_item_type}</td>
-        <td>{formatDate(history.report_at)}</td> {/* 날짜 포맷팅 함수 사용 */}
-        <td>{formatDate(history.process_date)}</td> {/* 날짜 포맷팅 함수 사용 */}
+        <td>{formatDate(history.report_at)}</td>
+        <td>{formatDate(history.process_date)}</td>
         <td>{history.rep_admin_id}</td>
       </tr>
     ));
@@ -386,11 +379,10 @@ export default function AdminReportHistory() {
         </thead>
         <tbody>
           {renderHistoryList()}
-          {/* 페이지네이션 (MUI Stack 대신 div와 CSS 클래스 사용) */}
-          {historyList.length > 0 && ( // historyList가 있을 때만 렌더링
+          {historyList.length > 0 && (
             <tr>
               <td colSpan="8">
-                <div className="pagination-container"> {/* 중앙 정렬용 컨테이너 */}
+                <div className="pagination-container">
                   <Pagination
                     count={totalPages}
                     page={currentPage}

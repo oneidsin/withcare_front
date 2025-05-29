@@ -33,7 +33,7 @@ export default function AdminReportHistoryDetail() {
         { headers: { Authorization: token } }
       );
       console.log("res : ", res.data);
-      setReportDetail(res.data);
+      setReportDetail(res.data.result[0]);
     } catch (error) {
       console.log("신고 히스토리 상세정보 불러오기 실패 : ", error);
     }
@@ -63,10 +63,19 @@ export default function AdminReportHistoryDetail() {
         </div>
       </div>
       <div className="inbox-content">
-        <input type="text" placeholder="신고 대상자 ID" />
-        <input type="text" placeholder="신고 사유" />
-        <button>처리 완료</button>
+        {reportDetail ? (
+          <>
+            <p style={{ backgroundColor: '#228B22', color: 'white', padding: '10px', borderRadius: '5px' }}>신고 대상자 ID : {reportDetail.reported_id}</p><br />
+            <p style={{ backgroundColor: '#228B22', color: 'white', padding: '10px', borderRadius: '5px' }}>신고 카테고리 : {reportDetail.cate_name}</p><br />
+            <p style={{ backgroundColor: '#228B22', color: 'white', padding: '10px', borderRadius: '5px' }}>신고일 : {formatDate(reportDetail.report_at)}</p><br />
+            <p style={{ backgroundColor: '#228B22', color: 'white', padding: '10px', borderRadius: '5px' }}>처리일 : {formatDate(reportDetail.process_date)}</p><br />
+            <button>처리 완료</button>
+          </>
+        ) : (
+          <p>로딩 중</p>
+        )}
       </div>
+
 
       {/* 신고 히스토리 내용 */}
       <div className="report-history-box">
@@ -74,15 +83,11 @@ export default function AdminReportHistoryDetail() {
         <div className="content-box">
           {reportDetail ? (
             <div>
-              <p><strong>신고자 ID:</strong> {reportDetail.reporter_id || '-'}</p>
-              <p><strong>신고 대상자 ID:</strong> {reportDetail.reported_id || '-'}</p>
-              <p><strong>신고 사유:</strong> {reportDetail.report_reason || '-'}</p>
-              <p><strong>신고 내용:</strong> {reportDetail.report_content || '-'}</p>
-              <p><strong>신고 일시:</strong> {formatDate(reportDetail.report_date)}</p>
-              <p><strong>신고 상태:</strong> {reportDetail.report_status || '-'}</p>
+              <p>{reportDetail.reported_content}</p>
+
             </div>
           ) : (
-            <p>로딩 중...</p>
+            <p>로딩 중</p>
           )}
         </div>
       </div>
@@ -91,9 +96,14 @@ export default function AdminReportHistoryDetail() {
       <div className="report-process-box">
         <h3>신고 처리 사유</h3>
         <div className="content-box">
-          <div>
-
-          </div>
+          {reportDetail ? (
+            <div>
+              <p>처리 관리자 : {reportDetail.rep_admin_id || '-'}</p>
+              <textarea rows={10} cols={60} name="rep_reason" id="rep_reason" value={reportDetail.rep_reason} readOnly></textarea>
+            </div>
+          ) : (
+            <p>로딩 중</p>
+          )}
         </div>
       </div>
     </div>

@@ -21,7 +21,7 @@
 .inbox-content {
   display: flex;
   flex-direction: row;
-  gap: 30px;
+  gap: 10;
   justify-content: space-between;
   align-items: center;
   text-decoration: none;
@@ -82,4 +82,15 @@
   font-weight: 600;
   display: inline-block;
   min-width: 120px;
+}
+
+.content-box textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  resize: none;
+  font-size: 14px;
+  line-height: 1.5;
 }
