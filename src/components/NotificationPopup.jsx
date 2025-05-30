@@ -60,6 +60,17 @@ export default function NotificationPopup() {
     return `${Math.floor(diffInMinutes / 1440)}일 전`;
   };
 
+  // 알림 불러오기
+  const fetchNotifications = async () => {
+    try {
+      const res = await axios.get(`http://localhost/noti/list/${id}`);
+      console.log(res.data);
+      dispatch(setNotifications(res.data));
+    } catch (error) {
+      console.error('알림 불러오기 실패:', error);
+    }
+  };
+
   return (
     <div className="notification-popup" ref={popupRef}>
       <div className="notification-header">
