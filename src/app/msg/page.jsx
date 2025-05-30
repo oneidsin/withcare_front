@@ -68,6 +68,8 @@ export default function Inbox() {
     }
   }
 
+
+
   // 전체 선택/해제 핸들러
   const handleSelectAll = (e) => {
     if (e.target.checked) {
@@ -96,6 +98,81 @@ export default function Inbox() {
       dispatch(fetchInbox({ id: currentUserId, page }));
     }
   };
+
+
+
+  // 선택한 쪽지 보관
+  const handleSave = async () => {
+    const id = sessionStorage.getItem('id');
+    const token = sessionStorage.getItem('token');
+
+    if(selectMsg.size == 0) {
+      alert('보관할 쪽지를 선택해주세요.');
+      return;
+    }
+
+    if (!window.confirm('선택한 쪽지를 보관하시겠습니까?')){
+      return;
+    }
+
+    // 선택한 모든 쪽지 보관
+    for (const msgId of selectMsg) {
+      await axios.put(
+          `http://localhost/msg/save/inbox/${id}/${msgId}`,
+          {},
+          { headers: { Authorization: token } }
+      );
+    }
+
+    // 보관 후 목록 새로고침
+    setSelectMsg(new Set());
+    dispatch(fetchInbox({ id: id, page: currentPage }));
+    };
+
+    // 단일 쪽지 보관
+    const handleSingleSave = async (msgId) => {
+      const id = sessionStorage.getItem('id');
+      const token = sessionStorage.getItem('token');
+
+      if (!window.confirm('이 쪽지를 보관하시겠습니까?')) {
+        return;
+      }
+
+      await axios.put(
+          `http://localhost/msg/save/inbox/${id}/${msgId}`,
+          {},
+          { headers: { Authorization: token } }
+      );
+
+      // 보관 후 목록 새로고침
+      dispatch(fetchInbox({ id: id, page: currentPage }));
+    };
+
+    useEffect(() => {
+      const currentUserId = sessionStorage.getItem('id');
+      if (currentUserId) {
+        dispatch(fetchInbox({ id: currentUserId, page: 1 }));
+      }
+    }, [dispatch]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   // 선택한 쪽지 삭제
   const handleDelete = async () => {
@@ -151,6 +228,8 @@ export default function Inbox() {
     }
   }, [dispatch]); // 초기 로딩시에는 1페이지 표출
 
+
+
   // MessageList 컴포넌트
   const MsgList = () => {
 
@@ -197,6 +276,7 @@ export default function Inbox() {
         <h1> 📬 받은 쪽지함 </h1>
         <div className='action-buttons'>
           <button className='block-button' onClick={() => { userBlock() }}>차단</button>
+          <button className='block-button' onClick={handleSave}>보관</button>
           <button className='delete-button' onClick={handleDelete}>삭제</button>
         </div>
       </div>
@@ -238,6 +318,5 @@ export default function Inbox() {
           </Stack>
         </div>
       )}
-    </div>
-  );
+    </div>);
 }

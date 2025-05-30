@@ -60,6 +60,7 @@ const msgSlice = createSlice({
             });
             }
         },
+
     extraReducers: (builder) => {
         builder
             .addCase(fetchInbox.fulfilled, (state, action) => {
