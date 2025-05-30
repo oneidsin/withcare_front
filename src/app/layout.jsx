@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import './app.css';
 import LoginOutlinedIcon from '@mui/icons-material/LoginOutlined';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
@@ -13,6 +14,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { store } from "@/redux/store";
 import SSEClient from "@/components/SSEClient";
+import NotificationPopup from "@/components/NotificationPopup";
+import { togglePopup } from "@/redux/notificationSlice";
 import axios from "axios";
 
 export default function RootLayout({ children }) {
@@ -89,40 +92,11 @@ export default function RootLayout({ children }) {
       <body>
         <Provider store={store}>
           <SSEClient />
-          <header className="header">
-            <Link href="/">
-              <img src="/logo.png" alt="withcare 로고" className="logo" />
-            </Link>
-            <div className="header-right">
-              {!isLoggedIn ? (
-                <Link href="/login">
-                  <LoginOutlinedIcon className="top-nav-icon"
-                    title="로그인"
-                  />
-                </Link>
-              ) : (
-                <>
-                  <span className="username-text">{username}님</span>
-                  <LogoutOutlinedIcon className="top-nav-icon"
-                    onClick={handleLogout}
-                    title="로그아웃"
-                  />
-                </>
-              )}
-              <Link href="/search">
-                <SearchOutlinedIcon className="top-nav-icon" title="검색" />
-              </Link>
-              <Link href="/msg">
-                <EmailOutlinedIcon className="top-nav-icon" title="메일" />
-              </Link>
-              <Link href="/alert">
-                <NotificationsOutlinedIcon className="top-nav-icon" title="알림" />
-              </Link>
-              <Link href="/profile">
-                <AccountCircleOutlinedIcon className="top-nav-icon" title="프로필" />
-              </Link>
-            </div>
-          </header>
+          <HeaderComponent
+            isLoggedIn={isLoggedIn}
+            username={username}
+            handleLogout={handleLogout}
+          />
 
           <nav className="top-nav">
             {menuBoards.map((parent) => (
@@ -151,5 +125,60 @@ export default function RootLayout({ children }) {
         </Provider>
       </body>
     </html>
+  );
+}
+
+// 헤더 컴포넌트 분리
+function HeaderComponent({ isLoggedIn, username, handleLogout }) {
+  const dispatch = useDispatch();
+  const { unreadCount } = useSelector(state => state.notification);
+
+  const handleNotificationClick = () => {
+    dispatch(togglePopup());
+  };
+
+  return (
+    <header className="header">
+      <Link href="/">
+        <img src="/logo.png" alt="withcare 로고" className="logo" />
+      </Link>
+      <div className="header-right">
+        {!isLoggedIn ? (
+          <Link href="/login">
+            <LoginOutlinedIcon className="top-nav-icon"
+              title="로그인"
+            />
+          </Link>
+        ) : (
+          <>
+            <span className="username-text">{username}님</span>
+            <LogoutOutlinedIcon className="top-nav-icon"
+              onClick={handleLogout}
+              title="로그아웃"
+            />
+          </>
+        )}
+        <Link href="/search">
+          <SearchOutlinedIcon className="top-nav-icon" title="검색" />
+        </Link>
+        <Link href="/msg">
+          <EmailOutlinedIcon className="top-nav-icon" title="메일" />
+        </Link>
+        <div className="notification-container">
+          <NotificationsOutlinedIcon
+            className="top-nav-icon"
+            title="알림"
+            onClick={handleNotificationClick}
+          />
+          {unreadCount > 0 && (
+            <span className="notification-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>
+          )}
+          <NotificationPopup />
+        </div>
+        <Link href="/profile">
+          <AccountCircleOutlinedIcon className="top-nav-icon" title="프로필" />
+        </Link>
+      </div>
+    </header>
   );
 }

@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import { addNotification } from "@/redux/notificationSlice";
 
 export default function SSEClient() {
   const [eventSource, setEventSource] = useState(null);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const id = sessionStorage.getItem("id");
@@ -27,7 +30,48 @@ export default function SSEClient() {
 
       newEventSource.onmessage = (event) => {
         console.log("실시간 알림 수신:", event.data);
-        // 여기에 알림 처리 로직 추가
+
+        try {
+          // 백엔드에서 받은 알림 데이터 파싱
+          const notificationData = JSON.parse(event.data);
+
+          // Redux store에 알림 추가
+          const notification = {
+            id: Date.now() + Math.random(), // 고유 ID 생성
+            title: notificationData.title || "새 알림",
+            message: notificationData.message || notificationData.content || "새로운 알림이 도착했습니다.",
+            timestamp: new Date().toISOString(),
+            isRead: false,
+            link: notificationData.link || null, // 알림 클릭 시 이동할 링크
+            type: notificationData.type || "general" // 알림 타입
+          };
+
+          dispatch(addNotification(notification));
+
+          // 브라우저 알림 표시 (권한이 있는 경우)
+          if (Notification.permission === "granted") {
+            new Notification(notification.title, {
+              body: notification.message,
+              icon: "/logo.png"
+            });
+          }
+
+        } catch (error) {
+          console.error("알림 데이터 파싱 오류:", error);
+
+          // 파싱 실패 시 기본 알림 생성
+          const fallbackNotification = {
+            id: Date.now() + Math.random(),
+            title: "새 알림",
+            message: event.data,
+            timestamp: new Date().toISOString(),
+            isRead: false,
+            link: null,
+            type: "general"
+          };
+
+          dispatch(addNotification(fallbackNotification));
+        }
       };
 
       newEventSource.onerror = (event) => {
@@ -61,6 +105,44 @@ export default function SSEClient() {
 
       newEventSource.onmessage = (event) => {
         console.log("실시간 알림 수신:", event.data);
+
+        try {
+          const notificationData = JSON.parse(event.data);
+
+          const notification = {
+            id: Date.now() + Math.random(),
+            title: notificationData.title || "새 알림",
+            message: notificationData.message || notificationData.content || "새로운 알림이 도착했습니다.",
+            timestamp: new Date().toISOString(),
+            isRead: false,
+            link: notificationData.link || null,
+            type: notificationData.type || "general"
+          };
+
+          dispatch(addNotification(notification));
+
+          if (Notification.permission === "granted") {
+            new Notification(notification.title, {
+              body: notification.message,
+              icon: "/logo.png"
+            });
+          }
+
+        } catch (error) {
+          console.error("알림 데이터 파싱 오류:", error);
+
+          const fallbackNotification = {
+            id: Date.now() + Math.random(),
+            title: "새 알림",
+            message: event.data,
+            timestamp: new Date().toISOString(),
+            isRead: false,
+            link: null,
+            type: "general"
+          };
+
+          dispatch(addNotification(fallbackNotification));
+        }
       };
 
       newEventSource.onerror = (event) => {
@@ -76,6 +158,12 @@ export default function SSEClient() {
   // 전역에서 호출할 수 있도록 window 객체에 함수 등록
   useEffect(() => {
     window.connectSSE = connectSSE;
+
+    // 브라우저 알림 권한 요청
+    if (Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+
     return () => {
       delete window.connectSSE;
     };
