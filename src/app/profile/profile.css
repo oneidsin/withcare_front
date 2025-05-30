@@ -108,6 +108,10 @@
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     position: relative;
+    height: calc(100vh - 100px); /* 뷰포트 높이에서 여백 제외한 높이로 고정 */
+    overflow-y: auto; /* 전체 페이지에 스크롤 적용 */
+    display: flex;
+    flex-direction: column;
 }
 
 /* 프로필 헤더 영역 */
@@ -119,6 +123,7 @@
     background-color: #f9f9f9;
     border-radius: 8px;
     border: 1px solid #eee;
+    flex-shrink: 0; /* 크기 고정 */
 }
 
 .profile-image {
@@ -167,6 +172,7 @@
     border-radius: 8px;
     border: 1px solid #eee;
     margin-bottom: 24px;
+    flex-shrink: 0; /* 크기 고정 */
 }
 
 .profile-details p {
@@ -187,6 +193,10 @@
 /* 탭 섹션 */
 .tab-section {
     margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+    flex: 1; /* 남은 공간 차지 */
+    min-height: 300px; /* 최소 높이 설정 */
 }
 
 .tab-menu {
@@ -195,6 +205,7 @@
     margin-bottom: 20px;
     border-bottom: 2px solid #eee;
     padding-bottom: 10px;
+    flex-shrink: 0; /* 크기 고정 */
 }
 
 .tab-menu button {
@@ -222,7 +233,10 @@
 .tab-content {
     background-color: #fff;
     border-radius: 8px;
-    min-height: 200px;
+    flex: 1; /* 남은 공간 차지 */
+    overflow: hidden; /* 내부 스크롤을 위한 설정 */
+    display: flex;
+    flex-direction: column;
 }
 
 /* 활동 리스트 */
@@ -230,6 +244,10 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
+    padding: 16px;
+    overflow-y: auto; /* 스크롤 적용 */
+    max-height: 400px; /* 최대 높이 제한 */
+    flex: 1; /* 남은 공간 차지 */
 }
 
 .activity-item {
@@ -239,6 +257,7 @@
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s;
+    flex-shrink: 0; /* 크기 고정 */
 }
 
 .activity-item:hover {
@@ -248,39 +267,34 @@
 
 .activity-item h4 {
     margin: 0 0 8px 0;
+    font-size: 1.1em;
     color: #333;
-    font-size: 0.95em;
-    font-weight: 600;
 }
 
 .activity-item p {
-    margin: 4px 0;
-    color: #666;
+    margin: 0;
     font-size: 0.85em;
+    color: #666;
 }
 
 /* 버튼 스타일 */
 .edit-btn {
     padding: 6px 15px;
-    background-color: #007bff;
-    color: white;
-    border: none;
+    background-color: #e0f0ff;
+    color: #007bff;
+    border: 1px solid #b3d7ff;
     border-radius: 4px;
     cursor: pointer;
     font-size: 0.85em;
     transition: background-color 0.2s;
-    position: relative;
-    left: -150px;
+    margin-right: 10px;
 }
 
 .edit-btn:hover {
-    background-color: #0056b3;
+    background-color: #c9e5ff;
 }
 
 .delete-btn {
-    position: absolute;
-    top: 24px;
-    right: 24px;
     padding: 6px 15px;
     background-color: #ffe0e0;
     color: #d9534f;
@@ -293,6 +307,13 @@
 
 .delete-btn:hover {
     background-color: #ffcccc;
+}
+
+.top-right {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    display: flex;
 }
 
 /* 타임라인 페이지 *//* 전체 레이아웃 */
@@ -421,4 +442,16 @@
 
 .month-nav button:hover {
     background-color: #ccc;
+}
+
+/* 빈 메시지 스타일 */
+.empty-message {
+    padding: 20px;
+    text-align: center;
+    color: #888;
+    font-size: 0.9em;
+    border: 1px dashed #ddd;
+    border-radius: 8px;
+    margin: 10px 0;
+    background-color: #f9f9f9;
 }

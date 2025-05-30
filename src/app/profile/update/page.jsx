@@ -61,7 +61,7 @@ export default function UpdatePage() {
                         profile_photo: userData.profile_photo || ""
                     });
                     if (userData.profile_photo) {
-                        setPreviewImage(userData.profile_photo);
+                        setPreviewImage(getValidImageUrl(userData.profile_photo));
                     }
                 }
 
@@ -178,6 +178,26 @@ export default function UpdatePage() {
         }
     };
 
+    // 유효한 이미지 URL 생성 함수
+    const getValidImageUrl = (url) => {
+        if (!url || url === 'null' || url === 'undefined') {
+            return "/defaultProfileImg.png";
+        }
+        
+        // URL이 이미 http://로 시작하는지 확인
+        if (url.startsWith('http://') || url.startsWith('https://')) {
+            return url;
+        }
+        
+        // URL이 /로 시작하는지 확인 (절대 경로)
+        if (url.startsWith('/')) {
+            return url;
+        }
+        
+        // 그 외의 경우 백엔드 기본 URL에 경로 추가
+        return `http://localhost/${url}`;
+    };
+
     return (
         <div className="update-container">
             <h2>프로필 수정</h2>
@@ -194,6 +214,7 @@ export default function UpdatePage() {
                             src={previewImage}
                             alt="Profile preview"
                             className="profile-preview"
+                            onError={(e) => { e.target.onerror = null; e.target.src = "/defaultProfileImg.png"; }}
                         />
                     )}
                 </div>
