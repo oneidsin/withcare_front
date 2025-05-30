@@ -9,6 +9,7 @@ import Link from "next/link";
 
 export default function ReportDetail() {
   const searchParams = useSearchParams();
+  const [reason, setReason] = useState('');
   const [reportDetail, setReportDetail] = useState(null);
 
 
@@ -41,6 +42,20 @@ export default function ReportDetail() {
     }
   };
 
+  // 신고 처리하기
+  const reportProcess = async () => {
+    try {
+      const res = await axios.post(`http://localhost/admin/report/list/view/process`,
+        { id: id, rep_idx: rep_idx, rep_reason: reason },
+        { headers: { Authorization: token } }
+      );
+      console.log("res : ", res.data);
+      setReportDetail(res.data.result[0]);
+    } catch (error) {
+      console.log("신고 처리 실패 : ", error);
+    }
+  };
+
   // 날짜 포맷팅 함수
   const formatDate = (dateString) => {
     if (!dateString) return '-';
@@ -70,8 +85,7 @@ export default function ReportDetail() {
             <p style={{ backgroundColor: '#228B22', color: 'white', padding: '10px', borderRadius: '5px' }}>신고 대상자 ID : {reportDetail.reported_id}</p><br />
             <p style={{ backgroundColor: '#228B22', color: 'white', padding: '10px', borderRadius: '5px' }}>신고 카테고리 : {reportDetail.cate_name}</p><br />
             <p style={{ backgroundColor: '#228B22', color: 'white', padding: '10px', borderRadius: '5px' }}>신고일 : {formatDate(reportDetail.report_at)}</p><br />
-            <p style={{ backgroundColor: '#228B22', color: 'white', padding: '10px', borderRadius: '5px' }}>처리일 : {formatDate(reportDetail.process_date)}</p><br />
-            <button>처리 완료</button>
+            <button onClick={reportProcess}>처리하기</button>
           </>
         ) : (
           <p>로딩 중</p>
@@ -81,31 +95,18 @@ export default function ReportDetail() {
 
       {/* 신고 히스토리 내용 */}
       <div className="report-history-box">
-        <h3>신고 히스토리 내용</h3>
+        <h3>신고 내용</h3>
         <div className="content-box">
-          {reportDetail ? (
-            <div>
-              <p>{reportDetail.reported_content}</p>
 
-            </div>
-          ) : (
-            <p>로딩 중</p>
-          )}
         </div>
-      </div>
 
-      {/* 신고 처리 사유 */}
-      <div className="report-process-box">
-        <h3>신고 처리 사유</h3>
-        <div className="content-box">
-          {reportDetail ? (
-            <div>
-              <p>처리 관리자 : {reportDetail.rep_admin_id || '-'}</p>
-              <textarea rows={10} cols={60} name="rep_reason" id="rep_reason" value={reportDetail.rep_reason} readOnly></textarea>
-            </div>
-          ) : (
-            <p>로딩 중</p>
-          )}
+        {/* 신고 처리 사유 */}
+        <div className="report-process-box">
+          <h3>신고 처리 사유</h3>
+          <div className="content-box">
+            <textarea rows={10} cols={60} name="rep_reason" id="rep_reason"
+              value={reason} onChange={(e) => setReason(e.target.value)}></textarea>
+          </div>
         </div>
       </div>
     </div>
