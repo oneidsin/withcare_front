@@ -11,12 +11,20 @@ const api = axios.create({
     }
 });
 
-
 const RecentSearches = ({ onSearchClick }) => {
     const [searchTerms, setSearchTerms] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+    // 인기 검색어 더미 데이터 (인기 검색어 API 실패 시 폴백으로 사용)
+    const popularSearchTerms = [
+        { sch_keyword: "자유게시판" },
+        { sch_keyword: "공지사항" },
+        { sch_keyword: "게시판" },
+        { sch_keyword: "질문" },
+        { sch_keyword: "추천" }
+    ];
 
     useEffect(() => {
         const token = sessionStorage.getItem('token');
@@ -25,26 +33,48 @@ const RecentSearches = ({ onSearchClick }) => {
         if (token) {
             fetchUserSearchTerms();
         } else {
-            // 비로그인 사용자를 위한 더미 인기 검색어
-            setSearchTerms([
-                { sch_keyword: "자유게시판" },
-                { sch_keyword: "공지사항" },
-                { sch_keyword: "게시판" },
-                { sch_keyword: "질문" },
-                { sch_keyword: "추천" }
-            ]);
-            setLoading(false);
+            fetchPopularSearchTerms();
         }
         
         // 1분마다 검색어 목록 갱신 (로그인한 경우에만)
         let interval;
         if (token) {
             interval = setInterval(fetchUserSearchTerms, 60000);
+        } else {
+            interval = setInterval(fetchPopularSearchTerms, 60000);
         }
         return () => {
             if (interval) clearInterval(interval);
         };
     }, []);
+
+    // 인기 검색어 가져오기 (비로그인 사용자용)
+    const fetchPopularSearchTerms = async () => {
+        try {
+            setLoading(true);
+            
+            // 백엔드에 인기 검색어 API가 있다면 호출
+            try {
+                const response = await api.get('/search/popular');
+                
+                if (response.data && response.data.success) {
+                    setSearchTerms(response.data.data || []);
+                    setLoading(false);
+                    return;
+                }
+            } catch (err) {
+                console.log('인기 검색어 API 호출 실패, 기본값 사용:', err);
+            }
+            
+            // API 실패 시 더미 데이터 사용
+            setSearchTerms(popularSearchTerms);
+            setLoading(false);
+        } catch (err) {
+            console.error('검색어 로딩 실패:', err);
+            setSearchTerms(popularSearchTerms);
+            setLoading(false);
+        }
+    };
 
     const fetchUserSearchTerms = async () => {
         try {
