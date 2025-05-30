@@ -49,23 +49,25 @@ export default function MsgBox() {
     const id = sessionStorage.getItem("id");
     const token = sessionStorage.getItem("token");
     
-    // 받은 쪽지함에서 보관된 쪽지만 가져오기
-    const response = await axios.get(
-      `http://localhost:80/msg/inbox/${id}?page=${page-1}&size=50&status=S`, 
-      {headers:{Authorization:token}}
-    );
+    try {
+      // 보관된 쪽지만 가져오기 (보관된 쪽지함 전용 API 사용)
+      const response = await axios.get(
+        `http://localhost:80/msg/inbox/saved/${id}?page=${page-1}&size=15`, 
+        {headers:{Authorization:token}}
+      );
 
-    console.log('=== Raw API Response ===');
-    console.log('Response:', response.data);
+      console.log("보관함 API 응답:", response.data); // 응답 확인용 로그
 
-    if (response.data.loginYN) {
-      const messages = response.data.inbox || [];
-      console.log('=== All Messages ===');
-      console.log('Messages:', messages);
-      
-      setPages(response.data.pages || 1);
-      pageRef.current = page;
-      setList(messages);
+      if (response.data.loginYN) {
+        const messages = response.data.inbox || [];
+        setPages(response.data.pages || 1);
+        pageRef.current = page;
+        setList(messages);
+      }
+    } catch (error) {
+      console.error('Error fetching saved messages:', error);
+      setList([]);
+      setPages(1);
     }
   };
 
