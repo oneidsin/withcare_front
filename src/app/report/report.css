@@ -1,0 +1,153 @@
+/* 신고 페이지 전용 컨테이너 스타일 재정의 */
+main.container:has(.report-container) {
+  /* app.css의 .container 스타일을 재정의 */
+  padding: 0;
+  max-width: none;
+  margin: 0;
+  flex: none;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 또는 더 간단한 방법 */
+.report-page-container {
+  padding: 0;
+  max-width: none;
+  margin: 0;
+  flex: none;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.report-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 20px;
+  min-height: calc(100vh - 200px);
+  /* 헤더/푸터 높이를 제외한 전체 높이 */
+  background-color: #f9f9f9;
+  /* 원하는 배경색 */
+}
+
+.report-content {
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 1000px;
+  width: 100%;
+}
+
+.report-content h1 {
+  color: #333;
+  font-size: 28px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.report-content p {
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+/* 신고 카테고리 스타일 */
+.report-categories {
+  margin-top: 30px;
+}
+
+.category-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.report-categories h3 {
+  color: #333;
+  font-size: 18px;
+  margin: 0;
+  font-weight: 600;
+}
+
+.report-submit-btn {
+  background-color: #0070f3;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.report-submit-btn:hover {
+  background-color: #0056b3;
+}
+
+.report-submit-btn:active {
+  background-color: #003369;
+}
+
+.button-group {
+  display: flex;
+  gap: 8px;
+}
+
+.report-submit-btn.cancel {
+  background-color: #6c757d;
+}
+
+.report-submit-btn.cancel:hover {
+  background-color: #5a6268;
+}
+
+.report-submit-btn.cancel:active {
+  background-color: #495057;
+}
+
+.category-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.report-category-item {
+  margin-bottom: 12px;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  transition: background-color 0.2s ease;
+}
+
+.report-category-item:hover {
+  background-color: #e9ecef;
+}
+
+.report-category-item:checked {
+  background-color: #0070f3;
+  color: white;
+}
+
+.report-category-item label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 16px;
+  color: #495057;
+}
+
+.report-category-item input[type="checkbox"] {
+  margin-right: 10px;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.report-category-item span {
+  user-select: none;
+}

@@ -6,8 +6,10 @@ import axios from "axios"; // HTTP 요청을 위한 라이브러리
 import { Pagination, Stack } from '@mui/material'; // Material UI 페이지네이션 컴포넌트
 import "./admin_report.css"; // 스타일시트 import
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function AdminReport() {
+  const router = useRouter();
   // 상태 관리 (React hooks)
   const [reportList, setReportList] = useState([]); // 신고 목록 데이터를 저장하는 상태
   const [currentPage, setCurrentPage] = useState(1); // 현재 페이지 번호를 저장하는 상태
@@ -98,6 +100,12 @@ export default function AdminReport() {
       );
     }
 
+    const handleDetailView = (rep_idx) => {
+      // 신고 상세보기 페이지로 이동 (새 탭에서 열기)
+      console.log('rep_idx:', rep_idx);
+      router.push(`/admin/admin-report/detail?rep_idx=${rep_idx}`);
+    };
+
     return reportList.map((report) => (
       <tr
         key={report.rep_idx}
@@ -106,7 +114,14 @@ export default function AdminReport() {
         <td>{report.rep_idx}</td>
         <td>{report.reporter_id}</td>
         <td>{report.cate_name}</td>
-        <td>{report.reported_id}</td>
+        <td>
+          <span className="detail-link"
+            onClick={() => handleDetailView(report.rep_idx)}
+            title="상세보기"
+          >
+            {report.reported_id}
+          </span>
+        </td>
         <td>{formatDate(report.report_at)}</td>
         <td>{report.status}</td>
       </tr>

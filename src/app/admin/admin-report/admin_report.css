@@ -269,3 +269,21 @@
 .report-history-btn:active {
   background-color: #1e7e34;
 }
+
+/* 상세보기 링크 스타일 */
+.detail-link {
+  color: #0070f3;
+  text-decoration: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.detail-link:hover {
+  color: #0058c7;
+  text-decoration: underline;
+}
+
+.detail-link:active {
+  color: #0046a6;
+}
