@@ -136,6 +136,7 @@
 /* 등록 버튼 포함 모든 버튼에 공통 스타일 */
 .detail-button,
 .comment-submit,
+.detail-control-button,
 .list-button{
     background-color: rgba(174, 226, 255, 0.4);
     color: #2d2d2d;
@@ -150,6 +151,7 @@
 
 .detail-button:hover,
 .comment-submit:hover,
+.detail-control-button:hover,
 .list-button:hover{
     background-color: #ffffff;
     transform: scale(1.02);

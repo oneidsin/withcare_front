@@ -259,8 +259,8 @@ export default function PostDetailPage() {
                 <div className="detail-controls">
                     {canEditOrDelete ? (
                         <>
-                            <button onClick={() => router.push(`/post/update?post_idx=${post.post_idx}`)}>수정</button>
-                            <button onClick={handleDelete}>삭제</button>
+                            <button className="detail-control-button" onClick={() => router.push(`/post/update?post_idx=${post.post_idx}`)}>수정</button>
+                            <button className="detail-control-button" onClick={handleDelete}>삭제</button>
                         </>
                     ) : (
                         <button className="warn-button">⚠ 신고</button>

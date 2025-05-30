@@ -175,3 +175,10 @@
 input.board-name{
     width: 98% !important;
 }
+
+.form-hint {
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: 5px;
+    font-style: italic;
+}
