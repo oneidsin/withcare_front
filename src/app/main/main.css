@@ -1,0 +1,68 @@
+/* 메인 레이아웃 - 세부 조정만 남김 */
+.main-layout {
+  gap: 16px; /* 간격 조정 */
+}
+
+.popular-searches-container {
+  padding-right: 5px;
+}
+
+.popular-search-item:nth-child(-n+3) {
+  flex-shrink: 0;
+  margin-top: 10px;
+}
+
+.recommended-posts {
+  gap: 8px;
+}
+
+.recommended-post-item {
+  padding: 8px;
+  margin-bottom: 4px;
+}
+
+.cancer-info-header {
+  margin-bottom: 12px;
+}
+
+.cancer-info-header p {
+  font-size: 0.9rem;
+}
+
+.cancer-posts {
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.cancer-post-item {
+  padding: 12px;
+  border-radius: 6px;
+  border-left: 3px solid #6c757d;
+}
+
+.cancer-post-item.personalized {
+  background-color: #f1f8ff;
+  border-left: 3px solid #5fa8d3;
+}
+
+.cancer-post-item h3 {
+  margin: 0 0 6px 0;
+  font-size: 1rem;
+}
+
+.loading-text {
+  font-size: 0.9rem;
+}
+
+/* 스크롤바 커스터마이즈는 app.css에서 일괄 적용하도록 삭제 */
+
+.bottom-row {
+  flex: 1.7;
+  gap: 20px;
+}
+
+.admin-button{
+  margin-top: auto;
+  align-self: flex-start;
+}
+
