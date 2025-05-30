@@ -57,7 +57,6 @@
 }
 
 .inbox-content button {
-  background-color: green;
   color: white;
   border: none;
   border-radius: 5px;
@@ -115,4 +114,22 @@
   resize: none;
   font-size: 14px;
   line-height: 1.5;
+}
+
+.report-process-button {
+  background-color: rgb(200, 0, 0);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  margin-left: auto;
+}
+
+.report-process-button:hover {
+  background-color: rgb(150, 0, 0);
+  cursor: pointer;
+}
+
+.report-process-button:active {
+  background-color: rgb(100, 0, 0);
 }
