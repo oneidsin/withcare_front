@@ -1,104 +1,197 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, {useRef, useState, useEffect} from 'react';
 import { BsTrash } from 'react-icons/bs';
-import '../msg.css'; // 받은 쪽지함과 동일한 CSS 사용
-
-// 보관함용 샘플 데이터 (받은 쪽지, 보낸 쪽지 혼합)
-const archivedMessages = [
-  { id: 1, type: 'received', counterpart: 'test01', subject: 'Re: 집에 보내 주세요.', date: '2025/05/12' },
-  { id: 2, type: 'sent', counterpart: 'user02', subject: '회의 자료 보냈습니다.', date: '2025/05/12' },
-  { id: 3, type: 'received', counterpart: 'admin', subject: 'Fwd: 시스템 점검 안내', date: '2025/05/11' },
-  { id: 4, type: 'sent', counterpart: 'friend', subject: '이번 주말 약속!', date: '2025/05/11' },
-  { id: 5, type: 'received', counterpart: 'company', subject: '(광고) 보관된 메일', date: '2025/05/10' },
-  { id: 6, type: 'sent', counterpart: 'test01', subject: '요청하신 파일 전달 (보관)', date: '2025/05/10' },
-  { id: 7, type: 'received', counterpart: 'team_lead', subject: '프로젝트 중간 보고', date: '2025/05/09' },
-  { id: 8, type: 'sent', counterpart: 'service', subject: '문의 드립니다. (보관)', date: '2025/05/09' },
-  { id: 9, type: 'received', counterpart: 'test01', subject: '점심 약속 확정', date: '2025/05/08' },
-  { id: 10, type: 'sent', counterpart: 'support', subject: '비밀번호 변경 완료', date: '2025/05/08' },
-];
+import '../msg.css';
+import Link from "next/link";
+import {Pagination, Stack} from "@mui/material";
+import axios from "axios";
 
 export default function MsgBox() {
-  const [selectedMessages, setSelectedMessages] = useState(new Set());
+  const pageRef = useRef(1);
+  const [selectMsg, setSelectMsg] = useState(new Set());
+  const [list,setList] = useState([]);
+  const [pages, setPages] = useState(1);
+
+  useEffect(() => {
+    console.log('Component mounted, calling callList');
+    callList(1);
+  }, []);
 
   // 전체 선택/해제 핸들러
   const handleSelectAll = (e) => {
     if (e.target.checked) {
-      const allMessageIds = archivedMessages.map(msg => msg.id);
-      setSelectedMessages(new Set(allMessageIds));
+      const allMessageIds = list.map(message => message.msg_idx);
+      setSelectMsg(new Set(allMessageIds));
     } else {
-      setSelectedMessages(new Set());
+      setSelectMsg(new Set());
     }
   };
 
   // 개별 선택 핸들러
   const handleSelectOne = (id) => {
-    const newSelected = new Set(selectedMessages);
+    const newSelected = new Set(selectMsg);
     if (newSelected.has(id)) {
       newSelected.delete(id);
     } else {
       newSelected.add(id);
     }
-    setSelectedMessages(newSelected);
+    setSelectMsg(newSelected);
+  };
+
+  // 페이지 변경 핸들러
+  const handlePageChg = (e, newPage) => {
+    pageRef.current = newPage;
+    callList(newPage);
+  };
+
+  const callList = async (page) => {
+    const id = sessionStorage.getItem("id");
+    const token = sessionStorage.getItem("token");
+    
+    // 받은 쪽지함에서 보관된 쪽지만 가져오기
+    const response = await axios.get(
+      `http://localhost:80/msg/inbox/${id}?page=${page-1}&size=50&status=S`, 
+      {headers:{Authorization:token}}
+    );
+
+    console.log('=== Raw API Response ===');
+    console.log('Response:', response.data);
+
+    if (response.data.loginYN) {
+      const messages = response.data.inbox || [];
+      console.log('=== All Messages ===');
+      console.log('Messages:', messages);
+      
+      setPages(response.data.pages || 1);
+      pageRef.current = page;
+      setList(messages);
+    }
+  };
+
+  // 선택한 쪽지 삭제
+  const handleDelete = async () => {
+    const id = sessionStorage.getItem("id");
+    const token = sessionStorage.getItem("token");
+
+    if (selectMsg.size === 0) {
+      alert('삭제할 쪽지를 선택해주세요.');
+      return;
+    }
+
+    if (!window.confirm('선택한 쪽지를 삭제하시겠습니까?')) {
+      return;
+    }
+
+    // 선택된 모든 쪽지 삭제
+    for (const msgId of selectMsg) {
+      await axios.put(
+        `http://localhost/msg/delete/inbox/${id}/${msgId}`,
+        {},
+        { headers: { Authorization: token } }
+      );
+    }
+
+    // 삭제 후 목록 새로고침
+    setSelectMsg(new Set());
+    callList(pageRef.current);
+  };
+
+  // 단일 쪽지 삭제
+  const handleSingleDelete = async (msgId) => {
+    const id = sessionStorage.getItem("id");
+    const token = sessionStorage.getItem("token");
+
+    if (!window.confirm('이 쪽지를 삭제하시겠습니까?')) {
+      return;
+    }
+
+    await axios.put(
+      `http://localhost/msg/delete/inbox/${id}/${msgId}`,
+      {},
+      { headers: { Authorization: token } }
+    );
+
+    // 삭제 후 목록 새로고침
+    callList(pageRef.current);
   };
 
   return (
-    <div className='inbox-container'> {/* 동일한 클래스명 사용 */}
-      {/* 상단 헤더: 제목 + 버튼 */}
-      <div className='inbox-header'> {/* 동일한 클래스명 사용 */}
-        <h1>쪽지 보관함</h1> {/* 제목 변경 */}
-        <div className='action-buttons'> {/* 동일한 클래스명 사용 */}
-          {/* 보관함에서는 보통 '삭제' 버튼만 사용합니다. */}
-          <button className='delete-button'>삭제</button>
+    <div className='inbox-container'>
+      {/* 상단 헤더 */}
+      <div className='inbox-header'>
+        <h1>📨 쪽지 보관함</h1>
+        <div className='action-buttons'>
+          <button className='delete-button' onClick={handleDelete}>삭제</button>
         </div>
       </div>
 
       {/* 쪽지 목록 테이블 */}
-      <table className='message-table'> {/* 동일한 클래스명 사용 */}
+      <table className='message-table'>
         <thead>
           <tr>
             <th>
               <input
                 type="checkbox"
                 onChange={handleSelectAll}
-                checked={selectedMessages.size === archivedMessages.length && archivedMessages.length > 0}
-              />
-            </th>
-            <th>구분</th> {/* '구분' 열 추가 */}
-            <th>상대방</th> {/* '상대방' 열 추가 */}
-            <th>제 목</th>
-            <th>날 짜</th>
-            <th>삭제</th> {/* '확인' 대신 '삭제' (또는 필요시 유지/변경) */}
-          </tr>
+                checked={selectMsg.size === list.length && list.length > 0}
+            />
+          </th>
+          <th>보낸 사람</th>
+          <th>내 용</th>
+          <th>날 짜</th>
+          <th>삭제</th>
+        </tr>
         </thead>
         <tbody>
-          {archivedMessages.map((msg) => (
-            <tr key={msg.id}> {/* 보관함에서는 '읽음' 상태 구분이 덜 중요할 수 있음 */}
-              <td>
-                <input
-                  type="checkbox"
-                  checked={selectedMessages.has(msg.id)}
-                  onChange={() => handleSelectOne(msg.id)}
-                />
-              </td>
-              <td>{msg.type === 'received' ? '받은 쪽지' : '보낸 쪽지'}</td> {/* 구분 표시 */}
-              <td>{msg.counterpart}</td> {/* 상대방 표시 */}
-              <td className='subject-cell'>{msg.subject}</td>
-              <td>{msg.date}</td>
-              <td>
-                <button className='icon-button'>
-                  <BsTrash />
-                </button>
-              </td>
+          {(!list || list.length === 0) ? (
+            <tr>
+              <td colSpan={5} style={{ textAlign: 'center', padding: '20px' }}>보관된 쪽지가 없습니다.</td>
             </tr>
-          ))}
+          ) : (
+            list.map((item) => (
+              <tr key={item.msg_idx}>
+                <td>
+                  <input
+                    type="checkbox"
+                    checked={selectMsg.has(item.msg_idx)}
+                    onChange={() => handleSelectOne(item.msg_idx)}
+                  />
+                </td>
+                <td>{item.sender_id}</td>
+                <td className='subject-cell'>
+                  <Link href={`/msg/detail?id=${item.msg_idx}&type=inbox`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                    {item.msg_content.length > 30 
+                      ? `${item.msg_content.substring(0, 30)}...` 
+                      : item.msg_content}
+                  </Link>
+                </td>
+                <td>{new Date(item.msg_sent_at).toLocaleDateString()}</td>
+                <td>
+                  <button className='icon-button' onClick={() => handleSingleDelete(item.msg_idx)}>
+                    <BsTrash />
+                  </button>
+                </td>
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
 
-      {/* 하단 작성하기 버튼 */}
-      <div className='compose-button-container'> {/* 동일한 클래스명 사용 */}
-        <button className='compose-button'>작성하기</button>
-      </div>
+      {pages >= 1 && (
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+          <Stack spacing={2} alignItems="center">
+            <Pagination
+              count={pages}
+              page={pageRef.current}
+              onChange={handlePageChg}
+              color="primary"
+              showFirstButton
+              showLastButton
+            />
+          </Stack>
+        </div>
+      )}
     </div>
   );
 }
