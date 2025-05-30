@@ -601,22 +601,10 @@ footer {
   /* 강제 표시 */
 }
 
-.post-title {
-  font-weight: 500;
-  color: #333;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin: 0 0 3px 0;
-  font-size: 0.9rem;
-  flex: 1;
-}
-
 .post-meta {
   display: flex;
   justify-content: space-between;
   color: #6c757d;
-  margin-top: 10px;
   font-size: 0.75rem;
   flex-shrink: 0;
 }
