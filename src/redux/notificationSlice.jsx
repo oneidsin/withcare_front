@@ -26,6 +26,8 @@ export const fetchNotifications = createAsyncThunk(
         }
       });
 
+      console.log(response.data);
+
       const apiResult = response.data.result; // 실제 알림 목록
       const loginYN = response.data.loginYN; // 백엔드에서 보낸 로그인 여부
 
@@ -34,8 +36,8 @@ export const fetchNotifications = createAsyncThunk(
         return rejectWithValue('User not authorized or login failed on backend (token mismatch).');
       }
 
-      const notifications = apiResult || []; // 알림 목록
-      const unreadCount = notifications.filter(n => !n.isRead).length; // 읽지 않은 알림
+      const notifications = apiResult || []; // 백엔드 데이터를 그대로 사용
+      const unreadCount = notifications.filter(n => !n.noti_read_yn).length; // 읽지 않은 알림
 
       return { notifications, unreadCount }; // 알림 목록과 읽지 않은 알림 수 반환
     } catch (error) {

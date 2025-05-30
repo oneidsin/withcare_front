@@ -2,12 +2,12 @@
 
 import { useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { closePopup, markAsRead, markAllAsRead, removeNotification } from '@/redux/notificationSlice';
+import { closePopup, markAsRead, markAllAsRead, removeNotification, fetchNotifications } from '@/redux/notificationSlice';
 import './NotificationPopup.css';
 
 export default function NotificationPopup() {
   const dispatch = useDispatch();
-  const { notifications, unreadCount, isPopupOpen } = useSelector(state => state.notification);
+  const { notifications, unreadCount, isPopupOpen, status, error } = useSelector(state => state.notification);
   const popupRef = useRef(null);
 
   // 팝업 외부 클릭 시 닫기
@@ -20,15 +20,28 @@ export default function NotificationPopup() {
 
     if (isPopupOpen) {
       document.addEventListener('mousedown', handleClickOutside);
+
+      // 세션 스토리지에서 사용자 ID 가져오기
+      const currentUserId = sessionStorage.getItem('id');
+
+      // 팝업이 열리고 (isPopupOpen === true)
+      // 알림 로딩 상태가 'idle' (아직 데이터를 불러오지 않았거나 이전 작업이 완료된 상태) 일 때
+      // 그리고 유효한 사용자 ID가 있을 때만 알림을 불러옵니다.
+      if (currentUserId && status === 'idle') {
+        // fetchNotifications thunk를 디스패치합니다.
+        // 백엔드 API가 id와 offset을 받으므로, 객체 형태로 전달합니다.
+        dispatch(fetchNotifications({ id: currentUserId, offset: 0 }));
+      }
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isPopupOpen, dispatch]);
+  }, [isPopupOpen, dispatch, status]); // currentUserId는 의존성 배열에서 제거 (useEffect 내부에서 가져오므로)
 
   if (!isPopupOpen) return null;
 
+  // 알림 클릭 시 처리
   const handleNotificationClick = (notification) => {
     if (!notification.isRead) {
       dispatch(markAsRead(notification.id));
@@ -44,8 +57,9 @@ export default function NotificationPopup() {
     dispatch(markAllAsRead());
   };
 
+  // 알림 삭제 시 처리
   const handleDeleteNotification = (e, notificationId) => {
-    e.stopPropagation();
+    e.stopPropagation(); // 부모 요소(알림 아이템)의 클릭 이벤트 전파 방지
     dispatch(removeNotification(notificationId));
   };
 
@@ -60,16 +74,19 @@ export default function NotificationPopup() {
     return `${Math.floor(diffInMinutes / 1440)}일 전`;
   };
 
-  // 알림 불러오기
-  const fetchNotifications = async () => {
-    try {
-      const res = await axios.get(`http://localhost/noti/list/${id}`);
-      console.log(res.data);
-      dispatch(setNotifications(res.data));
-    } catch (error) {
-      console.error('알림 불러오기 실패:', error);
-    }
-  };
+  if (status === 'failed') {
+    return (
+      <div className="notification-popup" ref={popupRef}>
+        <div className="notification-header">
+          <h3>알림</h3>
+          <button className="close-btn" onClick={() => dispatch(closePopup())}>✕</button>
+        </div>
+        <div className="notification-list">
+          <div className="no-notifications">알림을 불러오는 데 실패했습니다: {error}</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="notification-popup" ref={popupRef}>
@@ -101,18 +118,18 @@ export default function NotificationPopup() {
         ) : (
           notifications.map((notification) => (
             <div
-              key={notification.id}
-              className={`notification-item ${!notification.isRead ? 'unread' : ''}`}
+              key={notification.noti_idx}
+              className={`notification-item ${!notification.noti_read_yn ? 'unread' : ''}`}
               onClick={() => handleNotificationClick(notification)}
             >
               <div className="notification-content">
-                <div className="notification-title">{notification.title}</div>
-                <div className="notification-message">{notification.message}</div>
-                <div className="notification-time">{formatTime(notification.timestamp)}</div>
+                <div className="notification-title">{notification.noti_type}</div>
+                <div className="notification-message">{notification.content_pre}</div>
+                <div className="notification-time">{formatTime(notification.noti_date)}</div>
               </div>
               <button
                 className="delete-notification-btn"
-                onClick={(e) => handleDeleteNotification(e, notification.id)}
+                onClick={(e) => handleDeleteNotification(e, notification.noti_idx)}
                 title="알림 삭제"
               >
                 ✕
@@ -123,4 +140,4 @@ export default function NotificationPopup() {
       </div>
     </div>
   );
-} 
+}
