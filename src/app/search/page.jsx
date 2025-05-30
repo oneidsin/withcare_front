@@ -67,6 +67,18 @@ export default function SearchPage() {
             });
     }, []);
 
+    // 메인 페이지에서 인기 검색어 클릭 시 검색 수행
+    useEffect(() => {
+        const tempSearchKeyword = sessionStorage.getItem('tempSearchKeyword');
+        if (tempSearchKeyword && boardIdx) {
+            setKeyword(tempSearchKeyword);
+            // 검색 수행
+            handleSearch(null, tempSearchKeyword, 1);
+            // 사용 후 제거
+            sessionStorage.removeItem('tempSearchKeyword');
+        }
+    }, [boardIdx]); // boardIdx가 설정된 후에 실행
+
     // 초기 게시글 목록 불러오기 함수
     const loadInitialPosts = async (selectedBoardIdx, pageNum = 1) => {
         try {

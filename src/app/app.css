@@ -22,6 +22,8 @@ body {
     min-height: 100vh;
     /* 최소 높이를 화면 전체 높이로 설정 */
     /* --- ▲ Sticky Footer 적용 ▲ --- */
+    min-width: 100vw;
+    contain: layout style;  /* 렌더링 최적화 힌트 */
 }
 
 /* 헤더, 네비게이션, 푸터는 고정 크기 유지 */
@@ -141,9 +143,9 @@ nav a:focus-visible {
 
 /* 카드 안의 본문 텍스트 */
 .card p {
-    font-size: 16px;
-    margin-bottom: 24px;
+    font-size: 17px;
     color: #555;
+    margin: 5px;
 }
 
 /* 버튼 공통 스타일 */
@@ -206,7 +208,7 @@ footer {
 /* .main-layout은 세로 배치 */
 .main-layout {
     flex-direction: column;
-    gap: 32px;
+    /*padding: 16px 16px 5px 16px;*/
     /* 기존 스타일 유지 */
     /* padding: 32px; */
     /* 부모(.container)에 패딩이 있으므로 중복될 수 있음. 확인 후 조절 */
@@ -216,15 +218,27 @@ footer {
 .top-row {
     display: flex;
     justify-content: space-between;
-    gap: 32px;
     width: 100%;
+    gap: 20px; /* 간격 조정 */
+    flex: 1.4; /* 비율 조정 */
+    min-height: 0;
+    max-height: 464px;
 }
 
 /* 왼쪽 정보게시판 카드 */
 .large-card {
     flex: 2;
     /* 더 넓게 */
-    padding: 32px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 435px;
+}
+
+/* 내부 게시글 영역이 남은 영역 전부 차지 고정*/
+.large-card > .cancer-posts {
+    flex: 1 1 auto;
 }
 
 /* 오른쪽 패널 (인기검색어, 승급자) */
@@ -233,19 +247,28 @@ footer {
     display: flex;
     flex-direction: column;
     gap: 16px;
-}
-
-/* 오른쪽 카드 (작은 카드) */
-.small-card {
-    padding: 16px;
-    font-size: 14px;
+    min-height: 0;
 }
 
 /* 추천글 카드 */
 .mini-card {
-    flex: 1;
-    padding: 16px;
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* 핵심 추가 */
+    overflow: hidden;
+    min-height: 330px;
+    padding: 10px 16px;
+}
+
+.mini-card h2,
+.mini-card hr {
+    flex-shrink: 0;
+    margin-bottom: 10px;
+}
+
+.mini-card h2 {
+    margin-top: 0;
 }
 
 /* 아이콘끼리의 간격 */
@@ -405,7 +428,7 @@ footer {
     grid-template-columns: 1fr 1fr 1fr;
     align-items: center;
     gap: 40px;
-    padding: 8px 20px;
+    padding: 5px 20px;
     font-size: 0.9em;
     justify-content: center;
 }
@@ -415,6 +438,7 @@ footer {
     color: #333;
     font-weight: bold;
     text-align: center;
+    font-size: 15px;
 }
 
 .level-name {
@@ -422,6 +446,7 @@ footer {
     align-items: flex-start;
     height: 28px;
     text-align: center;
+    font-size: 15px;
 }
 
 .level-info {
@@ -430,9 +455,285 @@ footer {
     width: 100px;
 }
 
-.level-icon {
-    width: 24px;
+.level-icon{
+    width: 23px;
 }
+
+.popular-search-item:hover {
+    color: #007bff;
+}
+
+.search-rank {
+    display: inline-block;
+    min-width: 22px;
+    margin-right: 8px;
+    font-weight: 600;
+    font-size: 14px; /* px로 고정 */
+    line-height: 1;
+}
+
+.popular-search-item:nth-child(1) .search-rank {
+    color: #ff4757; /* 1위 빨간색 */
+}
+
+.popular-search-item:nth-child(2) .search-rank {
+    color: #ff6b81; /* 2위 분홍색 */
+}
+
+.popular-search-item:nth-child(3) .search-rank {
+    color: #ff7f50; /* 3위 주황색 */
+}
+
+/* --- ▼ main.css에서 가져온 공통 스타일 보강 ▼ --- */
+
+/* small-card 스타일 통합 */
+.small-card {
+    padding: 16px 16px 5px 16px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    font-size: 14px;
+    min-height: 205px;
+}
+
+.small-card > div {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.small-card h2,
+.small-card hr {
+    flex-shrink: 0;
+    margin-bottom: 10px;
+}
+
+.small-card h2 {
+    font-size: 1.1rem;
+    margin-top: 0;
+}
+
+.recommended-posts {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding-right: 5px;
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.cancer-posts {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 5px;
+    margin-bottom: 12px;
+    gap: 10px; /* 게시글 간 간격 추가 */
+}
+
+.cancer-post-item {
+    background-color: #f8f9fa;
+    cursor: pointer;
+    transition: all 0.2s;
+    padding: 12px;
+    border-radius: 6px;
+    border-left: 3px solid #6c757d;
+    display: flex; /* 플렉스 레이아웃 추가 */
+    flex-direction: column; /* 세로 방향 정렬 */
+    justify-content: space-between; /* 내용과 메타 정보 사이 공간 분배 */
+    min-height: 60px; /* 최소 높이 설정 */
+}
+
+.cancer-post-item:hover {
+    background-color: #e9ecef;
+    transform: translateX(3px);
+}
+
+.cancer-post-item.personalized:hover {
+    background-color: #e1f0ff;
+}
+
+.cancer-post-item h3 {
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0 0 6px 0;
+    font-size: 1rem;
+    flex: 1; /* 남은 공간 차지 */
+}
+
+.post-title {
+    font-weight: 500;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0 0 3px 0;
+    font-size: 0.9rem;
+    flex: 1;
+}
+
+.post-meta {
+    display: flex;
+    justify-content: space-between;
+    color: #6c757d;
+    margin-top: 10px;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+}
+
+/* 스크롤바 커스터마이즈 */
+.cancer-posts::-webkit-scrollbar,
+.small-card > div::-webkit-scrollbar,
+.recommended-posts::-webkit-scrollbar,
+.popular-searches-container::-webkit-scrollbar {
+    width: 4px;
+}
+
+.cancer-posts::-webkit-scrollbar-track,
+.small-card > div::-webkit-scrollbar-track,
+.recommended-posts::-webkit-scrollbar-track,
+.popular-searches-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.cancer-posts::-webkit-scrollbar-thumb,
+.small-card > div::-webkit-scrollbar-thumb,
+.recommended-posts::-webkit-scrollbar-thumb,
+.popular-searches-container::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+}
+
+.cancer-posts::-webkit-scrollbar-thumb:hover,
+.small-card > div::-webkit-scrollbar-thumb:hover,
+.recommended-posts::-webkit-scrollbar-thumb:hover,
+.popular-searches-container::-webkit-scrollbar-thumb:hover {
+    background: #a1a1a1;
+}
+
+/* 버튼 스타일 추가 보강 */
+.large-card .button {
+    flex-shrink: 0;
+    align-self: flex-start;
+    padding: 4px 10px;
+    font-size: 0.8rem;
+    margin-top: 10px; /* 상단 여백 추가 */
+}
+
+/* 관리자 버튼 스타일 */
+.admin-button {
+    background-color: rgba(174, 226, 255, 0.4);
+    color: #2d2d2d;
+    border: 1px solid rgba(135, 209, 255, 0.5);
+    padding: 4px 10px;
+    font-size: 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    margin-top: auto;
+    align-self: flex-start;
+}
+
+.admin-button:hover {
+    background-color: #ffffff;
+    transform: scale(1.02);
+}
+
+.admin-button:active {
+    box-shadow: 0 0 12px 8px rgba(135, 209, 255, 0.5);
+    transform: scale(0.98);
+}
+
+/* 추천 게시글 아이템 */
+.recommended-post-item {
+    padding: 8px;
+    border-radius: 6px;
+    background-color: #f8f9fa;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    min-height: 70px;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.recommended-post-item:hover {
+    background-color: #e9ecef;
+}
+
+/* 승급자 내용 크기 조정 */
+.ranking-item-small {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: center;
+    gap: 20px;
+    padding: 5px 10px;
+    font-size: 0.85em;
+    justify-content: center;
+}
+
+.member-name {
+    height: 24px;
+    font-size: 13px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.level-name {
+    height: 24px;
+    font-size: 13px;
+}
+
+.level-info {
+    width: auto;
+}
+
+.level-icon {
+    width: 20px;
+}
+
+.loading-text {
+    color: #6c757d;
+    font-style: italic;
+    font-size: 0.9rem;
+}
+
+/* 인기 검색어 컨테이너 */
+.popular-searches-container {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 5px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 상위 3개 인기 검색어는 항상 보이게 */
+.popular-search-item:nth-child(-n+3) {
+    flex-shrink: 0;
+    margin-top: 10px;
+}
+
+/* 인기 검색어 스타일 */
+.popular-search-item {
+    display: flex;
+    align-items: center;
+    margin: 0; /* margin 없애버림 → 안정 */
+    padding: 6px 0; /* 패딩으로만 여백 확보 */
+    font-size: 14px; /* rem 사용 안 함 → px 절대값으로 고정 */
+    line-height: 1.4; /* 고정된 라인박스 보장 */
+    color: #333;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+/* --- ▲ main.css에서 가져온 공통 스타일 보강 ▲ --- */
 
 /* 알림 관련 스타일 */
 .notification-container {
