@@ -18,175 +18,74 @@ export default function ProfilePage() {
     const [cancerList, setCancerList] = useState([]);
     const [stageList, setStageList] = useState([]);
 
+   
+
     useEffect(() => {
         const token = sessionStorage.getItem("token");
         const id = sessionStorage.getItem("id");
         // sessionStorage에서 name 가져오기 시도
-        const storedName = sessionStorage.getItem("name");
+    
+        
+        
 
         if (!token || !id) {
             alert("로그인이 필요합니다.");
             router.push("/login");
             return;
         }
+    
+        
 
-        // 콘솔에 현재 세션 스토리지 상태 출력
-        console.log("세션 스토리지 상태:", {
-            id: sessionStorage.getItem("id"),
-            name: sessionStorage.getItem("name"),
-            token: sessionStorage.getItem("token"),
-            profilePic: sessionStorage.getItem("profilePic")
-        });
-
-        // 회원 테이블에서 이름 가져오기 (member 테이블 직접 조회)
-        const fetchMemberName = async () => {
-            try {
-                // 세션 스토리지에 이름이 있으면 그대로 사용
-                if (storedName) {
-                    console.log("세션 스토리지에서 이름 가져옴:", storedName);
-                    return storedName;
-                }
-                
-                // 세션 스토리지에 이름이 없으면 프로필 정보에서 이름 가져오기
-                console.log("프로필 정보에서 이름 가져오기 시도");
-                return id; // 임시로 ID 반환 (나중에 프로필 정보에서 덮어씀)
-            } catch (error) {
-                console.error("회원 정보 가져오기 실패:", error);
-                return storedName || id; // 실패 시 저장된 이름 또는 ID 사용
-            }
-        };
-
-        // 암 종류와 병기 정보 가져오기
-        const fetchCancerStageData = async () => {
-            try {
-                const [cancerRes, stageRes] = await Promise.all([
-                    axios.get("http://localhost/cancer"),
-                    axios.get("http://localhost/stage")
-                ]);
-                
-                console.log("암 종류 데이터:", cancerRes.data);
-                console.log("병기 데이터:", stageRes.data);
-                
-                setCancerList(cancerRes.data || []);
-                setStageList(stageRes.data || []);
-                
-                return {
-                    cancerList: cancerRes.data || [],
-                    stageList: stageRes.data || []
-                };
-            } catch (error) {
-                console.error("암 종류/병기 데이터 로딩 실패:", error);
-                return { cancerList: [], stageList: [] };
-            }
-        };
-
-        // 프로필 정보 가져오기
-        const fetchProfile = async () => {
-            try {
-                // 회원 이름 가져오기
-                const memberName = await fetchMemberName();
-                console.log("가져온 회원 이름:", memberName);
-                
-                // 암 종류와 병기 데이터 가져오기
-                const { cancerList, stageList } = await fetchCancerStageData();
-                
-                // 프로필 정보 요청
-                const res = await axios.get(`http://localhost/profile/${id}`, {
-                    headers: { Authorization: token }
-                });
-
-                console.log("프로필 API 응답:", res.data);
-
-                if (res.data.status === "success") {
-                    console.log("서버 응답 데이터:", res.data.data);
-                    
-                    // 이름 확인 및 설정
-                    const userName = res.data.data.name || memberName;
-                    
-                    // cancer_idx와 stage_idx의 실제 값 확인
-                    console.log("진단명 idx:", res.data.data.cancer_idx);
-                    console.log("병기 idx:", res.data.data.stage_idx);
-                    
-                    // cancer_idx와 stage_idx를 이용해 이름 찾기
-                    let cancerName = "정보 없음";
-                    let stageName = "정보 없음";
-                    
-                    if (res.data.data.cancer_idx && cancerList.length > 0) {
-                        const cancer = cancerList.find(c => c.cancer_idx === res.data.data.cancer_idx);
-                        cancerName = cancer ? cancer.cancer_name : "정보 없음";
-                    }
-                    
-                    if (res.data.data.stage_idx && stageList.length > 0) {
-                        const stage = stageList.find(s => s.stage_idx === res.data.data.stage_idx);
-                        stageName = stage ? stage.stage_name : "정보 없음";
-                    }
-                    
-                    console.log("찾은 진단명:", cancerName);
-                    console.log("찾은 병기:", stageName);
-                    
-                    // 데이터 확인 및 저장
-                    const userData = {
-                        id: res.data.data.id,
-                        name: userName,
-                        cancer_idx: res.data.data.cancer_idx,
-                        stage_idx: res.data.data.stage_idx,
-                        cancer: cancerName,
-                        stage: stageName,
-                        intro: res.data.data.intro || "소개글을 작성해주세요.",
-                        profileImage: getValidImageUrl(res.data.data.profile_photo),
-                        isPublic: res.data.data.profile_yn
-                    };
-                    
-                    console.log("가공된 사용자 데이터:", userData);
-                    
-                    // 세션 스토리지에 정보 저장
-                    sessionStorage.setItem("profilePic", userData.profileImage);
-                    sessionStorage.setItem("name", userData.name);
-                    
-                    // 상태 업데이트
-                    setUser(userData);
-                    
-                    // 활동 내역 가져오기
-                    fetchActivities();
-                } else {
-                    console.error("프로필 정보를 불러올 수 없습니다:", res.data);
-                    alert("프로필 정보를 불러올 수 없습니다.");
-                }
-            } catch (error) {
-                console.error("프로필 로딩 실패:", error);
-                
-                if (error.response) {
-                    console.error("오류 응답:", error.response.data);
-                    console.error("오류 상태:", error.response.status);
-                }
-                
-                alert("프로필 정보를 불러오는데 실패했습니다.");
-            }
-        };
-
-        // 활동 내역 가져오기
-        const fetchActivities = async () => {
-            try {
-                const res = await axios.get(`http://localhost/profile/view/${id}`, {
-                    headers: { Authorization: token }
-                });
-
-                if (res.data.status === "success") {
-                    setActivities({
-                        posts: res.data.posts || [],
-                        comments: res.data.comments || [],
-                        likes: res.data.likes || [],
-                        searches: res.data.searches || []
-                    });
-                }
-            } catch (error) {
-                console.error("활동 내역 로딩 실패:", error);
-            }
-        };
-
-        // 프로필 정보 로드 시작
-        fetchProfile();
+        // fetchMemberName 함수와 fetchProfile 함수 대신 fetchData 함수 직접 호출
+        fetchData(id, token);
     }, []);
+
+
+    // 페이지 로드 시 항상 새로운 데이터 가져오기 (캐시 무시)
+    const fetchData = async (id, token) => {
+        try {
+            // 암 종류와 병기 데이터 가져오기
+            const { cancerList, stageList } = await fetchCancerStageData();
+            
+            // 프로필 정보 요청 - 캐시 방지를 위한 타임스탬프 추가
+            const timestamp = new Date().getTime();
+            const res = await axios.get(`http://localhost/profile/${id}`, {
+                headers: {Authorization: token}
+            });
+
+            console.log("프로필 API 응답:", res.data);
+
+            if (res.data && res.data.data) {
+                // 상태 업데이트 - 서버에서 받은 데이터 구조에 맞게 설정
+                setUser(res.data.data);
+                
+                // 활동 내역 가져오기
+                fetchActivities(id);
+            } else {
+                console.error("프로필 정보를 불러올 수 없습니다:", res.data);
+                alert("프로필 정보를 불러올 수 없습니다.");
+            }
+        } catch (error) {
+            console.error("프로필 로딩 실패:", error);
+            
+            if (error.response) {
+                console.error("오류 응답:", error.response.data);
+                console.error("오류 상태:", error.response.status);
+                
+                // JWT 토큰 에러 처리
+                if (error.response.status === 401 || 
+                    (error.response.data && error.response.data.message && 
+                     error.response.data.message.includes("JWT"))) {
+                    alert("로그인 세션이 만료되었습니다. 다시 로그인해주세요.");
+                    sessionStorage.clear();
+                    router.push("/login");
+                    return;
+                }
+            }
+            
+            alert("프로필 정보를 불러오는데 실패했습니다.");
+        }
+    };
 
     const handleDeleteAccount = async () => {
         if (!confirm("정말로 회원 탈퇴하시겠습니까?")) return;
@@ -288,22 +187,74 @@ export default function ProfilePage() {
 
     // 유효한 이미지 URL 생성 함수
     const getValidImageUrl = (url) => {
+        console.log("이미지 URL 변환 전:", url);
+        
         if (!url || url === 'null' || url === 'undefined') {
+            console.log("기본 이미지 사용");
             return "/defaultProfileImg.png";
         }
         
         // URL이 이미 http://로 시작하는지 확인
         if (url.startsWith('http://') || url.startsWith('https://')) {
+            console.log("절대 URL 사용:", url);
             return url;
         }
         
         // URL이 /로 시작하는지 확인 (절대 경로)
         if (url.startsWith('/')) {
+            console.log("루트 경로 URL 사용:", url);
             return url;
         }
         
         // 그 외의 경우 백엔드 기본 URL에 경로 추가
-        return `http://localhost/${url}`;
+        const fullUrl = `http://localhost/${url}`;
+        console.log("변환된 URL:", fullUrl);
+        return fullUrl;
+    };
+
+    // 암 종류와 병기 정보 가져오기
+    const fetchCancerStageData = async () => {
+        try {
+            const [cancerRes, stageRes] = await Promise.all([
+                axios.get("http://localhost/cancer"),
+                axios.get("http://localhost/stage")
+            ]);
+            
+            console.log("암 종류 데이터:", cancerRes.data);
+            console.log("병기 데이터:", stageRes.data);
+            
+            setCancerList(cancerRes.data || []);
+            setStageList(stageRes.data || []);
+            
+            return {
+                cancerList: cancerRes.data || [],
+                stageList: stageRes.data || []
+            };
+        } catch (error) {
+            console.error("암 종류/병기 데이터 로딩 실패:", error);
+            return { cancerList: [], stageList: [] };
+        }
+    };
+
+    // 활동 내역 가져오기
+    const fetchActivities = async (userId) => {
+        try {
+            const token = sessionStorage.getItem("token");
+            const res = await axios.get(`http://localhost/profile/view/${userId}`, {
+                headers: { Authorization: token }
+            });
+
+            if (res.data.status === "success") {
+                setActivities({
+                    posts: res.data.posts || [],
+                    comments: res.data.comments || [],
+                    likes: res.data.likes || [],
+                    searches: res.data.searches || []
+                });
+            }
+        } catch (error) {
+            console.error("활동 내역 로딩 실패:", error);
+        }
     };
 
     if (!user) return <div>로딩 중...</div>;
@@ -322,10 +273,14 @@ export default function ProfilePage() {
             <div className="profile-header">
                 <div className="profile-image">
                     <img 
-                        src={user?.profileImage || "/defaultProfileImg.png"} 
+                        src={user?.profile_photo || "/defaultProfileImg.png"} 
                         alt="프로필 이미지"
                         className="profile-pic"
-                        onError={(e) => { e.target.onerror = null; e.target.src = "/defaultProfileImg.png"; }}
+                        onError={(e) => { 
+                            console.error("이미지 로드 실패:", e.target.src);
+                            // 먼저 세션 스토리지의 이미지를 시도
+                            
+                        }}
                     />
                 </div>
                 <div className="profile-header-info">
@@ -339,6 +294,9 @@ export default function ProfilePage() {
             <div className="profile-details">
                 <p><strong>아이디:</strong> {user.id || "정보 없음"}</p>
                 <p><strong>이름:</strong> {user.name || "정보 없음"}</p>
+                <p><strong>이메일:</strong> {user.email || "정보 없음"}</p>
+                {user.year && <p><strong>출생연도:</strong> {user.year}</p>}
+                {user.gender && <p><strong>성별:</strong> {user.gender === 'M' ? '남성' : user.gender === 'F' ? '여성' : user.gender}</p>}
                 <p><strong>진단명:</strong> {user.cancer || "정보 없음"}</p>
                 <p><strong>병기:</strong> {user.stage || "정보 없음"}</p>
                 <p><strong>프로필 공개 여부:</strong> {user.isPublic ? "공개" : "비공개"}</p>
