@@ -62,6 +62,16 @@
     background-color: #f0f7ff;
 }
 
+/* 비활성 배지 스타일 */
+.badge-item.inactive {
+    opacity: 0.6;
+    background-color: #f5f5f5;
+}
+
+.badge-item.inactive .badge-icon {
+    filter: grayscale(50%);
+}
+
 .badge-icon {
     width: 70px;
     height: 70px;
@@ -84,6 +94,19 @@
 .badge-status {
     font-size: 12px;
     color: #666;
+    padding: 2px 6px;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+.badge-status.active {
+    background-color: #e8f5e8;
+    color: #2e7d32;
+}
+
+.badge-status.inactive {
+    background-color: #ffebee;
+    color: #c62828;
 }
 
 /* 새 배지 추가 버튼 */

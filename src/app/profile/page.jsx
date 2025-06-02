@@ -56,12 +56,27 @@ export default function ProfilePage() {
             console.log("프로필 API 응답:", res.data);
 
             if (res.data && res.data.data) {
-                // 상태 업데이트 - 서버에서 받은 데이터 구조에 맞게 설정
-                setUser(res.data.data);
+                const userData = res.data.data;
+                
+                // cancer_idx와 stage_idx를 실제 이름으로 변환
+                const cancerName = cancerList.find(cancer => cancer.cancer_idx === userData.cancer_idx)?.cancer_name || "정보 없음";
+                const stageName = stageList.find(stage => stage.stage_idx === userData.stage_idx)?.stage_name || "정보 없음";
+                
+                console.log("변환된 진단명:", cancerName);
+                console.log("변환된 병기:", stageName);
+                
+                // 변환된 데이터를 포함하여 상태 업데이트
+                const enrichedUserData = {
+                    ...userData,
+                    cancer: cancerName,
+                    stage: stageName
+                };
+                
+                setUser(enrichedUserData);
                 
                 // 프로필 이미지가 있으면 세션 스토리지에 저장
-                if (res.data.data.profile_photo) {
-                    const profileImageUrl = getValidImageUrl(res.data.data.profile_photo);
+                if (userData.profile_photo) {
+                    const profileImageUrl = getValidImageUrl(userData.profile_photo);
                     sessionStorage.setItem("profilePic", profileImageUrl);
                     
                     // 프로필 업데이트 이벤트 발생
@@ -231,9 +246,17 @@ export default function ProfilePage() {
     // 암 종류와 병기 정보 가져오기
     const fetchCancerStageData = async () => {
         try {
+            console.log("암 종류/병기 데이터 요청 시작");
+            
             const [cancerRes, stageRes] = await Promise.all([
-                axios.get("http://localhost/cancer"),
-                axios.get("http://localhost/stage")
+                axios.get("http://localhost/cancer").catch(err => {
+                    console.error("암 종류 API 호출 실패:", err);
+                    return { data: [] };
+                }),
+                axios.get("http://localhost/stage").catch(err => {
+                    console.error("병기 API 호출 실패:", err);
+                    return { data: [] };
+                })
             ]);
             
             console.log("암 종류 데이터:", cancerRes.data);
