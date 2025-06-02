@@ -79,8 +79,16 @@ export default function RootLayout({ children }) {
 
     sessionStorage.removeItem("token");
     sessionStorage.removeItem("id");
+    sessionStorage.removeItem("name");        // 이름 정보 제거
+    sessionStorage.removeItem("profilePic");  // 프로필 이미지 정보 제거
+    sessionStorage.removeItem("signupName");  // 회원가입 임시 이름 제거 (혹시 남아있을 경우)
+    
     setIsLoggedIn(false);
     setUsername("");
+    
+    // 사이드바 업데이트를 위한 이벤트 발생
+    window.dispatchEvent(new Event('profileUpdated'));
+    
     location.href = "/";
   };
 

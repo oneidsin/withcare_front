@@ -67,12 +67,21 @@ export default function joinPage(){
         if (!submitData.cancer) delete submitData.cancer;
         if (!submitData.stage) delete submitData.stage;
 
-        const res = await axios.post('http://localhost/join', submitData);
-        if (res.data.success) {
-            alert('회원가입이 완료되었습니다.');
-            window.location.href = '/login';
-        } else {
-            alert('회원가입에 실패했습니다. 다시 시도해주세요.');
+        try {
+            const res = await axios.post('http://localhost/join', submitData);
+            if (res.data.success) {
+                // 회원가입 성공 시 이름을 세션 스토리지에 미리 저장
+                sessionStorage.setItem('signupName', submitData.name);
+                console.log('회원가입 성공 - 이름 저장:', submitData.name);
+                
+                alert('회원가입이 완료되었습니다.');
+                window.location.href = '/login';
+            } else {
+                alert('회원가입에 실패했습니다. 다시 시도해주세요.');
+            }
+        } catch (error) {
+            console.error('회원가입 오류:', error);
+            alert('회원가입 중 오류가 발생했습니다.');
         }
     };
 
