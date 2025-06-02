@@ -23,6 +23,10 @@ export default function PostDetailPage() {
     const [userLikeStatus, setUserLikeStatus] = useState(0);
     const [isProcessing, setIsProcessing] = useState(false);
 
+    // COMMENTS
+    const [coms, setComs] = useState('');
+    const [comList, setComList] = useState([]);
+
     useEffect(() => {
         const token = sessionStorage.getItem('token');
         if (token) {
@@ -238,6 +242,34 @@ export default function PostDetailPage() {
 
     const isOwnerOrAdmin = loginId === post.id || loginId === 'admin';
 
+    // WRITE COMMENTS
+    const handleCom = async () => {
+        if (!coms) return alert('댓글 내용을 입력하세요.');
+
+        const token = sessionStorage.getItem('token');
+        if (!token) {
+            alert('로그인이 필요합니다.');
+        }
+
+        const comRes = await axios.post(`http://localhost/post/detail/${postIdx}/write`, {
+            post_idx : postIdx, // 게시글 번호
+            com_content : coms, // 댓글 내용
+            com_blind_yn : false, // 블라인드 여부
+
+        }, {
+            headers: { Authorization: token },
+        });
+
+        if(!comRes.data.success) return alert('댓글 등록 실패');
+
+        alert('댓글이 등록 되었습니다.');
+        window.location.href = `/post/detail?post_idx=${postIdx}`;
+
+    }
+
+    // COMMENTS LIST
+
+
     return (
         <div className="detail-container">
             <div className="detail-header">
@@ -300,8 +332,8 @@ export default function PostDetailPage() {
 
             <div className="comment-box">
                 <div className="comment-writer">{loginId || 'guest'}</div>
-                <input placeholder="댓글을 남겨보세요." className="comment-input" />
-                <button className="comment-submit">등록</button>
+                <input placeholder="댓글을 남겨보세요." className="comment-input" value={coms} onChange={(e) => setComs(e.target.value)} />
+                <button className="comment-submit" onClick={()=>handleCom()}>등록</button>
             </div>
 
             <div className="detail-footer">
