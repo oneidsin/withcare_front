@@ -82,13 +82,13 @@ export default function RootLayout({ children }) {
     sessionStorage.removeItem("name");        // 이름 정보 제거
     sessionStorage.removeItem("profilePic");  // 프로필 이미지 정보 제거
     sessionStorage.removeItem("signupName");  // 회원가입 임시 이름 제거 (혹시 남아있을 경우)
-    
+
     setIsLoggedIn(false);
     setUsername("");
-    
+
     // 사이드바 업데이트를 위한 이벤트 발생
     window.dispatchEvent(new Event('profileUpdated'));
-    
+
     location.href = "/";
   };
 
@@ -158,21 +158,6 @@ function HeaderComponent({ isLoggedIn, username, handleLogout }) {
     dispatch(togglePopup());
   };
 
-  // 테스트용 수동 알림 추가 함수
-  const handleTestNotification = () => {
-    const testNotification = {
-      noti_idx: Date.now(),
-      noti_type: "테스트 알림",
-      content_pre: "수동으로 추가한 테스트 알림입니다.",
-      noti_date: new Date().toISOString(),
-      noti_read_yn: false,
-      relate_user_id: username,
-      link: null
-    };
-    console.log('테스트 알림 추가:', testNotification);
-    dispatch(addNotification(testNotification));
-  };
-
   return (
     <header className="header">
       <Link href="/">
@@ -192,10 +177,6 @@ function HeaderComponent({ isLoggedIn, username, handleLogout }) {
               onClick={handleLogout}
               title="로그아웃"
             />
-            {/* 테스트용 버튼 - 나중에 제거 */}
-            <button onClick={handleTestNotification} style={{ marginRight: '10px', padding: '5px', fontSize: '12px' }}>
-              테스트 알림 추가
-            </button>
           </>
         )}
         <Link href="/search">
