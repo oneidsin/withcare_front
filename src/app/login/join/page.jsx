@@ -163,7 +163,7 @@ export default function joinPage(){
                 </tr>
                 </tbody>
             </table>
-            <p colSpan="2" className="notice"> ✅ 암 종류를 선택하신 경우, 암 병기 또한 함께 선택해주셔야 합니다. 암 병기 미선택 시 저장이 제한됩니다.</p>
+            <p colSpan="2" className="notice"> ✅ 암 종류를 선택하신 경우, 암 병기 또한 함께 선택해주셔야 합니다. 암 병기 미선택 시 암 종류 저장이 제한됩니다.</p>
             <input type="button" value="회원가입" onClick={handleJoin}/>
         </div>
     )
