@@ -133,3 +133,16 @@
 .select-bar option:hover {
     background-color: #f0f0f0;
 }
+
+/* 회원 ID 열 스타일 */
+.member-id {
+    cursor: pointer;
+    color: #2563eb;
+    transition: all 0.2s ease;
+}
+
+.member-id:hover {
+    text-decoration: underline;
+    color: #1d4ed8;
+    font-weight: 500;
+}

@@ -3,8 +3,10 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import './member.css';
+import { useRouter } from 'next/navigation';
 
 export default function AdminMemberPage() {
+    const router = useRouter();
     const [members, setMembers] = useState([]);
     const [searchId, setSearchId] = useState('');
     const [sortField, setSortField] = useState('');
@@ -77,6 +79,10 @@ export default function AdminMemberPage() {
         }
     };
 
+    const handleMemberClick = (id) => {
+        router.push(`/admin/admin-member/detail?id=${id}`);
+    };
+
     return (
         <div className="admin-container">
             {/* Main Content */}
@@ -146,7 +152,7 @@ export default function AdminMemberPage() {
                     <tbody>
                     {members.map((m, i) => (
                         <tr key={i}>
-                            <td>{m.id}</td>
+                            <td className="member-id" onClick={() => handleMemberClick(m.id)}>{m.id}</td>
                             <td>
                                 <select
                                     value={m.admin_yn ? 'Y' : 'N'}
