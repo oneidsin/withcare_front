@@ -73,7 +73,7 @@
     flex-direction: column;
     align-items: center;
     width: 100%;
-    margin: 20px 0;
+    margin: 10px 0;
 }
 
 .login button:active {
@@ -157,4 +157,22 @@
 /* 마지막 행 스타일 */
 .login tr:last-child th {
     padding-top: 20px;
+}
+
+.notice {
+    font-size: 13px;
+    color: #c1c1c1;
+}
+
+.gender {
+    vertical-align: middle; /* 기본값은 baseline이라 위로 붙는 느낌이 날 수 있음 */
+    margin-right: 4px;
+}
+
+label {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 16px;
+    position: relative;
+    top: 4px; /* 숫자를 조정하면서 원하는 위치 찾기 */
 }

@@ -124,9 +124,9 @@ export default function joinPage(){
                 <tr>
                     <th>GENDER<span style={{color: "red"}}> *</span></th>
                     <td>
-                        <input type="radio" name="gender" value="남" onChange={input}/> 남
+                        <label><input className="gender" type="radio" name="gender" value="남" onChange={input}/> 남</label>
                         &nbsp;&nbsp;&nbsp;&nbsp;
-                        <input type="radio" name="gender" value="여" onChange={input}/> 여
+                        <label><input className="gender" type="radio" name="gender" value="여" onChange={input}/> 여</label>
                     </td>
                 </tr>
                 <tr>
@@ -161,13 +161,10 @@ export default function joinPage(){
                         </select>
                     </td>
                 </tr>
-                <tr>
-                    <th colSpan="2">
-                        <input type="button" value="회원가입" onClick={handleJoin}/>
-                    </th>
-                </tr>
                 </tbody>
             </table>
+            <p colSpan="2" className="notice"> ✅ 암 종류를 선택하신 경우, 암 병기 또한 함께 선택해주셔야 합니다. 암 병기 미선택 시 저장이 제한됩니다.</p>
+            <input type="button" value="회원가입" onClick={handleJoin}/>
         </div>
     )
 }
