@@ -565,7 +565,7 @@ footer {
   background-color: #f8f9fa;
   cursor: pointer;
   transition: all 0.2s;
-  padding: 12px;
+  padding: 7px;
   border-radius: 6px;
   border-left: 3px solid #6c757d;
   display: flex;
@@ -592,10 +592,10 @@ footer {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin: 0 0 6px 0;
   font-size: 1rem;
   flex: 1;
   display: block;
+  margin: 1px;
   /* 반드시 표시되도록 */
   visibility: visible !important;
   /* 강제 표시 */

@@ -34,12 +34,6 @@
   margin-bottom: 12px;
 }
 
-.cancer-post-item {
-  padding: 12px;
-  border-radius: 6px;
-  border-left: 3px solid #6c757d;
-}
-
 .cancer-post-item.personalized {
   background-color: #f1f8ff;
   border-left: 3px solid #5fa8d3;
