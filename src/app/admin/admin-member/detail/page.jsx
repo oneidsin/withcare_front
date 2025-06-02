@@ -72,32 +72,44 @@ export default function MemberDetailPage() {
         fetchMemberDetail();
     }, [id, router]);
 
-    const handleBlockUser = async () => {
+    // 차단 처리 페이지로 이동 또는 차단 해제
+    const blockProcessPage = (blocked_id) => {
+        if (member.block_yn) {
+            // 이미 차단된 상태면 차단 해제
+            handleUnblockUser(blocked_id);
+        } else {
+            // 차단되지 않은 상태면 차단 처리 페이지로 이동
+            console.log(blocked_id);
+            router.push(`/admin/admin-block/process?blocked_id=${blocked_id}`);
+        }
+    };
+
+    // 차단 해제 함수
+    const handleUnblockUser = async (blocked_id) => {
         try {
+            const id = sessionStorage.getItem('id');
             const token = sessionStorage.getItem('token');
-            const reason = prompt('차단 사유를 입력해주세요:');
 
-            if (!reason) return;
+            if (!confirm(`${blocked_id} 회원의 차단을 해제하시겠습니까?`)) return;
 
-            const res = await axios.post(
-                'http://localhost/admin/block',
+            const res = await axios.put(
+                'http://localhost/admin/block/cancel',
                 {
-                    id,
-                    block_reason: reason,
-                    block_days: 7 // 기본 7일 차단
+                    id: id,
+                    blocked_id: blocked_id
                 },
                 { headers: { Authorization: token } }
             );
 
-            if (res.data.success) {
-                alert('회원이 차단되었습니다.');
+            if (res.data.result) {
+                alert('차단이 해제되었습니다.');
                 // 페이지 새로고침
                 window.location.reload();
             } else {
-                alert('회원 차단에 실패했습니다.');
+                alert('차단 해제에 실패했습니다.');
             }
         } catch (error) {
-            console.error('회원 차단 실패:', error);
+            console.error('차단 해제 실패:', error);
             alert('처리 중 오류가 발생했습니다.');
         }
     };
@@ -145,7 +157,7 @@ export default function MemberDetailPage() {
                 <div className="member-actions">
                     <button
                         className={`block-button ${member.block_yn ? 'active' : ''}`}
-                        onClick={handleBlockUser}
+                        onClick={() => blockProcessPage(id)}
                     >
                         {member.block_yn ? '차단 해제' : '회원 차단'}
                     </button>

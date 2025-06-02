@@ -1,0 +1,135 @@
+/* 헤더 영역 */
+.inbox-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.inbox-header h1 {
+  margin: 0;
+  color: #333;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+/* 뒤로가기 버튼 */
+.back-button {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.back-button:hover {
+  background-color: #0056b3;
+  transition: background-color 0.2s ease;
+}
+
+.back-button:active {
+  background-color: #004085;
+}
+
+/* 내부 컨텐츠 */
+.inbox-content {
+  display: flex;
+  flex-direction: row;
+  gap: 10;
+  justify-content: flex-start;
+  align-items: center;
+  text-decoration: none;
+}
+
+.inbox-content input {
+  width: 20%;
+  padding: 10px;
+  border: 1px solid black;
+  border-radius: 5px;
+}
+
+.inbox-content button {
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  margin-left: auto;
+}
+
+/* 신고 히스토리 및 처리 사유 박스 */
+.report-history-box,
+.report-process-box {
+  margin-top: 20px;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.report-history-box h3,
+.report-process-box h3 {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 18px;
+  font-weight: bold;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 8px;
+}
+
+.content-box {
+  background-color: white;
+  border: 1px solid #e9ecef;
+  border-radius: 5px;
+  padding: 15px;
+  min-height: 100px;
+}
+
+.content-box p {
+  margin: 8px 0;
+  line-height: 1.5;
+  color: #555;
+}
+
+.content-box strong {
+  color: #333;
+  font-weight: 600;
+  display: inline-block;
+  min-width: 120px;
+}
+
+.content-box textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  resize: none;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.report-process-button {
+  background-color: rgb(200, 0, 0);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  margin-left: auto;
+}
+
+.report-process-button:hover {
+  background-color: rgb(150, 0, 0);
+  cursor: pointer;
+}
+
+.report-process-button:active {
+  background-color: rgb(100, 0, 0);
+}

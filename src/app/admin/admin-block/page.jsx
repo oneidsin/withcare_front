@@ -45,8 +45,8 @@ export default function AdminBlock() {
       );
       console.log('API 응답 데이터:', res.data.result.list);
       setBlockList(res.data.result.list);
-      setTotalPages(res.data.result.totalPages);
-      console.log('총 페이지 수:', res.data.result.totalPages);
+      setTotalPages(res.data.result.totalPage);
+      console.log('총 페이지 수:', res.data.result.totalPage);
     } catch (error) {
       console.error('차단 목록 가져오기 실패:', error);
       alert('차단 목록을 불러오는데 실패했습니다.');
@@ -126,8 +126,6 @@ export default function AdminBlock() {
       </tr>
     );
   };
-
-
 
 
   return (
