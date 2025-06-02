@@ -1,141 +1,114 @@
-.search-page {
-    padding: 20px;
+.sch-page {
+    padding: 15px;
     max-width: 1200px;
     margin: 0 auto;
 }
 
-.search-bar {
+/* 상단 전체 검색바 grid 고정 */
+.sch-bar {
     background-color: white;
-    padding: 15px;
+    padding: 15px 20px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: 150px 150px 1fr;
     gap: 10px;
     align-items: center;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
-.search-form {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    flex: 1;
-    min-width: 300px;
-}
-
-.search-form select,
-.search-form input {
+/* 게시판 선택 박스 */
+.sch-board-select {
+    width: 100%;
+    height: 38px;
     padding: 8px 12px;
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 14px;
+    background-color: white;
+    box-sizing: border-box;
+}
+
+/* 정렬 옵션 박스 */
+.sch-sort-box {
+    width: 100%;
+}
+
+.sch-sort-select {
+    width: 100%;
     height: 38px;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: white;
+    box-sizing: border-box;
 }
 
-.search-form input {
-    flex: 1;
-    min-width: 200px;
+/* 검색폼 내부 grid 고정 */
+.sch-form {
+    display: grid;
+    grid-template-columns: 140px 1fr 80px;
+    gap: 10px;
+    width: 100%;
+    align-items: center;
 }
 
-.search-form button {
-    padding: 8px 16px;
+/* 검색 타입 select */
+.sch-form select {
+    width: 100%;
+    height: 38px;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: white;
+    box-sizing: border-box;
+}
+
+/* 검색 키워드 인풋 */
+.sch-form input {
+    width: 100%;
+    height: 38px;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: white;
+    box-sizing: border-box;
+}
+
+/* 검색 버튼 */
+.sch-button {
+    width: 100%;
+    height: 38px;
+    padding: 8px 12px;
     background-color: #007bff;
     color: white;
     border: none;
     border-radius: 4px;
+    font-size: 14px;
     cursor: pointer;
     transition: background-color 0.2s;
-    height: 38px;
-    min-width: 40px;
 }
 
-.search-form button:hover {
+.sch-button:hover {
     background-color: #0056b3;
 }
 
-.recent-searches-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin: 10px 0;
-    max-width: 100%;
-}
-
-.search-term {
-    background-color: #f0f0f0;
-    padding: 4px 12px;
-    border-radius: 16px;
-    font-size: 14px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 200px; /* 최대 너비 설정 */
-    cursor: pointer;
-}
-
-.search-term:hover {
-    background-color: #e0e0e0;
-}
-
-.board-select,
-.sort-select {
-    padding: 8px 12px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    margin-right: 10px;
-    font-size: 14px;
-    min-width: 150px;
-    height: 38px;
-}
-
-/* 게시글 목록 스타일 */
-.post-list {
-    margin-top: 20px;
-}
-
-.post-item {
-    background-color: white;
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.post-item:hover {
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-}
-
-.tags {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-.tag {
-    background-color: #f0f0f0;
-    padding: 4px 8px;
-    border-radius: 8px;
-    font-size: 14px;
-}
-
-.recent-keywords{
-    margin-top: 15px;
-}
-
-.popular-keywords{
-    margin-top: 30px;
-}
-
-.post-table {
+/* 게시글 테이블 (기존 유지) */
+.sch-post-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
     table-layout: fixed;
 }
 
-.post-table th,
-.post-table td {
+.sch-post-table th,
+.sch-post-table td {
     border-bottom: 1px solid #ddd;
     padding: 12px;
     text-align: left;
@@ -144,66 +117,9 @@
     white-space: nowrap;
 }
 
-/* 칼럼별 너비 조정 */
-.post-table th:nth-child(1), .post-table td:nth-child(1) { /* 글번호 */
-    width: 8%;
-}
-.post-table th:nth-child(2), .post-table td:nth-child(2) { /* 제목 */
-    width: 50%;
-}
-.post-table th:nth-child(3), .post-table td:nth-child(3) { /* 작성자 */
-    width: 10%;
-}
-.post-table th:nth-child(4), .post-table td:nth-child(4) { /* 조회 */
-    width: 8%;
-}
-.post-table th:nth-child(5), .post-table td:nth-child(5) { /* 추천 */
-    width: 8%;
-}
-.post-table th:nth-child(6), .post-table td:nth-child(6) { /* 날짜 */
-    width: 16%;
-}
-
-/* 정렬 옵션 */
-.sort-box {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    margin-bottom: 0;
-    gap: 8px;
-}
-
-.sort-box label {
-    font-size: 14px;
-    color: #444;
-}
-
-/* 모든 select 요소에 공통 스타일 적용 */
-.search-form select,
-.board-select,
-.sort-select,
-.sort-box select,
-.search-form input {
-    padding: 8px 12px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
-    height: 38px;
-    min-width: 150px;
-    background-color: white;
-    box-sizing: border-box;
-    vertical-align: middle;
-}
-
-/* select 요소에만 적용할 스타일 */
-.search-form select,
-.board-select,
-.sort-select,
-.sort-box select {
-    appearance: auto;
-}
-
-.search-form input {
-    flex: 1;
-    min-width: 200px;
-}
+.sch-post-table th:nth-child(1), .sch-post-table td:nth-child(1) { width: 8%; }
+.sch-post-table th:nth-child(2), .sch-post-table td:nth-child(2) { width: 50%; }
+.sch-post-table th:nth-child(3), .sch-post-table td:nth-child(3) { width: 10%; }
+.sch-post-table th:nth-child(4), .sch-post-table td:nth-child(4) { width: 8%; }
+.sch-post-table th:nth-child(5), .sch-post-table td:nth-child(5) { width: 8%; }
+.sch-post-table th:nth-child(6), .sch-post-table td:nth-child(6) { width: 16%; }
