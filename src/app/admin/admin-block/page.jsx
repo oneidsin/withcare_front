@@ -128,8 +128,6 @@ export default function AdminBlock() {
   };
 
 
-
-
   return (
     <div className="inbox-container">
       <div className="inbox-header">

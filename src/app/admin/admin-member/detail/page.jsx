@@ -71,35 +71,41 @@ export default function MemberDetailPage() {
         fetchMemberDetail();
     }, [id, router]);
 
-    const handleBlockUser = async () => {
-        try {
-            const token = sessionStorage.getItem('token');
-            const reason = prompt('차단 사유를 입력해주세요:');
+    // const handleBlockUser = async () => {
+    //     try {
+    //         const token = sessionStorage.getItem('token');
+    //         const reason = prompt('차단 사유를 입력해주세요:');
 
-            if (!reason) return;
+    //         if (!reason) return;
 
-            const res = await axios.post(
-                'http://localhost/admin/block',
-                {
-                    id,
-                    block_reason: reason,
-                    block_days: 7 // 기본 7일 차단
-                },
-                { headers: { Authorization: token } }
-            );
+    //         const res = await axios.post(
+    //             'http://localhost/admin/block',
+    //             {
+    //                 id,
+    //                 block_reason: reason,
+    //                 block_days: 7 // 기본 7일 차단
+    //             },
+    //             { headers: { Authorization: token } }
+    //         );
 
-            if (res.data.success) {
-                alert('회원이 차단되었습니다.');
-                // 페이지 새로고침
-                window.location.reload();
-            } else {
-                alert('회원 차단에 실패했습니다.');
-            }
-        } catch (error) {
-            console.error('회원 차단 실패:', error);
-            alert('처리 중 오류가 발생했습니다.');
-        }
-    };
+    //         if (res.data.success) {
+    //             alert('회원이 차단되었습니다.');
+    //             // 페이지 새로고침
+    //             window.location.reload();
+    //         } else {
+    //             alert('회원 차단에 실패했습니다.');
+    //         }
+    //     } catch (error) {
+    //         console.error('회원 차단 실패:', error);
+    //         alert('처리 중 오류가 발생했습니다.');
+    //     }
+    // };
+
+    // 차단 처리 페이지로 이동
+    const blockProcessPage = (blocked_id) => {
+        console.log(blocked_id);
+        router.push(`/admin/admin-block/process?blocked_id=${blocked_id}`);
+    }
 
     const handleGrantAdmin = async () => {
         try {
@@ -144,7 +150,7 @@ export default function MemberDetailPage() {
                 <div className="member-actions">
                     <button
                         className={`block-button ${member.block_yn ? 'active' : ''}`}
-                        onClick={handleBlockUser}
+                        onClick={() => blockProcessPage(id)}
                     >
                         {member.block_yn ? '차단 해제' : '회원 차단'}
                     </button>

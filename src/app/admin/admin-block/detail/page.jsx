@@ -1,12 +1,15 @@
 "use client";
 
 import axios from "axios";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import "./block-detail.css";
 
 export default function AdminBlockDetail() {
-  const [blockDetail, setBlockDetail] = useState([]);
+  const [blockDetail, setBlockDetail] = useState(null);
   const searchParams = useSearchParams();
+  const [reason, setReason] = useState('');
   const blocked_id = searchParams.get("blocked_id");
 
   useEffect(() => {
@@ -25,24 +28,10 @@ export default function AdminBlockDetail() {
         { headers: { Authorization: token } }
       );
       console.log("응답 : ", res.data);
-      setBlockDetail(res.data.result[0]);
+      setBlockDetail(res.data.result);
     } catch (error) {
       console.log("차단 상세보기 실패 : ", error);
     }
-  };
-
-  // 차단 렌더링
-  const renderBlockDetail = () => {
-    return blockDetail.map((block) => (
-      <tr key={block.block_idx}>
-        <td>{block.block_idx}</td>
-        <td>{block.blocked_id}</td>
-        <td>{block.block_admin_id}</td>
-        <td>{block.block_reason}</td>
-        <td>{formatDate(block.block_start_date)}</td>
-        <td>{formatDate(block.block_end_date)}</td>
-      </tr>
-    ));
   };
 
   // 날짜를 한국 형식으로 포맷팅하는 함수
@@ -57,6 +46,42 @@ export default function AdminBlockDetail() {
   };
 
   return (
-    <div>page</div>
+    <div className="inbox-container">
+      <div className="inbox-header">
+        <h1>차단 상세보기</h1>
+        <div className="action-buttons">
+          <Link href="/admin/admin-block">
+            <button className="back-button">뒤로가기</button>
+          </Link>
+        </div>
+      </div>
+      <div className="inbox-content">
+        {blockDetail ? (
+          <>
+            <p style={{ backgroundColor: '#228B22', color: 'white', padding: '10px', borderRadius: '5px' }}>차단한 ID : {blockDetail.blocked_id}</p>
+            <p style={{ backgroundColor: '#228B22', color: 'white', padding: '10px', borderRadius: '5px' }}>차단을 실행한 관리자 : {blockDetail.block_admin_id}</p>
+            <p style={{ backgroundColor: '#228B22', color: 'white', padding: '10px', borderRadius: '5px' }}>차단 시작일 : {formatDate(blockDetail.block_start_date)}</p>
+            <p style={{ backgroundColor: '#228B22', color: 'white', padding: '10px', borderRadius: '5px' }}>차단 종료일 : {formatDate(blockDetail.block_end_date)}</p>
+          </>
+        ) : (
+          <p>로딩 중</p>
+        )}
+      </div>
+
+
+      {/* 차단 사유 */}
+      <div className="report-process-box">
+        <h3>차단 처리 사유</h3>
+        <div className="content-box">
+          {blockDetail ? (
+            <div>
+              <textarea rows={10} cols={60} name="block_reason" id="block_reason" value={blockDetail.block_reason} readOnly></textarea>
+            </div>
+          ) : (
+            <p>로딩 중</p>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
