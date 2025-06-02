@@ -59,7 +59,7 @@ export default function MemberRanking() {
                                     <img
                                         src={member.lv_icon}
                                         alt="레벨 아이콘"
-                                        className="level-icon"
+                                        className="main-level-icon"
                                     />
                                 )}
                             </div>

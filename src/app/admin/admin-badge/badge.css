@@ -1,0 +1,233 @@
+/* 배지 관리 페이지 스타일 */
+.admin-badge-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.admin-badge-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #333;
+    text-align: center;
+}
+
+/* 섹션 스타일 */
+.badge-section {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #444;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+/* 배지 목록 스타일 */
+.badge-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.badge-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 120px;
+    height: 150px;
+    padding: 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: #f9f9f9;
+}
+
+.badge-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.badge-item.selected {
+    border: 2px solid #4a90e2;
+    background-color: #f0f7ff;
+}
+
+.badge-icon {
+    width: 70px;
+    height: 70px;
+    object-fit: contain;
+    margin-bottom: 10px;
+}
+
+.badge-info {
+    text-align: center;
+    width: 100%;
+}
+
+.badge-name {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 5px;
+    word-break: break-word;
+}
+
+.badge-status {
+    font-size: 12px;
+    color: #666;
+}
+
+/* 새 배지 추가 버튼 */
+.add-new {
+    justify-content: center;
+    background-color: #f0f0f0;
+    border: 1px dashed #ccc;
+}
+
+.add-new:hover {
+    background-color: #e8e8e8;
+}
+
+.add-badge-icon {
+    font-size: 32px;
+    color: #999;
+    margin-bottom: 10px;
+}
+
+/* 배지 편집 폼 스타일 */
+.badge-edit-section {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.badge-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #555;
+}
+
+.form-group input[type="text"] {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.form-group.checkbox {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+}
+
+.badge-image-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.badge-preview {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+}
+
+.badge-preview-placeholder {
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px dashed #ccc;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+    color: #999;
+}
+
+.badge-file-input {
+    display: none;
+}
+
+.badge-file-label {
+    padding: 8px 16px;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    text-align: center;
+    transition: background-color 0.2s;
+}
+
+.badge-file-label:hover {
+    background-color: #e0e0e0;
+}
+
+/* 버튼 스타일 */
+.badge-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.save-btn {
+    background-color: #4a90e2;
+    color: white;
+}
+
+.save-btn:hover {
+    background-color: #3a80d2;
+}
+
+.delete-btn {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.delete-btn:hover {
+    background-color: #d73c2c;
+}
+
+.cancel-btn {
+    background-color: #f0f0f0;
+    color: #666;
+}
+
+.cancel-btn:hover {
+    background-color: #e0e0e0;
+}
