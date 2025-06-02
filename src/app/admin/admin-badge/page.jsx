@@ -67,6 +67,24 @@ export default function AdminBadge() {
         }
     };
 
+    // 배지 이미지 URL 처리 함수
+    const getBadgeImageUrl = (iconPath) => {
+        if (!iconPath) return '/defaultProfileImg.png';
+        
+        // 이미 완전한 URL인 경우
+        if (iconPath.startsWith('http://') || iconPath.startsWith('https://')) {
+            return iconPath;
+        }
+        
+        // 상대 경로인 경우 백엔드 파일 서버 URL 추가
+        if (iconPath.startsWith('badge/')) {
+            return `http://localhost:80/file/${iconPath}`;
+        }
+        
+        // 기본적으로 백엔드 파일 서버 경로 추가
+        return `http://localhost:80/file/badge/${iconPath}`;
+    };
+
     // 배지 목록 가져오기
     const fetchBadges = async () => {
         try {
@@ -91,6 +109,7 @@ export default function AdminBadge() {
             console.log('fetchBadges - 응답:', response.data);
             
             if (response.data.success) {
+                console.log('배지 목록:', response.data.badges);
                 setBadges(response.data.badges || []);
             } else {
                 alert(response.data.msg || '배지 목록을 불러오는데 실패했습니다.');
@@ -119,7 +138,7 @@ export default function AdminBadge() {
             bdg_condition: badge.bdg_condition,
             bdg_active_yn: badge.bdg_active_yn
         });
-        setBadgePreview(badge.bdg_icon); // API 응답에 bdg_icon이 포함되어야 함
+        setBadgePreview(getBadgeImageUrl(badge.bdg_icon));
         setIsEditing(true);
     };
 
@@ -149,6 +168,26 @@ export default function AdminBadge() {
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
+            // 지원되는 이미지 형식 체크
+            const supportedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+            const supportedExtensions = ['.jpg', '.jpeg', '.png', '.gif'];
+            
+            const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+            
+            if (!supportedTypes.includes(file.type) && !supportedExtensions.includes(fileExtension)) {
+                alert('지원하지 않는 이미지 형식입니다.\n지원 형식: JPG, JPEG, PNG, GIF');
+                e.target.value = ''; // 파일 선택 초기화
+                return;
+            }
+            
+            // 파일 크기 체크 (예: 5MB 제한)
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            if (file.size > maxSize) {
+                alert('파일 크기가 너무 큽니다. 5MB 이하의 파일을 선택해주세요.');
+                e.target.value = ''; // 파일 선택 초기화
+                return;
+            }
+            
             setBadgeFile(file);
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -198,23 +237,14 @@ export default function AdminBadge() {
                 console.log('수정 모드 - bdg_idx:', selectedBadge.bdg_idx);
             }
             
-            // 파일 처리 - 백엔드에서 file 파라미터가 required이므로 항상 전송
+            // 파일 처리 - 새 배지 등록 시에만 파일 필수
             if (badgeFile) {
                 formData.append('file', badgeFile);
                 console.log('파일 추가:', badgeFile.name);
-            } else if (isEditing) {
-                // 수정 모드에서 파일이 선택되지 않았을 때 더미 이미지 파일 생성
-                // 1x1 투명 PNG 데이터 (base64)
-                const transparentPngData = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
-                const byteCharacters = atob(transparentPngData);
-                const byteNumbers = new Array(byteCharacters.length);
-                for (let i = 0; i < byteCharacters.length; i++) {
-                    byteNumbers[i] = byteCharacters.charCodeAt(i);
-                }
-                const byteArray = new Uint8Array(byteNumbers);
-                const dummyFile = new File([byteArray], 'dummy.png', { type: 'image/png' });
-                formData.append('file', dummyFile);
-                console.log('더미 이미지 파일 추가 (수정 모드)');
+            } else if (!isEditing) {
+                // 새 배지 등록 시에는 파일이 필수이므로 에러 처리는 위에서 이미 함
+                alert('새 배지 등록 시 이미지 파일이 필요합니다.');
+                return;
             }
 
             formData.append('bdg_name', badgeForm.bdg_name);
@@ -258,11 +288,14 @@ export default function AdminBadge() {
         }
     };
 
-    // 배지 삭제
+    // 배지 블라인드 처리 (비활성화)
     const handleDeleteBadge = async () => {
         if (!selectedBadge) return;
 
-        if (!confirm('정말 이 배지를 삭제(비활성화)하시겠습니까? 실제 데이터 삭제가 아닌 비활성화 처리될 수 있습니다.')) return;
+        const actionText = selectedBadge.bdg_active_yn ? '블라인드 처리' : '활성화';
+        const newStatus = !selectedBadge.bdg_active_yn;
+        
+        if (!confirm(`정말 "${selectedBadge.bdg_name}" 배지를 ${actionText}하시겠습니까?\n\n${selectedBadge.bdg_active_yn ? '⚠️ 사용자에게 더 이상 보이지 않습니다.' : '✅ 사용자에게 다시 보이게 됩니다.'}`)) return;
 
         try {
             const token = sessionStorage.getItem('token');
@@ -273,36 +306,59 @@ export default function AdminBadge() {
                 return;
             }
 
-            const requestData = { bdg_idx: selectedBadge.bdg_idx };
-            console.log('handleDeleteBadge - 요청 데이터:', requestData);
-            console.log('handleDeleteBadge - 요청 헤더:', { 'Authorization': token });
+            console.log('handleDeleteBadge - 상태 변경할 배지 ID:', selectedBadge.bdg_idx);
+            console.log('handleDeleteBadge - 새로운 상태:', newStatus);
 
-            const response = await axios.put(`${API_BASE_URL}/admin/bdg/delete`, 
-                requestData, // 요청 본문
-                {
+            if (selectedBadge.bdg_active_yn) {
+                // 활성 -> 비활성 (블라인드 처리): 기존 delete API 사용
+                const requestData = { bdg_idx: selectedBadge.bdg_idx };
+                
+                const response = await axios.put(`${API_BASE_URL}/admin/bdg/delete`, requestData, {
                     headers: {
-                        'Authorization': token
+                        'Authorization': token,
+                        'Content-Type': 'application/json'
                     }
+                });
+
+                if (response.data.success) {
+                    alert(`"${selectedBadge.bdg_name}" 배지가 블라인드 처리되었습니다.`);
+                    fetchBadges();
+                    handleAddNew();
+                } else {
+                    alert(response.data.msg || '블라인드 처리에 실패했습니다.');
                 }
-            );
-
-            console.log('handleDeleteBadge - 응답:', response.data);
-
-            if (response.data.success) {
-                alert('배지가 삭제(비활성화)되었습니다.');
-                fetchBadges(); // 목록 새로고침
-                handleAddNew(); // 폼 초기화
             } else {
-                alert(response.data.msg || '배지 삭제에 실패했습니다.');
+                // 비활성 -> 활성: save API 사용 (파일 없이)
+                const formData = new FormData();
+                formData.append('bdg_idx', selectedBadge.bdg_idx);
+                formData.append('bdg_name', selectedBadge.bdg_name);
+                formData.append('bdg_condition', selectedBadge.bdg_condition);
+                formData.append('bdg_active_yn', true);
+
+                const response = await axios.post(`${API_BASE_URL}/admin/bdg/save`, formData, {
+                    headers: {
+                        'Authorization': token,
+                        'Content-Type': 'multipart/form-data'
+                    }
+                });
+
+                if (response.data.success) {
+                    alert(`"${selectedBadge.bdg_name}" 배지가 활성화되었습니다.`);
+                    fetchBadges();
+                    handleAddNew();
+                } else {
+                    alert(response.data.msg || '활성화에 실패했습니다.');
+                }
             }
+
         } catch (error) {
-            console.error('배지 삭제 오류:', error);
+            console.error('배지 상태 변경 오류:', error);
             console.error('에러 응답:', error.response?.data);
             
             if (error.response && error.response.status === 403) {
                 alert('관리자 권한이 필요합니다.');
             } else {
-                alert('배지 삭제에 실패했습니다. 백엔드 API와 요청 형식을 확인해주세요.');
+                alert(`배지 ${actionText}에 실패했습니다. 백엔드 API와 요청 형식을 확인해주세요.`);
             }
         }
     };
@@ -317,18 +373,20 @@ export default function AdminBadge() {
                     {badges.map(badge => (
                         <div 
                             key={badge.bdg_idx} 
-                            className={`badge-item ${selectedBadge?.bdg_idx === badge.bdg_idx ? 'selected' : ''}`}
+                            className={`badge-item ${selectedBadge?.bdg_idx === badge.bdg_idx ? 'selected' : ''} ${!badge.bdg_active_yn ? 'inactive' : ''}`}
                             onClick={() => handleSelectBadge(badge)}
                         >
                             <img 
-                                src={badge.bdg_icon || '/default-badge.png'} 
+                                src={getBadgeImageUrl(badge.bdg_icon) || '/defaultProfileImg.png'} 
                                 alt={badge.bdg_name} 
                                 className="badge-icon"
-                                onError={(e) => { e.target.onerror = null; e.target.src='/default-badge.png'; }} // 이미지 로드 실패 시 기본 이미지
+                                onError={(e) => { e.target.onerror = null; e.target.src='/defaultProfileImg.png'; }} // 이미지 로드 실패 시 기본 이미지
                             />
                             <div className="badge-info">
                                 <p className="badge-name">{badge.bdg_name}</p>
-                                <p className="badge-status">{badge.bdg_active_yn ? '활성' : '비활성'}</p>
+                                <p className={`badge-status ${badge.bdg_active_yn ? 'active' : 'inactive'}`}>
+                                    {badge.bdg_active_yn ? '활성' : '비활성'}
+                                </p>
                             </div>
                         </div>
                     ))}
@@ -374,7 +432,7 @@ export default function AdminBadge() {
                             )}
                             <input 
                                 type="file" 
-                                accept="image/*"
+                                accept="image/jpeg,image/jpg,image/png,image/gif,.jpg,.jpeg,.png,.gif"
                                 onChange={handleFileChange}
                                 className="badge-file-input"
                                 id="badge-file"
@@ -421,7 +479,7 @@ export default function AdminBadge() {
                                 className="btn delete-btn"
                                 onClick={handleDeleteBadge}
                             >
-                                삭제
+                                {selectedBadge?.bdg_active_yn ? '블라인드' : '활성화'}
                             </button>
                         )}
                         
