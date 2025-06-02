@@ -59,6 +59,15 @@ export default function ProfilePage() {
                 // 상태 업데이트 - 서버에서 받은 데이터 구조에 맞게 설정
                 setUser(res.data.data);
                 
+                // 프로필 이미지가 있으면 세션 스토리지에 저장
+                if (res.data.data.profile_photo) {
+                    const profileImageUrl = getValidImageUrl(res.data.data.profile_photo);
+                    sessionStorage.setItem("profilePic", profileImageUrl);
+                    
+                    // 프로필 업데이트 이벤트 발생
+                    window.dispatchEvent(new Event('profileUpdated'));
+                }
+                
                 // 활동 내역 가져오기
                 fetchActivities(id);
             } else {
@@ -206,6 +215,13 @@ export default function ProfilePage() {
             return url;
         }
         
+        // profile/ 경로로 시작하는 경우 file/ 접두사 추가
+        if (url.startsWith('profile/')) {
+            const fullUrl = `http://localhost/file/${url}`;
+            console.log("프로필 이미지 변환된 URL:", fullUrl);
+            return fullUrl;
+        }
+        
         // 그 외의 경우 백엔드 기본 URL에 경로 추가
         const fullUrl = `http://localhost/${url}`;
         console.log("변환된 URL:", fullUrl);
@@ -273,13 +289,13 @@ export default function ProfilePage() {
             <div className="profile-header">
                 <div className="profile-image">
                     <img 
-                        src={user?.profile_photo || "/defaultProfileImg.png"} 
+                        src={user?.profile_photo ? getValidImageUrl(user.profile_photo) : "/defaultProfileImg.png"} 
                         alt="프로필 이미지"
                         className="profile-pic"
                         onError={(e) => { 
                             console.error("이미지 로드 실패:", e.target.src);
-                            // 먼저 세션 스토리지의 이미지를 시도
-                            
+                            e.target.onerror = null; 
+                            e.target.src = "/defaultProfileImg.png";
                         }}
                     />
                 </div>
