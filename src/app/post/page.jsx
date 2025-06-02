@@ -140,23 +140,24 @@ export default function PostPage() {
                 }}
                 className="search-form"
             >
-                <select value={sort} onChange={e => setSort(e.target.value)}>
+                <select className="post-sort-form" value={sort} onChange={e => setSort(e.target.value)}>
                     <option value="latest">최신순</option>
                     <option value="recommend">인기순</option>
                 </select>
-                <select value={searchType} onChange={(e) => setSearchType(e.target.value)}>
+                <select className="post-search-form" value={searchType} onChange={(e) => setSearchType(e.target.value)}>
                     <option value="title">제목</option>
                     <option value="content">내용</option>
                     <option value="title_content">제목+내용</option>
                     <option value="id">작성자</option>
                 </select>
                 <input
+                    className="post-search-input"
                     type="text"
                     placeholder="검색어 입력"
                     value={keyword}
                     onChange={(e) => setKeyword(e.target.value)}
                 />
-                <button type="submit">검색</button>
+                <button className="post-search-btn" type="submit">검색</button>
             </form>
         </div>
     );

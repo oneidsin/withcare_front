@@ -48,11 +48,6 @@ div.post-page{
     margin-top: 24px;
 }
 
-.search-form select{
-    font-size: 14px;
-    height: 25px;
-}
-
 .search-form button{
     width: 60px;
 }
@@ -91,15 +86,41 @@ div.post-page{
     /* 눌리는 효과 */
 }
 
-.search-form input {
-    width: 40%;
-    height: 19px;
-}
-
 .container {
     width: 85%;
 }
 
 .write-button {
     margin-left: auto;
+}
+
+.post-search-form{
+    width: 100px;
+    height: 30px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: white;
+    box-sizing: border-box;
+}
+
+.post-sort-form{
+    width: 100px;
+    height: 30px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: white;
+    box-sizing: border-box;
+}
+
+.post-search-input{
+    width: 40%;
+    height: 30px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: white;
+    box-sizing: border-box;
+}
+
+.post-search-btn{
+
 }
