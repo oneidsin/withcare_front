@@ -372,13 +372,13 @@ export default function SearchPage() {
     };
 
     return (
-        <div className="search-page">
-            <div className="search-bar">
+        <div className="sch-page">
+            <div className="sch-bar">
                 {/* 게시판 선택 */}
                 <select 
                     value={boardIdx || ''} 
                     onChange={(e) => handleBoardChange(e.target.value)}
-                    className="board-select"
+                    className="sch-board-select"
                 >
                     <option value="">게시판 선택</option>
                     {boards.map(board => (
@@ -389,11 +389,11 @@ export default function SearchPage() {
                 </select>
 
                 {/* 정렬 옵션 */}
-                <div className="sort-box">
+                <div className="sch-sort-box">
                     <select
                         value={sortOption}
                         onChange={(e) => setSortOption(e.target.value)}
-                        className="sort-select"
+                        className="sch-sort-select"
                     >
                         <option value="latest">최신순</option>
                         <option value="popular">추천순</option>
@@ -401,7 +401,7 @@ export default function SearchPage() {
                 </div>
 
                 {/* 검색 폼 */}
-                <form onSubmit={handleSearch} className="search-form">
+                <form onSubmit={handleSearch} className="sch-form">
                     <select 
                         value={searchType} 
                         onChange={(e) => setSearchType(e.target.value)}
@@ -418,7 +418,7 @@ export default function SearchPage() {
                         onChange={handleKeywordChange}
                         maxLength={SEARCH_CONSTANTS.MAX_LENGTH}
                     />
-                    <button type="submit" className="search-button">검색</button>
+                    <button type="submit" className="sch-button">검색</button>
                 </form>
             </div>
 
@@ -426,7 +426,7 @@ export default function SearchPage() {
             <RecentSearches onSearchClick={handleSearchTermClick} />
 
             {/* 게시글 리스트 */}
-            <table className="post-table">
+            <table className="sch-post-table">
                 <thead>
                     <tr>
                         <th>글번호</th>
@@ -450,7 +450,7 @@ export default function SearchPage() {
 
             {/* 페이지네이션 */}
             {totalPages > 0 && (
-                <div className="pagination" style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '20px' }}>
+                <div className="sch-pagination" style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '20px' }}>
                     {/* 첫 페이지로 이동 */}
                     {page > 1 && (
                         <button 
