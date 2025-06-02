@@ -15,7 +15,7 @@ import { useRouter } from "next/navigation";
 import { store } from "@/redux/store";
 import SSEClient from "@/components/SSEClient";
 import NotificationPopup from "@/components/NotificationPopup";
-import { togglePopup, fetchNotifications, addNotification } from "@/redux/notificationSlice";
+import { togglePopup } from "@/redux/notificationSlice";
 import axios from "axios";
 
 export default function RootLayout({ children }) {
@@ -82,18 +82,18 @@ export default function RootLayout({ children }) {
     const confirmed = confirm("로그아웃하시겠습니까?");
     if (!confirmed) return;
 
-    sessionStorage.removeItem("token");
-    sessionStorage.removeItem("id");
-    sessionStorage.removeItem("name");        // 이름 정보 제거
-    sessionStorage.removeItem("profilePic");  // 프로필 이미지 정보 제거
-    sessionStorage.removeItem("signupName");  // 회원가입 임시 이름 제거 (혹시 남아있을 경우)
-
+    // 모든 세션 데이터 정리
+    sessionStorage.clear(); // 한 번에 모든 데이터 삭제
+    
+    // 상태 초기화
     setIsLoggedIn(false);
     setUsername("");
-
-    // 사이드바 업데이트를 위한 이벤트 발생
+    
+    // 사이드바 및 다른 컴포넌트 업데이트를 위한 이벤트 발생
     window.dispatchEvent(new Event('profileUpdated'));
-
+    window.dispatchEvent(new Event('logout'));
+    
+    // 메인 페이지로 이동
     location.href = "/";
   };
 
@@ -145,19 +145,6 @@ export default function RootLayout({ children }) {
 function HeaderComponent({ isLoggedIn, username, handleLogout }) {
   const dispatch = useDispatch();
   const { unreadCount } = useSelector(state => state.notification);
-
-  // unreadCount 변화 디버깅
-  useEffect(() => {
-    console.log('HeaderComponent - unreadCount 변화:', unreadCount);
-  }, [unreadCount]);
-
-  // 로그인 상태가 변경될 때 알림 가져오기
-  useEffect(() => {
-    if (isLoggedIn && username) {
-      // 로그인 시 알림 목록 가져오기
-      dispatch(fetchNotifications({ id: username, offset: 0 }));
-    }
-  }, [isLoggedIn, username, dispatch]);
 
   const handleNotificationClick = () => {
     dispatch(togglePopup());
