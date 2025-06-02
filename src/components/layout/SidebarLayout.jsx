@@ -20,10 +20,16 @@ export default function SidebarLayout({
       const storedProfilePic = sessionStorage.getItem('profilePic');
       const storedName = sessionStorage.getItem('name') || sessionStorage.getItem('id');
       
+      // 프로필 이미지 처리
       if (storedProfilePic) {
         console.log('사이드바 프로필 이미지 업데이트:', storedProfilePic);
         setUserProfilePic(storedProfilePic);
         setImageError(false); // 이미지 오류 상태 초기화
+      } else {
+        // 프로필 이미지가 없으면 기본 이미지 사용
+        console.log('프로필 이미지가 없어서 기본 이미지 사용');
+        setUserProfilePic('/defaultProfileImg.png');
+        setImageError(false);
       }
       
       if (storedName) {

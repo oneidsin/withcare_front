@@ -48,14 +48,22 @@ export default function UpdatePage() {
             const timestamp = new Date().getTime();
             const storedName = sessionStorage.getItem("name");
             
-            // 프로필 정보 요청
-            const [userRes, cancerRes, stageRes] = await Promise.all([
+            // 프로필 정보와 선택 옵션 데이터를 병렬로 요청
+            const requests = [
                 axios.get(`http://localhost/profile/${id}?t=${timestamp}`, {
                     headers: { Authorization: token }
                 }),
-                axios.get("http://localhost/cancer"),
-                axios.get("http://localhost/stage")
-            ]);
+                axios.get("http://localhost/cancer").catch(err => {
+                    console.error("암 종류 API 호출 실패:", err);
+                    return { data: [] };
+                }),
+                axios.get("http://localhost/stage").catch(err => {
+                    console.error("병기 API 호출 실패:", err);
+                    return { data: [] };
+                })
+            ];
+            
+            const [userRes, cancerRes, stageRes] = await Promise.all(requests);
 
             console.log("프로필 API 응답:", userRes.data);
             console.log("세션에 저장된 이름:", storedName);
@@ -87,10 +95,28 @@ export default function UpdatePage() {
                 if (userData.profile_photo) {
                     setPreviewImage(getValidImageUrl(userData.profile_photo));
                 }
+            } else {
+                // 프로필 정보를 가져올 수 없는 경우 기본 정보라도 설정
+                const basicInfo = {
+                    id: id,
+                    name: storedName || "",
+                    year: "",
+                    gender: "",
+                    email: "",
+                    cancer_idx: "",
+                    stage_idx: "",
+                    profile_yn: "Y",
+                    intro: "",
+                    profile_photo: ""
+                };
+                setInfo(basicInfo);
+                console.warn("프로필 정보 로딩 실패, 기본 정보 사용");
             }
 
+            // 선택 옵션 설정 (실패해도 빈 배열로 설정)
             setCancerList(cancerRes.data || []);
             setStageList(stageRes.data || []);
+            
         } catch (error) {
             console.error("데이터 로딩 실패:", error);
             
@@ -111,14 +137,25 @@ export default function UpdatePage() {
             
             // 오류가 발생해도 세션 스토리지의 기본 정보는 표시
             const storedName = sessionStorage.getItem("name");
-            if (storedName) {
-                setInfo(prev => ({
-                    ...prev,
-                    id: id,
-                    name: storedName
-                }));
-            }
-            alert("일부 프로필 정보를 불러오는데 실패했습니다.");
+            const basicInfo = {
+                id: id,
+                name: storedName || "",
+                year: "",
+                gender: "",
+                email: "",
+                cancer_idx: "",
+                stage_idx: "",
+                profile_yn: "Y",
+                intro: "",
+                profile_photo: ""
+            };
+            setInfo(basicInfo);
+            
+            // 선택 옵션은 빈 배열로 설정
+            setCancerList([]);
+            setStageList([]);
+            
+            alert("일부 프로필 정보를 불러오는데 실패했습니다. 기본 정보로 진행합니다.");
         }
     };
 
@@ -170,8 +207,8 @@ export default function UpdatePage() {
                 email: info.email || "",
                 year: parseInt(info.year) || 0,
                 gender: info.gender || "",
-                cancer_idx: info.cancer_idx ? parseInt(info.cancer_idx) : 0,
-                stage_idx: info.stage_idx ? parseInt(info.stage_idx) : 0,
+                cancer_idx: (info.cancer_idx && info.cancer_idx !== "") ? parseInt(info.cancer_idx) : null,
+                stage_idx: (info.stage_idx && info.stage_idx !== "") ? parseInt(info.stage_idx) : null,
                 profile_yn: info.profile_yn === "Y",
                 intro: info.intro || "",
                 profile_photo: info.profile_photo  // 기존 이미지 URL 유지
