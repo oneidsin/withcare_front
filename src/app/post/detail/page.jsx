@@ -22,14 +22,16 @@ export default function PostDetailPage() {
     const [isProcessing, setIsProcessing] = useState(false);
 
     // COMMENTS
-    const [coms, setComs] = useState('');
-    const [comList, setComList] = useState([]);
-    const [showMentionSuggestions, setShowMentionSuggestions] = useState(false);
+    const [coms, setComs] = useState(''); // 댓글 내용쿤
+    const [comList, setComList] = useState([]); // 댓글 리스트쿤
+    const [showMentionSuggestions, setShowMentionSuggestions] = useState(false); // 멘션 유저리스트 추천쿤
     const [mentionQuery, setMentionQuery] = useState('');
     const [mentionSuggestions, setMentionSuggestions] = useState([]);
     const [allUsers, setAllUsers] = useState([]);
     const effectiveBoardIdx = boardIdxFromParam || post?.board_idx;
     const comIdx = searchParams.get('com_idx');
+    const [updateComIdx, setUpdateComIdx] = useState(null); // 수정 중인 댓글의 인덱스
+    const [updateComs, setUpdateComs] = useState(""); // 수정할 댓글 내용
 
     // COMMENT LIST
     const fetchCom = async () => {
@@ -361,6 +363,43 @@ export default function PostDetailPage() {
         }
     };
 
+    // '수정' 버튼 눌렀을 때 실행됨
+    // 클릭한 댓글의 com_idx를 상태에 저장해서 어떤 댓글을 수정하는지 표시하고,
+    // 댓글 내용을 수정용 상태 변수에 넣어서 input에 보여주게 함
+    const handleEditClick = (comment) => {
+        setUpdateComIdx(comment.com_idx);       // 수정할 댓글 ID 저장
+        setUpdateComs(comment.com_content);     // 수정할 댓글 내용 저장
+    };
+
+    // '취소' 버튼 눌렀을 때 실행됨
+    // 수정 모드를 종료하고, 수정용 상태 변수 초기화
+    const handleEditCancel = () => {
+        setUpdateComIdx(null);   // 수정 중인 댓글 ID 초기화 (수정 종료)
+        setUpdateComs("");       // 수정 중인 댓글 내용 초기화
+    };
+
+    // '완료' 버튼 눌렀을 때 실행됨
+    // 실제로 서버에 수정 내용을 보내는 작업 넣어야 함
+    // 지금은 콘솔에 수정된 댓글 내용 찍고 수정 모드 종료
+    const handleEditSubmit = async () => {
+        const token = sessionStorage.getItem('token');
+        const response = await axios.put(`http://localhost/post/detail/${postIdx}/update`, {
+                com_idx: updateComIdx,
+                com_content: updateComs,
+            }, {headers: {Authorization: token}});
+
+            if (response.data.success) {
+                alert('댓글 수정이 완료 되었습니다.');
+                setUpdateComIdx(null);  // 수정 모드 종료
+                setUpdateComs("");      // 수정 상태 초기화
+                fetchCom(); // 수정 성공 시 목록 새로고침
+            } else {
+                alert('댓글을 수정할 권한이 없습니다.');
+            }
+    };
+
+
+    // 댓글 삭제
     const comDelete = async (comIdx) => {
         if (!confirm("정말 삭제하시겠습니까?")) return;
 
@@ -420,8 +459,8 @@ export default function PostDetailPage() {
             </div>
 
             <div className="recommend-box">
-                <button 
-                    className={`recommend-button ${userLikeStatus === 1 ? 'active' : ''}`} 
+                <button
+                    className={`recommend-button ${userLikeStatus === 1 ? 'active' : ''}`}
                     onClick={() => handleRecommend(1)}
                     disabled={isProcessing}
                 >
@@ -429,8 +468,8 @@ export default function PostDetailPage() {
                     <span className="like">추천</span>
                     <span>{likes}</span>
                 </button>
-                <button 
-                    className={`recommend-button ${userLikeStatus === -1 ? 'active' : ''}`} 
+                <button
+                    className={`recommend-button ${userLikeStatus === -1 ? 'active' : ''}`}
                     onClick={() => handleRecommend(-1)}
                     disabled={isProcessing}
                 >
@@ -440,8 +479,6 @@ export default function PostDetailPage() {
                 </button>
             </div>
 
-            {console.log("댓글 리스트", comList)}
-
             <div className="comment-list">
                 {comList.length === 0 ? (
                     <p>댓글이 없습니다.</p>
@@ -450,33 +487,54 @@ export default function PostDetailPage() {
                         <div key={idx} className="comment-item">
                             <div className="comment-header">
                                 <span className="comlist-writer">{comment.id}</span>
-                                <span className="comment-date">{comment.com_create_date?.slice(0, 10)}</span>
-                                <button className="comlist-btn"> 수정 </button>
-                                <button className="comlist-btn" onClick={() => comDelete(comment.com_idx)}> 삭제 </button>
-                                <button className="comlist-btn"> 신고 </button>
+                                {updateComIdx === comment.com_idx ? (
+                                    <>
+                                        <button className="comlist-btn" onClick={handleEditSubmit}>완료</button>
+                                        <button className="comlist-btn" onClick={handleEditCancel}>취소</button>
+                                    </>
+                                ) : (
+                                    <>
+                                        {(loginId === comment.id) && (
+                                            <button className="comlist-btn" onClick={() => handleEditClick(comment)}>수정</button>
+                                        )}
+                                        {(loginId === comment.id || isAdmin) && (
+                                            <button className="comlist-btn" onClick={() => comDelete(comment.com_idx)}>삭제</button>
+                                        )}
+                                        <button className="comlist-btn">신고</button>
+                                    </>
+                                )}
                             </div>
-                            <div className="comment-content">{comment.com_content}</div>
+
+                            {updateComIdx === comment.com_idx ? (
+                                <input
+                                    className="comment-edit-input"
+                                    value={updateComs}
+                                    onChange={(e) => setUpdateComs(e.target.value)}
+                                />
+                            ) : (
+                                <div className="comment-content">{comment.com_content}</div>
+                            )}
+                            <span className="comment-date">{comment.com_create_date?.slice(0, 10)}</span>
                         </div>
                     ))
                 )}
             </div>
 
-
             <div className="comment-box">
                 <div className="comment-writer">{loginId || 'guest'}</div>
                 <div className="comment-input-container">
-                    <input 
-                        placeholder="댓글을 남겨보세요. (@를 입력하여 멘션)" 
-                        className="comment-input" 
-                        value={coms} 
+                    <input
+                        placeholder="댓글을 남겨보세요. (@를 입력하여 멘션)"
+                        className="comment-input"
+                        value={coms}
                         onChange={handleCommentInput}
                     />
                     {showMentionSuggestions && (
                         <div className="mention-suggestions">
                             {mentionSuggestions.length > 0 ? (
                                 mentionSuggestions.map((user, index) => (
-                                    <div 
-                                        key={index} 
+                                    <div
+                                        key={index}
                                         className="mention-item"
                                         onClick={() => handleMentionSelect(user.id)}
                                     >

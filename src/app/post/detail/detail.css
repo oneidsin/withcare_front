@@ -180,13 +180,31 @@
 
 /* 댓글 아이템 */
 .comment-item {
+    display: flex;
+    flex-direction: column; /* 가로 → 세로 정렬 */
+    align-items: flex-start; /* 작성자/버튼 왼쪽 정렬 */
     padding: 12px 16px;
     border-bottom: 1px solid #f0f0f0;
     background-color: #fafafa;
     border-radius: 6px;
-    margin: 10px auto 10px auto;
+    margin: 10px auto;
     box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     transition: background-color 0.2s ease;
+}
+
+.comment-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between; /* 작성자 왼쪽 / 버튼 오른쪽 */
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.comment-body {
+    width: 100%;
+    font-size: 14px;
+    color: #333;
+    word-break: break-word;
 }
 
 .comment-box {
@@ -225,16 +243,30 @@
 }
 
 .comlist-writer {
-    margin-right: 8px; /* 혹은 10px, 필요에 따라 조절 */
+    margin-right: auto; /* 혹은 10px, 필요에 따라 조절 */
     font-weight: bold;
 }
 
 .comlist-btn {
-    margin-left: 8px; /* 혹은 10px, 필요에 따라 조절 */
+    margin-left: 8px; /* 8px;  혹은 10px, 필요에 따라 조절 */
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+.comlist-btn:hover {
+    color: red;
+    text-decoration: underline;
 }
 
 .comment-writer{
     align-self: flex-start;
+}
+
+.comment-date{
+    color: #c1c1c1;
+    margin-top: 8px;
+    font-size: 14px;
 }
 
 .attached-image{
