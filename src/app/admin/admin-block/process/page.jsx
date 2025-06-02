@@ -38,6 +38,7 @@ export default function AdminBlockProcess() {
         {
           id: id,
           blocked_id: blocked_id,
+          blocked_admin_id: id,
           block_reason: reason,
           block_end_date: block_end_date
         },

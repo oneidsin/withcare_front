@@ -135,7 +135,7 @@ export default function ReportDetail() {
           <h3>신고 처리 사유</h3>
           <div className="content-box">
             <textarea rows={10} cols={60} name="rep_reason" id="rep_reason"
-              value={reason} onChange={(e) => setReason(e.target.value)}></textarea>
+              value={reason} placeholder='사유를 입력하세요' onChange={(e) => setReason(e.target.value)}></textarea>
           </div>
         </div>
       </div>
