@@ -9,11 +9,9 @@ export default function PostDetailPage() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const postIdx = searchParams.get('post_idx');
+    const boardIdxFromParam = searchParams.get('board_idx');
 
     const [post, setPost] = useState(null);
-    const boardIdxFromParam = searchParams.get('board_idx');
-    const effectiveBoardIdx = boardIdxFromParam || post?.board_idx;
-
     const [likes, setLikes] = useState(0);
     const [dislikes, setDislikes] = useState(0);
     const [photos, setPhotos] = useState([]);
@@ -26,8 +24,13 @@ export default function PostDetailPage() {
     // COMMENTS
     const [coms, setComs] = useState('');
     const [comList, setComList] = useState([]);
+    const [showMentionSuggestions, setShowMentionSuggestions] = useState(false);
+    const [mentionQuery, setMentionQuery] = useState('');
+    const [mentionSuggestions, setMentionSuggestions] = useState([]);
+    const [allUsers, setAllUsers] = useState([]);
+    const effectiveBoardIdx = boardIdxFromParam || post?.board_idx;
 
-    // COMMENTS LIST
+    // COMMENT LIST
     const fetchCom = async () => {
         const res = await axios.get(`http://localhost/post/detail/${postIdx}/list`);
         console.log('댓글 응답 : ',res.data);
@@ -35,6 +38,26 @@ export default function PostDetailPage() {
             setComList(res.data.list || []);
         };
     }
+
+    // 전체 사용자 목록 가져오기
+    useEffect(() => {
+        const fetchAllUsers = async () => {
+            try {
+                const token = sessionStorage.getItem('token');
+                const response = await axios.get('http://localhost/post/detail/users', {
+                    headers: { Authorization: token }
+                });
+                
+                if (response.data && response.data.list) {
+                    console.log('받아온 사용자 목록:', response.data.list);
+                    setAllUsers(response.data.list);
+                }
+            } catch (error) {
+                console.error('사용자 목록 가져오기 실패:', error);
+            }
+        };
+        fetchAllUsers();
+    }, []);
 
     useEffect(() => {
         const token = sessionStorage.getItem('token');
@@ -257,16 +280,21 @@ export default function PostDetailPage() {
     const handleCom = async () => {
         if (!coms) return alert('댓글 내용을 입력하세요.');
 
+        // 멘션 처리: @로 시작하는 단어들을 찾아서 멘션으로 처리
+        const mentions = coms.match(/@[\w]+/g) || [];
+        const mentionIds = mentions.map(mention => mention.slice(1)); // @ 제거
+
         const token = sessionStorage.getItem('token');
         if (!token) {
             alert('로그인이 필요합니다.');
+            return;
         }
 
         const comRes = await axios.post(`http://localhost/post/detail/${postIdx}/write`, {
-            post_idx : postIdx, // 게시글 번호
-            com_content : coms, // 댓글 내용
-            com_blind_yn : false, // 블라인드 여부
-
+            post_idx: postIdx,
+            com_content: coms,
+            com_blind_yn: false,
+            mentions: mentionIds // 멘션된 사용자 ID 목록 추가
         }, {
             headers: { Authorization: token },
         });
@@ -277,11 +305,59 @@ export default function PostDetailPage() {
         //window.location.href = `/post/detail?post_idx=${postIdx}`;
         setComs(''); // 입력창 초기화
         fetchCom(); // 댓글 리스트 다시 불러오기
-
     }
 
+    // 사용자 검색 함수
+    const searchUsers = (query) => {
+        if (!query.trim()) {
+            setMentionSuggestions([]);
+            return;
+        }
+        
+        console.log('검색 쿼리:', query);
+        console.log('현재 전체 사용자 목록:', allUsers);
+        
+        // 로컬에서 필터링
+        const filteredUsers = allUsers
+            .filter(userId => {
+                const match = userId.toLowerCase().includes(query.toLowerCase());
+                console.log(`사용자 ${userId} 매칭 결과:`, match);
+                return match;
+            })
+            .slice(0, 5);
 
+        console.log('필터링된 사용자:', filteredUsers);
+        setMentionSuggestions(filteredUsers.map(id => ({ id })));
+    };
 
+    // 멘션 선택 처리
+    const handleMentionSelect = (userId) => {
+        const textBeforeMention = coms.slice(0, coms.lastIndexOf('@'));
+        const newText = `${textBeforeMention}@${userId} `;
+        setComs(newText);
+        setShowMentionSuggestions(false);
+        setMentionSuggestions([]);
+        setMentionQuery('');
+    };
+
+    // 댓글 입력 처리
+    const handleCommentInput = (e) => {
+        const text = e.target.value;
+        setComs(text);
+
+        // @ 입력 감지 및 멘션 제안 표시
+        const lastAtSymbol = text.lastIndexOf('@');
+        if (lastAtSymbol !== -1 && !text.slice(lastAtSymbol).includes(' ')) {
+            const query = text.slice(lastAtSymbol + 1);
+            setMentionQuery(query);
+            setShowMentionSuggestions(true);
+            searchUsers(query);
+        } else {
+            setShowMentionSuggestions(false);
+            setMentionSuggestions([]);
+            setMentionQuery('');
+        }
+    };
 
     return (
         <div className="detail-container">
@@ -364,10 +440,36 @@ export default function PostDetailPage() {
 
             <div className="comment-box">
                 <div className="comment-writer">{loginId || 'guest'}</div>
-                <input placeholder="댓글을 남겨보세요." className="comment-input" value={coms} onChange={(e) => setComs(e.target.value)} />
+                <div className="comment-input-container">
+                    <input 
+                        placeholder="댓글을 남겨보세요. (@를 입력하여 멘션)" 
+                        className="comment-input" 
+                        value={coms} 
+                        onChange={handleCommentInput}
+                    />
+                    {showMentionSuggestions && (
+                        <div className="mention-suggestions">
+                            {mentionSuggestions.length > 0 ? (
+                                mentionSuggestions.map((user, index) => (
+                                    <div 
+                                        key={index} 
+                                        className="mention-item"
+                                        onClick={() => handleMentionSelect(user.id)}
+                                    >
+                                        @{user.id}
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="mention-hint">
+                                    {mentionQuery ? "일치하는 사용자가 없습니다" : "@를 입력하여 사용자를 멘션할 수 있습니다"}
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
             </div>
             <div className="submit">
-                <button className="submit-button" onClick={()=>handleCom()}>등록</button>
+                <button className="submit-button" onClick={handleCom}>등록</button>
             </div>
 
             <div className="detail-footer">
