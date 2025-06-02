@@ -229,6 +229,10 @@
     font-weight: bold;
 }
 
+.comlist-btn {
+    margin-left: 8px; /* 혹은 10px, 필요에 따라 조절 */
+}
+
 .comment-writer{
     align-self: flex-start;
 }

@@ -29,6 +29,7 @@ export default function PostDetailPage() {
     const [mentionSuggestions, setMentionSuggestions] = useState([]);
     const [allUsers, setAllUsers] = useState([]);
     const effectiveBoardIdx = boardIdxFromParam || post?.board_idx;
+    const comIdx = searchParams.get('com_idx');
 
     // COMMENT LIST
     const fetchCom = async () => {
@@ -291,7 +292,8 @@ export default function PostDetailPage() {
         }
 
         const comRes = await axios.post(`http://localhost/post/detail/${postIdx}/write`, {
-            post_idx: postIdx,
+            post_idx:postIdx,
+            com_idx: comIdx,
             com_content: coms,
             com_blind_yn: false,
             mentions: mentionIds // 멘션된 사용자 ID 목록 추가
@@ -357,6 +359,25 @@ export default function PostDetailPage() {
             setMentionSuggestions([]);
             setMentionQuery('');
         }
+    };
+
+    const comDelete = async (comIdx) => {
+        if (!confirm("정말 삭제하시겠습니까?")) return;
+
+        const token = sessionStorage.getItem('token');
+        const res = await axios.put(`http://localhost/post/detail/${postIdx}/delete`, {
+                com_idx: comIdx,
+                com_blind_yn: true  // 블라인드 처리를 위한 값 추가
+            }, {
+                headers: { Authorization: token }
+            });
+
+            if (res.data.success) {
+                alert("삭제되었습니다.");
+                fetchCom(); // 삭제 성공 시 목록 새로고침
+            } else {
+                alert("삭제 권한이 없습니다.");
+            }
     };
 
     return (
@@ -430,6 +451,9 @@ export default function PostDetailPage() {
                             <div className="comment-header">
                                 <span className="comlist-writer">{comment.id}</span>
                                 <span className="comment-date">{comment.com_create_date?.slice(0, 10)}</span>
+                                <button className="comlist-btn"> 수정 </button>
+                                <button className="comlist-btn" onClick={() => comDelete(comment.com_idx)}> 삭제 </button>
+                                <button className="comlist-btn"> 신고 </button>
                             </div>
                             <div className="comment-content">{comment.com_content}</div>
                         </div>
