@@ -14,26 +14,58 @@ export default function SidebarLayout({
   const [userDisplayName, setUserDisplayName] = useState(userName);
   const [imageError, setImageError] = useState(false);
   
+  // 사용자 정보 가져오기 함수
+  const fetchUserInfo = () => {
+    try {
+      const storedProfilePic = sessionStorage.getItem('profilePic');
+      const storedName = sessionStorage.getItem('name') || sessionStorage.getItem('id');
+      
+      if (storedProfilePic) {
+        console.log('사이드바 프로필 이미지 업데이트:', storedProfilePic);
+        setUserProfilePic(storedProfilePic);
+        setImageError(false); // 이미지 오류 상태 초기화
+      }
+      
+      if (storedName) {
+        console.log('사이드바 사용자 이름 업데이트:', storedName);
+        setUserDisplayName(storedName);
+      }
+    } catch (error) {
+      console.error('사용자 정보를 가져오는데 실패했습니다:', error);
+    }
+  };
+  
   useEffect(() => {
-    // 세션 스토리지에서 사용자 정보 가져오기 시도
-    const fetchUserInfo = async () => {
-      try {
-        const storedProfilePic = sessionStorage.getItem('profilePic');
-        const storedName = sessionStorage.getItem('name') || sessionStorage.getItem('id');
-        
-        if (storedProfilePic) {
-          setUserProfilePic(storedProfilePic);
-        }
-        
-        if (storedName) {
-          setUserDisplayName(storedName);
-        }
-      } catch (error) {
-        console.error('사용자 정보를 가져오는데 실패했습니다:', error);
+    // 초기 로드 시 사용자 정보 가져오기
+    fetchUserInfo();
+    
+    // 세션 스토리지 변경 이벤트 리스너 (커스텀 이벤트)
+    const handleStorageChange = (e) => {
+      if (e.key === 'profilePic' || e.key === 'name' || e.key === 'id') {
+        console.log('세션 스토리지 변경 감지:', e.key, e.newValue);
+        fetchUserInfo();
       }
     };
     
-    fetchUserInfo();
+    // 페이지 포커스를 얻을 때마다 정보 새로고침
+    const handleFocus = () => {
+      console.log('페이지가 포커스를 얻었습니다. 프로필 정보 새로고침');
+      fetchUserInfo();
+    };
+    
+    // 이벤트 리스너 등록
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('focus', handleFocus);
+    
+    // 커스텀 이벤트 등록 - 프로필 업데이트 시 발생
+    window.addEventListener('profileUpdated', fetchUserInfo);
+    
+    // 컴포넌트 언마운트 시 이벤트 리스너 제거
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('profileUpdated', fetchUserInfo);
+    };
   }, []);
   
   const handleImageError = () => {

@@ -163,50 +163,7 @@ export default function UpdatePage() {
             console.log("프로필 수정 시작");
             console.log("이미지 변경 여부:", !!profileImage);
 
-            // 먼저 이미지 업로드 처리 (이미지가 있는 경우)
-            let imageUrl = info.profile_photo;
-            if (profileImage) {
-                console.log("이미지 업로드 시작:", profileImage.name);
-                
-                const imageFormData = new FormData();
-                imageFormData.append("file", profileImage);
-                
-                try {
-                    const imageRes = await axios.post(
-                        'http://localhost/profile/upload',
-                        imageFormData,
-                        {
-                            headers: {
-                                'Content-Type': 'multipart/form-data',
-                                'Authorization': token
-                            }
-                        }
-                    );
-                    
-                    console.log("이미지 업로드 응답:", imageRes.data);
-                    
-                    if (imageRes.data.status === "success") {
-                        imageUrl = imageRes.data.url;
-                        console.log("업로드된 이미지 URL:", imageUrl);
-                    } else {
-                        throw new Error(imageRes.data.message || "이미지 업로드에 실패했습니다.");
-                    }
-                } catch (uploadError) {
-                    console.error("이미지 업로드 실패:", uploadError);
-                    
-                    // JWT 토큰 에러 처리
-                    if (uploadError.response && uploadError.response.status === 401) {
-                        alert("로그인 세션이 만료되었습니다. 다시 로그인해주세요.");
-                        sessionStorage.clear();
-                        router.push("/login");
-                        return;
-                    }
-                    
-                    alert("이미지 업로드에 실패했습니다. 프로필 정보만 수정됩니다.");
-                }
-            }
-
-            // 프로필 정보 업데이트 (이미지 URL 포함)
+            // 프로필 정보 준비
             const profileData = {
                 id: info.id,
                 name: info.name,
@@ -217,7 +174,7 @@ export default function UpdatePage() {
                 stage_idx: info.stage_idx ? parseInt(info.stage_idx) : 0,
                 profile_yn: info.profile_yn === "Y",
                 intro: info.intro || "",
-                profile_photo: imageUrl  // 업로드된 이미지 URL 또는 기존 이미지 URL
+                profile_photo: info.profile_photo  // 기존 이미지 URL 유지
             };
 
             console.log("프로필 수정 요청 데이터:", profileData);
@@ -238,8 +195,7 @@ export default function UpdatePage() {
             
             console.log("FormData 생성 완료");
 
-            // 프로필 업데이트 요청
-            
+            // 프로필 업데이트 요청 - PUT 메소드 사용
             const response = await fetch('http://localhost/profile/update', {
                 method: 'PUT',
                 headers: {
@@ -278,9 +234,12 @@ export default function UpdatePage() {
                 sessionStorage.setItem("name", info.name);
                 
                 // 이미지 URL을 세션 스토리지에 저장 (필요한 경우)
-                if (imageUrl) {
-                    sessionStorage.setItem("profilePic", getValidImageUrl(imageUrl));
+                if (profileData.profile_photo) {
+                    sessionStorage.setItem("profilePic", getValidImageUrl(profileData.profile_photo));
                 }
+                
+                // 프로필 업데이트 커스텀 이벤트 발생 - 다른 컴포넌트에 알림
+                window.dispatchEvent(new Event('profileUpdated'));
                 
                 alert(`프로필이 성공적으로 수정되었습니다.\n이름: ${info.name}`);
                 
@@ -318,6 +277,11 @@ export default function UpdatePage() {
         // URL이 /로 시작하는지 확인 (절대 경로)
         if (url.startsWith('/')) {
             return `http://localhost${url}`;
+        }
+        
+        // profile/ 경로로 시작하는 경우 file/ 접두사 추가
+        if (url.startsWith('profile/')) {
+            return `http://localhost/file/${url}`;
         }
         
         // 그 외의 경우 백엔드 기본 URL에 경로 추가
