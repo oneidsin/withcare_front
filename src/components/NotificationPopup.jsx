@@ -2,12 +2,12 @@
 
 import { useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { closePopup, markAsRead, markAllAsRead, removeNotification, fetchNotifications } from '@/redux/notificationSlice';
+import { closePopup, markNotificationAsRead, markAllNotificationsAsRead, deleteNotification, deleteAllNotifications, fetchNotifications, resetStatuses } from '@/redux/notificationSlice';
 import './NotificationPopup.css';
 
 export default function NotificationPopup() {
   const dispatch = useDispatch();
-  const { notifications, unreadCount, isPopupOpen, status, error } = useSelector(state => state.notification);
+  const { notifications, unreadCount, isPopupOpen, status, error, deleteStatus, deleteAllStatus, markAsReadStatus, markAllAsReadStatus } = useSelector(state => state.notification);
   const popupRef = useRef(null);
 
   // 팝업 외부 클릭 시 닫기
@@ -24,12 +24,9 @@ export default function NotificationPopup() {
       // 세션 스토리지에서 사용자 ID 가져오기
       const currentUserId = sessionStorage.getItem('id');
 
-      // 팝업이 열리고 (isPopupOpen === true)
-      // 알림 로딩 상태가 'idle' (아직 데이터를 불러오지 않았거나 이전 작업이 완료된 상태) 일 때
-      // 그리고 유효한 사용자 ID가 있을 때만 알림을 불러옵니다.
-      if (currentUserId && status === 'idle') {
-        // fetchNotifications thunk를 디스패치합니다.
-        // 백엔드 API가 id와 offset을 받으므로, 객체 형태로 전달합니다.
+      // 팝업이 열리고, 로딩 중이 아니고, 실패 상태일 때만 다시 알림을 불러옵니다.
+      // 이미 성공적으로 데이터를 가져온 경우에는 다시 가져오지 않습니다.
+      if (currentUserId && status === 'failed') {
         dispatch(fetchNotifications({ id: currentUserId, offset: 0 }));
       }
     }
@@ -37,14 +34,31 @@ export default function NotificationPopup() {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isPopupOpen, dispatch, status]); // currentUserId는 의존성 배열에서 제거 (useEffect 내부에서 가져오므로)
+  }, [isPopupOpen, dispatch, status]); // notifications.length 의존성 제거
+
+  // 작업 완료 후 상태 리셋
+  useEffect(() => {
+    const statuses = [deleteStatus, deleteAllStatus, markAsReadStatus, markAllAsReadStatus];
+    const hasSucceeded = statuses.some(status => status === 'succeeded');
+
+    if (hasSucceeded) {
+      const timer = setTimeout(() => {
+        dispatch(resetStatuses());
+      }, 2000); // 2초 후 상태 리셋
+
+      return () => clearTimeout(timer);
+    }
+  }, [deleteStatus, deleteAllStatus, markAsReadStatus, markAllAsReadStatus, dispatch]);
 
   if (!isPopupOpen) return null;
 
-  // 알림 클릭 시 처리
+  // 알림 클릭 시 처리 - 백엔드 API 호출
   const handleNotificationClick = (notification) => {
-    if (!notification.isRead) {
-      dispatch(markAsRead(notification.id));
+    if (!notification.noti_read_yn) {
+      const currentUserId = sessionStorage.getItem('id');
+      if (currentUserId) {
+        dispatch(markNotificationAsRead({ id: currentUserId, noti_idx: notification.noti_idx }));
+      }
     }
 
     // 알림 타입에 따른 페이지 이동
@@ -53,14 +67,32 @@ export default function NotificationPopup() {
     }
   };
 
+  // 모든 알림 읽음 처리 - 백엔드 API 호출
   const handleMarkAllAsRead = () => {
-    dispatch(markAllAsRead());
+    const currentUserId = sessionStorage.getItem('id');
+    if (currentUserId) {
+      dispatch(markAllNotificationsAsRead({ id: currentUserId }));
+    }
   };
 
-  // 알림 삭제 시 처리
-  const handleDeleteNotification = (e, notificationId) => {
+  // 알림 삭제 시 처리 - 백엔드 API 호출
+  const handleDeleteNotification = (e, noti_idx) => {
     e.stopPropagation(); // 부모 요소(알림 아이템)의 클릭 이벤트 전파 방지
-    dispatch(removeNotification(notificationId));
+
+    const currentUserId = sessionStorage.getItem('id');
+    if (currentUserId) {
+      dispatch(deleteNotification({ id: currentUserId, noti_idx }));
+    }
+  };
+
+  // 알림 전체 삭제 처리 - 백엔드 API 호출
+  const handleDeleteAllNotifications = () => {
+    if (window.confirm('모든 알림을 삭제하시겠습니까?')) {
+      const currentUserId = sessionStorage.getItem('id');
+      if (currentUserId) {
+        dispatch(deleteAllNotifications({ id: currentUserId }));
+      }
+    }
   };
 
   const formatTime = (timestamp) => {
@@ -93,13 +125,26 @@ export default function NotificationPopup() {
       <div className="notification-header">
         <h3>알림</h3>
         <div className="notification-actions">
-          {unreadCount > 0 && (
-            <button
-              className="mark-all-read-btn"
-              onClick={handleMarkAllAsRead}
-            >
-              모두 읽음
-            </button>
+          {notifications.length > 0 && (
+            <>
+              <button
+                className={`delete-all-btn ${deleteAllStatus === 'loading' ? 'deleting' : ''}`}
+                onClick={handleDeleteAllNotifications}
+                disabled={deleteAllStatus === 'loading'}
+                title="모든 알림 삭제"
+              >
+                {deleteAllStatus === 'loading' ? '삭제 중...' : '전체 삭제'}
+              </button>
+              {unreadCount > 0 && (
+                <button
+                  className={`mark-all-read-btn ${markAllAsReadStatus === 'loading' ? 'reading' : ''}`}
+                  onClick={handleMarkAllAsRead}
+                  disabled={markAllAsReadStatus === 'loading'}
+                >
+                  {markAllAsReadStatus === 'loading' ? '읽는 중...' : '모두 읽음'}
+                </button>
+              )}
+            </>
           )}
           <button
             className="close-btn"
@@ -119,7 +164,7 @@ export default function NotificationPopup() {
           notifications.map((notification) => (
             <div
               key={notification.noti_idx}
-              className={`notification-item ${!notification.noti_read_yn ? 'unread' : ''}`}
+              className={`notification-item ${!notification.noti_read_yn ? 'unread' : ''} ${markAsReadStatus === 'loading' ? 'reading' : ''}`}
               onClick={() => handleNotificationClick(notification)}
             >
               <div className="notification-content">
@@ -128,11 +173,12 @@ export default function NotificationPopup() {
                 <div className="notification-time">{formatTime(notification.noti_date)}</div>
               </div>
               <button
-                className="delete-notification-btn"
+                className={`delete-notification-btn ${deleteStatus === 'loading' ? 'deleting' : ''}`}
                 onClick={(e) => handleDeleteNotification(e, notification.noti_idx)}
                 title="알림 삭제"
+                disabled={deleteStatus === 'loading'}
               >
-                ✕
+                {deleteStatus === 'loading' ? '⏳' : '🗑️'}
               </button>
             </div>
           ))
