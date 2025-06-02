@@ -45,8 +45,44 @@
   transition: background-color 0.2s;
 }
 
-.mark-all-read-btn:hover {
+.mark-all-read-btn:hover:not(:disabled) {
   background-color: #e3f2fd;
+}
+
+.mark-all-read-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  color: #6c757d;
+}
+
+.mark-all-read-btn.reading {
+  opacity: 0.8;
+}
+
+.delete-all-btn {
+  background: none;
+  border: none;
+  color: #dc3545;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.delete-all-btn:hover:not(:disabled) {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.delete-all-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  color: #6c757d;
+}
+
+.delete-all-btn.deleting {
+  opacity: 0.8;
 }
 
 .close-btn {
@@ -100,6 +136,25 @@
   border-radius: 50%;
 }
 
+.notification-item.reading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.notification-item.reading::after {
+  content: '읽는 중...';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 123, 255, 0.9);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  z-index: 10;
+}
+
 .notification-content {
   flex: 1;
   margin-right: 8px;
@@ -145,9 +200,29 @@
   opacity: 1;
 }
 
-.delete-notification-btn:hover {
+.delete-notification-btn:hover:not(:disabled) {
   background-color: #f0f0f0;
   color: #666;
+}
+
+.delete-notification-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.delete-notification-btn.deleting {
+  opacity: 1;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .no-notifications {

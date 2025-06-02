@@ -15,7 +15,7 @@ import { useRouter } from "next/navigation";
 import { store } from "@/redux/store";
 import SSEClient from "@/components/SSEClient";
 import NotificationPopup from "@/components/NotificationPopup";
-import { togglePopup } from "@/redux/notificationSlice";
+import { togglePopup, fetchNotifications, addNotification } from "@/redux/notificationSlice";
 import axios from "axios";
 
 export default function RootLayout({ children }) {
@@ -133,8 +133,36 @@ function HeaderComponent({ isLoggedIn, username, handleLogout }) {
   const dispatch = useDispatch();
   const { unreadCount } = useSelector(state => state.notification);
 
+  // unreadCount 변화 디버깅
+  useEffect(() => {
+    console.log('HeaderComponent - unreadCount 변화:', unreadCount);
+  }, [unreadCount]);
+
+  // 로그인 상태가 변경될 때 알림 가져오기
+  useEffect(() => {
+    if (isLoggedIn && username) {
+      // 로그인 시 알림 목록 가져오기
+      dispatch(fetchNotifications({ id: username, offset: 0 }));
+    }
+  }, [isLoggedIn, username, dispatch]);
+
   const handleNotificationClick = () => {
     dispatch(togglePopup());
+  };
+
+  // 테스트용 수동 알림 추가 함수
+  const handleTestNotification = () => {
+    const testNotification = {
+      noti_idx: Date.now(),
+      noti_type: "테스트 알림",
+      content_pre: "수동으로 추가한 테스트 알림입니다.",
+      noti_date: new Date().toISOString(),
+      noti_read_yn: false,
+      relate_user_id: username,
+      link: null
+    };
+    console.log('테스트 알림 추가:', testNotification);
+    dispatch(addNotification(testNotification));
   };
 
   return (
@@ -156,6 +184,10 @@ function HeaderComponent({ isLoggedIn, username, handleLogout }) {
               onClick={handleLogout}
               title="로그아웃"
             />
+            {/* 테스트용 버튼 - 나중에 제거 */}
+            <button onClick={handleTestNotification} style={{ marginRight: '10px', padding: '5px', fontSize: '12px' }}>
+              테스트 알림 추가
+            </button>
           </>
         )}
         <Link href="/search">
