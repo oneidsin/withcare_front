@@ -34,6 +34,7 @@ export default function MemberDetailPage() {
 
                 if (memberRes.data.success) {
                     setMember(memberRes.data.data);
+                    console.log(memberRes.data.data);
                 } else {
                     alert('회원 정보를 불러오는데 실패했습니다.');
                     router.push('/admin/admin-member');
