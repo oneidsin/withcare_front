@@ -37,7 +37,7 @@ export default function ProfileLayout({ children }) {
         <ul>
             <li>
                 <Link href="/profile"
-                    className={pathname === '/profile' ? 'active' : ''}>
+                    className={pathname === '/profile' || pathname === '/profile/update' ? 'active' : ''}>
                     <AiOutlineUser style={{ marginRight: '5px' }} />활동 내역
                 </Link>
             </li>

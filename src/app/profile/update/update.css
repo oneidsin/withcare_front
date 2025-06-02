@@ -110,6 +110,25 @@
     background-color: #5a6268;
 }
 
+/* 회원탈퇴 버튼 스타일 */
+.button-group button.withdraw-btn {
+    background-color: #dc3545;
+    color: white;
+    border: 1px solid #dc3545;
+    position: relative;
+    margin-top: 0;
+}
+
+.button-group button.withdraw-btn:hover {
+    background-color: #c82333;
+    border-color: #c82333;
+}
+
+.button-group button.withdraw-btn:before {
+    content: "⚠️ ";
+    margin-right: 0.5em;
+}
+
 .form-group input[disabled] {
     background-color: #f8f9fa;
     cursor: not-allowed;

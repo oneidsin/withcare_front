@@ -27,11 +27,12 @@ export default function RootLayout({ children }) {
   // 로그인/로그아웃 상태 동기화
   const syncLoginState = () => {
     const token = sessionStorage.getItem("token");
-    const name = sessionStorage.getItem("id");
+    const name = sessionStorage.getItem("name");
+    const id = sessionStorage.getItem("id");
 
-    if (token && name) {
+    if (token && (name || id)) {
       setIsLoggedIn(true);
-      setUsername(name);
+      setUsername(name || id); // name을 우선 사용, 없으면 id 사용
     } else {
       setIsLoggedIn(false);
       setUsername("");
@@ -41,9 +42,12 @@ export default function RootLayout({ children }) {
   useEffect(() => {
     syncLoginState();
 
-    // 로그인 이벤트 수신 (수동 dispatch를 위한)
+    // 로그인/로그아웃 이벤트 수신
     const handleLogin = () => syncLoginState();
+    const handleLogout = () => syncLoginState();
+    
     window.addEventListener("login", handleLogin);
+    window.addEventListener("logout", handleLogout);
 
     axios.get("http://localhost/board/list", {
       headers: {
@@ -70,6 +74,7 @@ export default function RootLayout({ children }) {
 
     return () => {
       window.removeEventListener("login", handleLogin);
+      window.removeEventListener("logout", handleLogout);
     };
   }, []);
 
@@ -77,18 +82,18 @@ export default function RootLayout({ children }) {
     const confirmed = confirm("로그아웃하시겠습니까?");
     if (!confirmed) return;
 
-    sessionStorage.removeItem("token");
-    sessionStorage.removeItem("id");
-    sessionStorage.removeItem("name");        // 이름 정보 제거
-    sessionStorage.removeItem("profilePic");  // 프로필 이미지 정보 제거
-    sessionStorage.removeItem("signupName");  // 회원가입 임시 이름 제거 (혹시 남아있을 경우)
+    // 모든 세션 데이터 정리
+    sessionStorage.clear(); // 한 번에 모든 데이터 삭제
     
+    // 상태 초기화
     setIsLoggedIn(false);
     setUsername("");
     
-    // 사이드바 업데이트를 위한 이벤트 발생
+    // 사이드바 및 다른 컴포넌트 업데이트를 위한 이벤트 발생
     window.dispatchEvent(new Event('profileUpdated'));
+    window.dispatchEvent(new Event('logout'));
     
+    // 메인 페이지로 이동
     location.href = "/";
   };
 
