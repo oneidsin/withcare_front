@@ -27,6 +27,15 @@ export default function PostDetailPage() {
     const [coms, setComs] = useState('');
     const [comList, setComList] = useState([]);
 
+    // COMMENTS LIST
+    const fetchCom = async () => {
+        const res = await axios.get(`http://localhost/post/detail/${postIdx}/list`);
+        console.log('댓글 응답 : ',res.data);
+        if (res.data.list) {
+            setComList(res.data.list || []);
+        };
+    }
+
     useEffect(() => {
         const token = sessionStorage.getItem('token');
         if (token) {
@@ -47,7 +56,9 @@ export default function PostDetailPage() {
 
     useEffect(() => {
         if (postIdx) {
-            fetchPostWithHit();
+            fetchPostWithHit().then(() => {
+                fetchCom(); // 게시글 데이터 이후 댓글 호출
+            });
         }
     }, [postIdx]);
 
@@ -263,11 +274,13 @@ export default function PostDetailPage() {
         if(!comRes.data.success) return alert('댓글 등록 실패');
 
         alert('댓글이 등록 되었습니다.');
-        window.location.href = `/post/detail?post_idx=${postIdx}`;
+        //window.location.href = `/post/detail?post_idx=${postIdx}`;
+        setComs(''); // 입력창 초기화
+        fetchCom(); // 댓글 리스트 다시 불러오기
 
     }
 
-    // COMMENTS LIST
+
 
 
     return (
@@ -330,10 +343,31 @@ export default function PostDetailPage() {
                 </button>
             </div>
 
+            {console.log("댓글 리스트", comList)}
+
+            <div className="comment-list">
+                {comList.length === 0 ? (
+                    <p>댓글이 없습니다.</p>
+                ) : (
+                    comList.map((comment, idx) => (
+                        <div key={idx} className="comment-item">
+                            <div className="comment-header">
+                                <span className="comlist-writer">{comment.id}</span>
+                                <span className="comment-date">{comment.com_create_date?.slice(0, 10)}</span>
+                            </div>
+                            <div className="comment-content">{comment.com_content}</div>
+                        </div>
+                    ))
+                )}
+            </div>
+
+
             <div className="comment-box">
                 <div className="comment-writer">{loginId || 'guest'}</div>
                 <input placeholder="댓글을 남겨보세요." className="comment-input" value={coms} onChange={(e) => setComs(e.target.value)} />
-                <button className="comment-submit" onClick={()=>handleCom()}>등록</button>
+            </div>
+            <div className="submit">
+                <button className="submit-button" onClick={()=>handleCom()}>등록</button>
             </div>
 
             <div className="detail-footer">
