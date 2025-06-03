@@ -174,9 +174,17 @@
   margin-bottom: 6px;
   line-height: 1.4;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  /* 여전히 필요할 수 있음 */
   -webkit-box-orient: vertical;
+  /* 여전히 필요할 수 있음 */
+  -webkit-line-clamp: 2;
   overflow: hidden;
+  /* 표준 속성 추가 */
+  display: -moz-box;
+  /* Firefox 구버전 대응 */
+  line-clamp: 2;
+  -moz-box-orient: vertical;
+  /* Firefox 구버전 대응 */
 }
 
 .notification-time {

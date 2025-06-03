@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
 import './app.css';
 import LoginOutlinedIcon from '@mui/icons-material/LoginOutlined';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
@@ -15,7 +14,7 @@ import { useRouter } from "next/navigation";
 import { store } from "@/redux/store";
 import SSEClient from "@/components/SSEClient";
 import NotificationPopup from "@/components/NotificationPopup";
-import { togglePopup, fetchNotifications, addNotification } from "@/redux/notificationSlice";
+import { NotificationProvider, useNotification } from "@/contexts/NotificationContext";
 import axios from "axios";
 
 export default function RootLayout({ children }) {
@@ -77,18 +76,18 @@ export default function RootLayout({ children }) {
     const confirmed = confirm("로그아웃하시겠습니까?");
     if (!confirmed) return;
 
-    // 모든 세션 데이터 정리
-    sessionStorage.clear(); // 한 번에 모든 데이터 삭제
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("id");
+    sessionStorage.removeItem("name");        // 이름 정보 제거
+    sessionStorage.removeItem("profilePic");  // 프로필 이미지 정보 제거
+    sessionStorage.removeItem("signupName");  // 회원가입 임시 이름 제거 (혹시 남아있을 경우)
 
-    // 상태 초기화
     setIsLoggedIn(false);
     setUsername("");
 
-    // 사이드바 및 다른 컴포넌트 업데이트를 위한 이벤트 발생
+    // 사이드바 업데이트를 위한 이벤트 발생
     window.dispatchEvent(new Event('profileUpdated'));
-    window.dispatchEvent(new Event('logout'));
 
-    // 메인 페이지로 이동
     location.href = "/";
   };
 
@@ -99,37 +98,39 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         <Provider store={store}>
-          <SSEClient />
-          <HeaderComponent
-            isLoggedIn={isLoggedIn}
-            username={username}
-            handleLogout={handleLogout}
-          />
+          <NotificationProvider>
+            <SSEClient />
+            <HeaderComponent
+              isLoggedIn={isLoggedIn}
+              username={username}
+              handleLogout={handleLogout}
+            />
 
-          <nav className="top-nav">
-            {menuBoards.map((parent) => (
-              <div key={parent.board_idx} className="nav-item">
-                <Link href={`/post?board_idx=${parent.board_idx}`}>
-                  {parent.board_name}
-                </Link>
-                {parent.children.length > 0 && (
-                  <div className="dropdown">
-                    {parent.children.map((child) => (
-                      <Link
-                        key={child.board_idx}
-                        href={`/post?board_idx=${child.board_idx}`}
-                      >
-                        {child.board_name}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-          </nav>
+            <nav className="top-nav">
+              {menuBoards.map((parent) => (
+                <div key={parent.board_idx} className="nav-item">
+                  <Link href={`/post?board_idx=${parent.board_idx}`}>
+                    {parent.board_name}
+                  </Link>
+                  {parent.children.length > 0 && (
+                    <div className="dropdown">
+                      {parent.children.map((child) => (
+                        <Link
+                          key={child.board_idx}
+                          href={`/post?board_idx=${child.board_idx}`}
+                        >
+                          {child.board_name}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </nav>
 
-          <main className="container">{children}</main>
-          <footer>ⓒ 2025 withcare</footer>
+            <main className="container">{children}</main>
+            <footer>ⓒ 2025 withcare</footer>
+          </NotificationProvider>
         </Provider>
       </body>
     </html>
@@ -138,24 +139,57 @@ export default function RootLayout({ children }) {
 
 // 헤더 컴포넌트 분리
 function HeaderComponent({ isLoggedIn, username, handleLogout }) {
-  const dispatch = useDispatch();
-  const { unreadCount } = useSelector(state => state.notification);
+  const { unreadCount, togglePopup, setNotificationList } = useNotification();
 
   // unreadCount 변화 디버깅
   useEffect(() => {
-    console.log('HeaderComponent - unreadCount 변화:', unreadCount);
+    console.log('=== HeaderComponent Context 상태 변화 ===');
+    console.log('현재 시간:', new Date().toLocaleTimeString());
+    console.log('unreadCount:', unreadCount);
   }, [unreadCount]);
 
   // 로그인 상태가 변경될 때 알림 가져오기
   useEffect(() => {
     if (isLoggedIn && username) {
-      // 로그인 시 알림 목록 가져오기
-      dispatch(fetchNotifications({ id: username, offset: 0 }));
+      fetchNotifications(username);
     }
-  }, [isLoggedIn, username, dispatch]);
+  }, [isLoggedIn, username]);
+
+  // 알림 목록 가져오기 함수
+  const fetchNotifications = async (userId) => {
+    try {
+      const token = sessionStorage.getItem('token');
+      if (!token) return;
+
+      console.log('API로 알림 목록 가져오기 시작:', userId);
+
+      const response = await axios.get(`http://localhost/noti/list/${userId}`, {
+        headers: {
+          Authorization: token
+        }
+      });
+
+      console.log('API 응답:', response.data);
+
+      if (response.data.loginYN && response.data.result) {
+        setNotificationList(response.data.result);
+      }
+    } catch (error) {
+      console.error('알림 목록 가져오기 실패:', error);
+    }
+  };
 
   const handleNotificationClick = () => {
-    dispatch(togglePopup());
+    console.log('알림 아이콘 클릭 - 팝업 토글 및 알림 새로고침');
+
+    // 팝업 토글
+    togglePopup();
+
+    // 로그인된 사용자의 최신 알림 불러오기
+    if (username) {
+      console.log('최신 알림 불러오기 시작:', username);
+      fetchNotifications(username);
+    }
   };
 
   return (
