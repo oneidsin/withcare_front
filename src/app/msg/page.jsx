@@ -274,10 +274,10 @@ export default function Inbox() {
       {/* 상단 헤더 */}
       <div className='inbox-header'>
         <h1> 📬 받은 쪽지함 </h1>
-        <div className='action-buttons'>
-          <button className='block-button' onClick={() => { userBlock() }}>차단</button>
-          <button className='block-button' onClick={handleSave}>보관</button>
-          <button className='delete-button' onClick={handleDelete}>삭제</button>
+        <div className='message-action-group'>
+          <button className='message-action-btn' onClick={() => { userBlock() }}>차단</button>
+          <button className='message-action-btn' onClick={handleSave}>보관</button>
+          <button className='message-action-btn message-delete-btn' onClick={handleDelete}>삭제</button>
         </div>
       </div>
 

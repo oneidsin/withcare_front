@@ -111,8 +111,8 @@ export default function Outbox() {
         {/* 상단 헤더 */}
         <div className='inbox-header'>
           <h1> 📭 보낸 쪽지함 </h1>
-          <div className='action-buttons'>
-            <button className='delete-button' onClick={handleDelete}>삭제</button>
+          <div className='message-action-group'>
+            <button className='message-action-btn message-delete-btn' onClick={handleDelete}>삭제</button>
           </div>
         </div>
 
@@ -130,12 +130,11 @@ export default function Outbox() {
               <th>받는 사람</th>
               <th>내 용</th>
               <th>날 짜</th>
-              <th>삭제</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td colSpan={5} style={{ textAlign: 'center', padding: '20px' }}>보낸 쪽지가 없습니다.</td>
+              <td colSpan={4} style={{ textAlign: 'center', padding: '20px' }}>보낸 쪽지가 없습니다.</td>
             </tr>
           </tbody>
         </table>
@@ -148,8 +147,8 @@ export default function Outbox() {
         {/* 상단 헤더 */}
         <div className='inbox-header'>
           <h1> 📭 보낸 쪽지함 </h1>
-          <div className='action-buttons'>
-            <button className='delete-button' onClick={handleDelete}>삭제</button>
+          <div className='message-action-group'>
+            <button className='message-action-btn message-delete-btn' onClick={handleDelete}>삭제</button>
           </div>
         </div>
 
@@ -167,13 +166,12 @@ export default function Outbox() {
             <th>받는 사람</th>
             <th>내 용</th>
             <th>날 짜</th>
-            <th>삭제</th>
           </tr>
           </thead>
           <tbody>
           {(!list || list.length === 0) ? (
             <tr>
-              <td colSpan={5} style={{ textAlign: 'center', padding: '20px' }}>보낸 쪽지가 없습니다.</td>
+              <td colSpan={4} style={{ textAlign: 'center', padding: '20px' }}>보낸 쪽지가 없습니다.</td>
             </tr>
           ) : (
             list.map((item) => (
@@ -194,11 +192,6 @@ export default function Outbox() {
                   </Link>
                 </td>
                 <td>{new Date(item.msg_sent_at).toLocaleDateString()}</td>
-                <td>
-                  <button className='icon-button' onClick={() => handleSingleDelete(item.msg_idx)}>
-                    <BsTrash />
-                  </button>
-                </td>
               </tr>
             ))
           )}
