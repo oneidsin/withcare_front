@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
-import '../../badge/badge.css';
+import '../../../badge/badge.css';
 
 const API_BASE_URL = 'http://localhost:80';
 
