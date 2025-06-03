@@ -43,15 +43,31 @@ export default function NotificationPopup() {
       const success = await markAsRead(notification.noti_idx);
       if (!success) {
         console.error('알림 읽음 처리 실패');
-        // 실패해도 페이지 이동은 계속 진행
       }
     }
 
-    // 알림 타입에 따른 페이지 이동
-    if (notification.link) {
-      window.location.href = notification.link;
+    let link;
+
+    // 알림 타입에 따라 이동할 경로 결정
+    switch (notification.noti_type) {
+      case 'comment':
+        link = `/msg/detail?id=${notification.relate_item_id}&type=inbox`;
+        break;
+      case 'mention':
+        link = `/mention/${notification.relate_item_id}`;
+        break;
+      case 'message':
+        link = `/msg/detail?id=${notification.relate_item_id}&type=inbox`;
+        break;
+      default:
+        console.warn('알 수 없는 알림 타입:', notification.noti_type);
+        return;
     }
+
+    // 페이지 이동
+    window.location.href = link;
   };
+
 
   // 모든 알림 읽음 처리
   const handleMarkAllAsRead = async () => {
