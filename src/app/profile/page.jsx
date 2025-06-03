@@ -215,16 +215,45 @@ export default function ProfilePage() {
         const id = sessionStorage.getItem("id");
 
         try {
-            const res = await axios.delete(`http://localhost:80/member/delete/${id}`, {
-                headers: { Authorization: token }
+            const response = await fetch(`http://localhost:80/delete/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': token,
+                    'Content-Type': 'application/json'
+                }
             });
 
-            if (res.data.success) {
+            if (!response.ok) {
+                let errorMessage = `회원 탈퇴에 실패했습니다. (${response.status})`;
+                
+                if (response.status === 401) {
+                    alert("로그인 세션이 만료되었습니다. 다시 로그인해주세요.");
+                    sessionStorage.clear();
+                    router.push("/login");
+                    return;
+                }
+                
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.msg || errorMessage;
+                } catch (e) {
+                    // JSON 파싱 실패 시 기본 메시지 사용
+                }
+                throw new Error(errorMessage);
+            }
+
+            const data = await response.json();
+            
+            if (data.success) {
                 alert("회원 탈퇴가 완료되었습니다.");
                 sessionStorage.clear();
+                
+                // 로그아웃 상태 업데이트를 위한 이벤트 발생
+                window.dispatchEvent(new Event('logout'));
+                
                 router.push("/");
             } else {
-                alert("회원 탈퇴에 실패했습니다.");
+                alert(data.msg || "회원 탈퇴에 실패했습니다.");
             }
         } catch (error) {
             console.error("회원 탈퇴 실패:", error);
