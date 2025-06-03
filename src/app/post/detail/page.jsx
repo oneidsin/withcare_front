@@ -36,7 +36,7 @@ export default function PostDetailPage() {
     // COMMENT LIST
     const fetchCom = async () => {
         const res = await axios.get(`http://localhost/post/detail/${postIdx}/list`);
-        console.log('댓글 응답 : ',res.data);
+        console.log('댓글 응답 : ', res.data);
         if (res.data.list) {
             setComList(res.data.list || []);
         };
@@ -50,7 +50,7 @@ export default function PostDetailPage() {
                 const response = await axios.get('http://localhost/post/detail/users', {
                     headers: { Authorization: token }
                 });
-                
+
                 if (response.data && response.data.list) {
                     console.log('받아온 사용자 목록:', response.data.list);
                     setAllUsers(response.data.list);
@@ -115,7 +115,7 @@ export default function PostDetailPage() {
                 // 권한이 없을 때 알림 표시 후 리다이렉트
                 const message = res.data.message || "게시글을 볼 수 있는 권한이 없습니다.";
                 window.alert(message); // window.alert로 변경하여 확실히 표시되도록 함
-                
+
                 setTimeout(() => {
                     if (boardIdxFromParam) {
                         router.push(`/post?board_idx=${boardIdxFromParam}`);
@@ -294,7 +294,7 @@ export default function PostDetailPage() {
         }
 
         const comRes = await axios.post(`http://localhost/post/detail/${postIdx}/write`, {
-            post_idx:postIdx,
+            post_idx: postIdx,
             com_idx: comIdx,
             com_content: coms,
             com_blind_yn: false,
@@ -303,7 +303,7 @@ export default function PostDetailPage() {
             headers: { Authorization: token },
         });
 
-        if(!comRes.data.success) return alert('댓글 등록 실패');
+        if (!comRes.data.success) return alert('댓글 등록 실패');
 
         alert('댓글이 등록 되었습니다.');
         //window.location.href = `/post/detail?post_idx=${postIdx}`;
@@ -317,10 +317,10 @@ export default function PostDetailPage() {
             setMentionSuggestions([]);
             return;
         }
-        
+
         console.log('검색 쿼리:', query);
         console.log('현재 전체 사용자 목록:', allUsers);
-        
+
         // 로컬에서 필터링
         const filteredUsers = allUsers
             .filter(userId => {
@@ -384,18 +384,18 @@ export default function PostDetailPage() {
     const handleEditSubmit = async () => {
         const token = sessionStorage.getItem('token');
         const response = await axios.put(`http://localhost/post/detail/${postIdx}/update`, {
-                com_idx: updateComIdx,
-                com_content: updateComs,
-            }, {headers: {Authorization: token}});
+            com_idx: updateComIdx,
+            com_content: updateComs,
+        }, { headers: { Authorization: token } });
 
-            if (response.data.success) {
-                alert('댓글 수정이 완료 되었습니다.');
-                setUpdateComIdx(null);  // 수정 모드 종료
-                setUpdateComs("");      // 수정 상태 초기화
-                fetchCom(); // 수정 성공 시 목록 새로고침
-            } else {
-                alert('댓글을 수정할 권한이 없습니다.');
-            }
+        if (response.data.success) {
+            alert('댓글 수정이 완료 되었습니다.');
+            setUpdateComIdx(null);  // 수정 모드 종료
+            setUpdateComs("");      // 수정 상태 초기화
+            fetchCom(); // 수정 성공 시 목록 새로고침
+        } else {
+            alert('댓글을 수정할 권한이 없습니다.');
+        }
     };
 
 
@@ -405,19 +405,33 @@ export default function PostDetailPage() {
 
         const token = sessionStorage.getItem('token');
         const res = await axios.put(`http://localhost/post/detail/${postIdx}/delete`, {
-                com_idx: comIdx,
-                com_blind_yn: true  // 블라인드 처리를 위한 값 추가
-            }, {
-                headers: { Authorization: token }
-            });
+            com_idx: comIdx,
+            com_blind_yn: true  // 블라인드 처리를 위한 값 추가
+        }, {
+            headers: { Authorization: token }
+        });
 
-            if (res.data.success) {
-                alert("삭제되었습니다.");
-                fetchCom(); // 삭제 성공 시 목록 새로고침
-            } else {
-                alert("삭제 권한이 없습니다.");
-            }
+        if (res.data.success) {
+            alert("삭제되었습니다.");
+            fetchCom(); // 삭제 성공 시 목록 새로고침
+        } else {
+            alert("삭제 권한이 없습니다.");
+        }
     };
+
+    // 신고 페이지로 이동(게시글)
+    const moveToReportPost = () => {
+        const reportUrl = `/report?item_idx=${postIdx}&item_type=게시글`;
+        window.open(reportUrl, '_blank');
+    }
+
+    // 신고 페이지로 이동(댓글, 멘션)
+    const moveToReportCom = (comIdx, comContent) => {
+        const type = comContent.trim().startsWith('@') ? '멘션' : '댓글';
+        const reportUrl = `/report?item_idx=${comIdx}&item_type=${type}`;
+        window.open(reportUrl, '_blank');
+    }
+
 
     return (
         <div className="detail-container">
@@ -444,7 +458,7 @@ export default function PostDetailPage() {
                             <button className="detail-control-button" onClick={handleDelete}>삭제</button>
                         </>
                     ) : (
-                        <button className="warn-button">⚠ 신고</button>
+                        <button className="warn-button" onClick={() => moveToReportPost()}>⚠ 신고</button>
                     )}
                 </div>
             </div>
@@ -500,7 +514,7 @@ export default function PostDetailPage() {
                                         {(loginId === comment.id || isAdmin) && (
                                             <button className="comlist-btn" onClick={() => comDelete(comment.com_idx)}>삭제</button>
                                         )}
-                                        <button className="comlist-btn">신고</button>
+                                        <button className="comlist-btn" onClick={() => moveToReportCom(comment.com_idx, comment.com_content)}>신고</button>
                                     </>
                                 )}
                             </div>
