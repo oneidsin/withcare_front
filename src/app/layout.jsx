@@ -42,7 +42,10 @@ export default function RootLayout({ children }) {
 
     // 로그인 이벤트 수신 (수동 dispatch를 위한)
     const handleLogin = () => syncLoginState();
+    const handleLogout = () => syncLoginState();
+    
     window.addEventListener("login", handleLogin);
+    window.addEventListener("logout", handleLogout);
 
     axios.get("http://localhost/board/list", {
       headers: {
@@ -69,6 +72,7 @@ export default function RootLayout({ children }) {
 
     return () => {
       window.removeEventListener("login", handleLogin);
+      window.removeEventListener("logout", handleLogout);
     };
   }, []);
 

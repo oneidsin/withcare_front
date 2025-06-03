@@ -77,13 +77,31 @@ export default function UpdatePage() {
             if (userRes.data.status === "success") {
                 const userData = userRes.data.data;
                 console.log("서버에서 받은 프로필 데이터:", userData);
+                console.log("서버에서 받은 gender 값:", userData.gender);
+                console.log("서버 gender 타입:", typeof userData.gender);
+                console.log("서버 gender === null:", userData.gender === null);
+                console.log("서버 gender === '':", userData.gender === "");
+                console.log("세션에 저장된 gender 값:", signupGender);
+                console.log("세션 gender 타입:", typeof signupGender);
                 
                 // 서버 데이터와 세션 스토리지를 조합하여 폼 데이터 설정
                 const formData = {
                     id: id,
                     name: userData.name || storedName || signupName || "",
                     year: userData.year || signupYear || "",
-                    gender: userData.gender || signupGender || "",
+                    gender: (() => {
+                        // gender 값 우선순위: 서버 데이터 > 세션 스토리지 > 빈 문자열
+                        if (userData.gender && userData.gender !== null && userData.gender !== "" && userData.gender !== "null") {
+                            console.log("서버 gender 값 사용:", userData.gender);
+                            return userData.gender;
+                        } else if (signupGender && signupGender !== null && signupGender !== "" && signupGender !== "null") {
+                            console.log("세션 gender 값 사용:", signupGender);
+                            return signupGender;
+                        } else {
+                            console.log("gender 값 없음, 빈 문자열 사용");
+                            return "";
+                        }
+                    })(),
                     email: userData.email || signupEmail || "",
                     cancer_idx: userData.cancer_idx || "",
                     stage_idx: userData.stage_idx || "",
@@ -93,6 +111,7 @@ export default function UpdatePage() {
                 };
                 
                 console.log("폼에 표시할 데이터:", formData);
+                console.log("최종 gender 값:", formData.gender);
                 
                 // 폼 상태 업데이트
                 setInfo(formData);
