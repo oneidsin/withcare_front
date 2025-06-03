@@ -194,7 +194,30 @@
     display: flex;
     flex-direction: column;
     gap: 32px;
+    max-height: 600px;
+    overflow-y: auto;
+    padding-right: 10px;
 }
+
+/* 스크롤바 스타일 */
+.activity-section::-webkit-scrollbar {
+    width: 6px;
+}
+
+.activity-section::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.activity-section::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+}
+
+.activity-section::-webkit-scrollbar-thumb:hover {
+    background: #a1a1a1;
+}
+
 
 .activity-posts, .activity-comments {
     display: flex;
@@ -236,6 +259,43 @@
 
 .activity-table tbody tr:hover {
     background-color: #f5f5f5;
+}
+
+
+/* 페이지네이션 스타일 */
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    gap: 5px;
+}
+
+.pagination-button {
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    background-color: #fff;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.pagination-button:hover {
+    background-color: #f0f0f0;
+}
+
+.pagination-button.active {
+    background-color: #1976d2;
+    color: white;
+    border-color: #1976d2;
+}
+
+.pagination-button:disabled {
+    background-color: #f5f5f5;
+    color: #aaa;
+    cursor: not-allowed;
+    border-color: #eee;
 }
 
 .no-data {

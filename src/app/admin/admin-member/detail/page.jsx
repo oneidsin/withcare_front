@@ -17,6 +17,12 @@ export default function MemberDetailPage() {
     const [timelines, setTimelines] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('basic'); // 'basic', 'activity', 'timeline'
+    
+    // 페이지네이션 상태 추가
+    const [currentPostPage, setCurrentPostPage] = useState(1);
+    const [currentCommentPage, setCurrentCommentPage] = useState(1);
+    const postsPerPage = 5;
+    const commentsPerPage = 5;
 
     useEffect(() => {
         if (!id) return;
@@ -34,7 +40,7 @@ export default function MemberDetailPage() {
 
                 if (memberRes.data.success) {
                     setMember(memberRes.data.data);
-                    console.log(memberRes.data.data);
+                    console.log('회원 정보:', memberRes.data.data);
                 } else {
                     alert('회원 정보를 불러오는데 실패했습니다.');
                     router.push('/admin/admin-member');
@@ -57,8 +63,17 @@ export default function MemberDetailPage() {
                     { headers: { Authorization: token } }
                 );
 
+                console.log('게시글 데이터:', postsRes.data);
+                console.log('댓글 데이터:', commentsRes.data);
+                console.log('타임라인 데이터:', timelinesRes.data);
+
                 setPosts(postsRes.data.data || []);
-                setComments(commentsRes.data.data || []);
+                
+                // 댓글 데이터 처리 - 데이터 구조 확인 및 필요한 필드 검증
+                const commentsData = commentsRes.data.data || [];
+                console.log('댓글 데이터 상세:', commentsData);
+                setComments(commentsData);
+                
                 setTimelines(timelinesRes.data.data || []);
 
                 setLoading(false);
@@ -142,6 +157,37 @@ export default function MemberDetailPage() {
         }
     };
 
+    // 페이지네이션 함수
+    const paginate = (array, pageNumber, itemsPerPage) => {
+        const startIndex = (pageNumber - 1) * itemsPerPage;
+        return array.slice(startIndex, startIndex + itemsPerPage);
+    };
+
+    // 페이지 번호 생성 함수
+    const generatePageNumbers = (totalItems, itemsPerPage, currentPage) => {
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
+        
+        // 표시할 페이지 번호 범위 계산 (최대 5개)
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, startPage + 4);
+        
+        // 5개 페이지 번호를 유지하기 위한 조정
+        if (endPage - startPage < 4 && totalPages > 5) {
+            if (startPage === 1) {
+                endPage = 5;
+            } else if (endPage === totalPages) {
+                startPage = Math.max(1, totalPages - 4);
+            }
+        }
+        
+        const pageNumbers = [];
+        for (let i = startPage; i <= endPage; i++) {
+            pageNumbers.push(i);
+        }
+        
+        return { pageNumbers, totalPages };
+    };
+
     if (loading) {
         return <div className="loading">로딩 중...</div>;
     }
@@ -149,6 +195,16 @@ export default function MemberDetailPage() {
     if (!member) {
         return <div className="error">회원 정보를 찾을 수 없습니다.</div>;
     }
+
+    // 현재 페이지에 표시할 게시글과 댓글
+    const currentPosts = paginate(posts, currentPostPage, postsPerPage);
+    const currentComments = paginate(comments, currentCommentPage, commentsPerPage);
+    
+    // 페이지 번호 계산
+    const { pageNumbers: postPageNumbers, totalPages: totalPostPages } = 
+        generatePageNumbers(posts.length, postsPerPage, currentPostPage);
+    const { pageNumbers: commentPageNumbers, totalPages: totalCommentPages } = 
+        generatePageNumbers(comments.length, commentsPerPage, currentCommentPage);
 
     return (
         <div className="member-detail-container">
@@ -293,28 +349,60 @@ export default function MemberDetailPage() {
                             <div className="activity-posts">
                                 <h3>작성 게시글</h3>
                                 {posts.length > 0 ? (
-                                    <table className="activity-table">
-                                        <thead>
-                                            <tr>
-                                                <th>글번호</th>
-                                                <th>제목</th>
-                                                <th>작성일</th>
-                                                <th>조회수</th>
-                                                <th>추천수</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {posts.map(post => (
-                                                <tr key={post.post_idx} onClick={() => window.open(`/post/detail?post_idx=${post.post_idx}`, '_blank')}>
-                                                    <td>{post.post_idx}</td>
-                                                    <td>{post.post_title}</td>
-                                                    <td>{new Date(post.post_create_date).toLocaleDateString()}</td>
-                                                    <td>{post.post_view_cnt || 0}</td>
-                                                    <td>{post.like_cnt || 0}</td>
+                                    <>
+                                        <table className="activity-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>글번호</th>
+                                                    <th>제목</th>
+                                                    <th>작성일</th>
+                                                    <th>조회수</th>
+                                                    <th>추천수</th>
                                                 </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                            </thead>
+                                            <tbody>
+                                                {currentPosts.map(post => (
+                                                    <tr key={post.post_idx} onClick={() => window.open(`/post/detail?post_idx=${post.post_idx}`, '_blank')}>
+                                                        <td>{post.post_idx}</td>
+                                                        <td>{post.post_title}</td>
+                                                        <td>{new Date(post.post_create_date).toLocaleDateString()}</td>
+                                                        <td>{post.post_view_cnt || 0}</td>
+                                                        <td>{post.like_cnt || 0}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                        
+                                        {posts.length > postsPerPage && (
+                                            <div className="pagination">
+                                                <button 
+                                                    className="pagination-button"
+                                                    onClick={() => setCurrentPostPage(prev => Math.max(prev - 1, 1))}
+                                                    disabled={currentPostPage === 1}
+                                                >
+                                                    &lt;
+                                                </button>
+                                                
+                                                {postPageNumbers.map(number => (
+                                                    <button
+                                                        key={number}
+                                                        className={`pagination-button ${currentPostPage === number ? 'active' : ''}`}
+                                                        onClick={() => setCurrentPostPage(number)}
+                                                    >
+                                                        {number}
+                                                    </button>
+                                                ))}
+                                                
+                                                <button
+                                                    className="pagination-button"
+                                                    onClick={() => setCurrentPostPage(prev => Math.min(prev + 1, totalPostPages))}
+                                                    disabled={currentPostPage === totalPostPages}
+                                                >
+                                                    &gt;
+                                                </button>
+                                            </div>
+                                        )}
+                                    </>
                                 ) : (
                                     <p className="no-data">작성한 게시글이 없습니다.</p>
                                 )}
@@ -323,24 +411,77 @@ export default function MemberDetailPage() {
                             <div className="activity-comments">
                                 <h3>작성 댓글</h3>
                                 {comments.length > 0 ? (
-                                    <table className="activity-table">
-                                        <thead>
-                                            <tr>
-                                                <th>게시글</th>
-                                                <th>댓글 내용</th>
-                                                <th>작성일</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {comments.map(comment => (
-                                                <tr key={comment.com_idx} onClick={() => window.open(`/post/detail?post_idx=${comment.post_idx}`, '_blank')}>
-                                                    <td>{comment.post_title || `게시글 ${comment.post_idx}`}</td>
-                                                    <td>{comment.com_cont}</td>
-                                                    <td>{new Date(comment.com_create_date).toLocaleDateString()}</td>
+                                    <>
+                                        <table className="activity-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>게시글</th>
+                                                    <th>댓글 내용</th>
+                                                    <th>작성일</th>
                                                 </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                            </thead>
+                                            <tbody>
+                                                {currentComments.map((comment, index) => {
+                                                    // 댓글 데이터 필드 확인 및 안전하게 접근
+                                                    const postTitle = comment.post_title || '제목 없음';
+                                                    const postIdx = comment.post_idx || '';
+                                                    const commentContent = comment.comment_content || comment.com_cont || '내용 없음';
+                                                    
+                                                    // 날짜 형식 확인 및 안전하게 변환
+                                                    let commentDate = '날짜 정보 없음';
+                                                    const dateField = comment.comment_date || comment.com_create_date || comment.reg_date;
+                                                    if (dateField) {
+                                                        try {
+                                                            commentDate = new Date(dateField).toLocaleDateString();
+                                                        } catch (e) {
+                                                            console.error('날짜 변환 오류:', e);
+                                                        }
+                                                    }
+                                                    
+                                                    return (
+                                                        <tr 
+                                                            key={comment.com_idx || comment.comment_idx || index} 
+                                                            onClick={() => postIdx && window.open(`/post/detail?post_idx=${postIdx}`, '_blank')}
+                                                        >
+                                                            <td>{postTitle}</td>
+                                                            <td>{commentContent}</td>
+                                                            <td>{commentDate}</td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                        
+                                        {comments.length > commentsPerPage && (
+                                            <div className="pagination">
+                                                <button 
+                                                    className="pagination-button"
+                                                    onClick={() => setCurrentCommentPage(prev => Math.max(prev - 1, 1))}
+                                                    disabled={currentCommentPage === 1}
+                                                >
+                                                    &lt;
+                                                </button>
+                                                
+                                                {commentPageNumbers.map(number => (
+                                                    <button
+                                                        key={number}
+                                                        className={`pagination-button ${currentCommentPage === number ? 'active' : ''}`}
+                                                        onClick={() => setCurrentCommentPage(number)}
+                                                    >
+                                                        {number}
+                                                    </button>
+                                                ))}
+                                                
+                                                <button
+                                                    className="pagination-button"
+                                                    onClick={() => setCurrentCommentPage(prev => Math.min(prev + 1, totalCommentPages))}
+                                                    disabled={currentCommentPage === totalCommentPages}
+                                                >
+                                                    &gt;
+                                                </button>
+                                            </div>
+                                        )}
+                                    </>
                                 ) : (
                                     <p className="no-data">작성한 댓글이 없습니다.</p>
                                 )}
