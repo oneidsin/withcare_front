@@ -18,6 +18,7 @@ export default function PostDetailPage() {
     const [loginId, setLoginId] = useState(null);
     const [lvIdx, setLvIdx] = useState(null);
     const [boardName, setBoardName] = useState('');
+    const [isAnonymousBoard, setIsAnonymousBoard] = useState(false);
     const [userLikeStatus, setUserLikeStatus] = useState(0);
     const [isProcessing, setIsProcessing] = useState(false);
 
@@ -183,6 +184,7 @@ export default function PostDetailPage() {
             const res = await axios.get(`http://localhost/board/${boardIdx}`);
             if (res.data && res.data.board_name) {
                 setBoardName(res.data.board_name);
+                setIsAnonymousBoard(res.data.anony_yn === true);
             }
         } catch (err) {
             console.error('게시판 이름 로딩 실패');
@@ -298,7 +300,8 @@ export default function PostDetailPage() {
             com_idx: comIdx,
             com_content: coms,
             com_blind_yn: false,
-            mentions: mentionIds // 멘션된 사용자 ID 목록 추가
+            mentions: mentionIds, // 멘션된 사용자 ID 목록 추가
+            id: isAnonymousBoard ? '익명' : loginId // 익명 게시판일 경우 '익명'으로 설정
         }, {
             headers: { Authorization: token },
         });
@@ -386,6 +389,7 @@ export default function PostDetailPage() {
         const response = await axios.put(`http://localhost/post/detail/${postIdx}/update`, {
             com_idx: updateComIdx,
             com_content: updateComs,
+            id: isAnonymousBoard ? '익명' : loginId // 익명 게시판일 경우 수정된 댓글도 익명으로 처리
         }, { headers: { Authorization: token } });
 
         if (response.data.success) {
@@ -444,8 +448,8 @@ export default function PostDetailPage() {
             <div className="detail-meta">
                 <div className="meta-left">
                     <div className="meta-author-line">
-                        <span>{post.id || '익명'}</span>
-                        <span className="badge">관리자</span>
+                        <span>{isAnonymousBoard ? '익명' : (post.id || '익명')}</span>
+                        {!isAnonymousBoard && post.id === 'admin' && <span className="badge">관리자</span>}
                     </div>
                     <div className="meta-date-line">
                         {post.post_create_date.slice(0, 10)} · 조회 {post.post_view_cnt}
@@ -467,9 +471,25 @@ export default function PostDetailPage() {
 
             <div className="detail-content">
                 {post.post_content.split('\n').map((line, idx) => <p key={idx}>{line}</p>)}
-                {photos.map((photo, idx) => (
-                    <img key={idx} src={`http://localhost/file/${photo.file_url}`} alt="첨부 이미지" className="attached-image" />
-                ))}
+                {photos.map((photo, idx) => {
+                    // 이미지 URL이 이미 http:// 또는 https://로 시작하는지 확인
+                    const imgSrc = photo.file_url.startsWith('http://') || photo.file_url.startsWith('https://')
+                        ? photo.file_url  // 이미 전체 URL이면 그대로 사용
+                        : `http://localhost/file/${photo.file_url}`;  // 아니면 경로 추가
+                    
+                    return (
+                        <img 
+                            key={idx} 
+                            src={imgSrc} 
+                            alt="첨부 이미지" 
+                            className="attached-image" 
+                            onError={(e) => {
+                                console.error("이미지 로드 실패:", imgSrc);
+                                e.target.style.display = 'none'; // 이미지 로드 실패 시 숨김 처리
+                            }}
+                        />
+                    );
+                })}
             </div>
 
             <div className="recommend-box">
@@ -500,7 +520,7 @@ export default function PostDetailPage() {
                     comList.map((comment, idx) => (
                         <div key={idx} className="comment-item">
                             <div className="comment-header">
-                                <span className="comlist-writer">{comment.id}</span>
+                                <span className="comlist-writer">{isAnonymousBoard ? '익명' : comment.id}</span>
                                 {updateComIdx === comment.com_idx ? (
                                     <>
                                         <button className="comlist-btn" onClick={handleEditSubmit}>완료</button>
@@ -535,7 +555,7 @@ export default function PostDetailPage() {
             </div>
 
             <div className="comment-box">
-                <div className="comment-writer">{loginId || 'guest'}</div>
+                <div className="comment-writer">{isAnonymousBoard ? '익명' : (loginId || 'guest')}</div>
                 <div className="comment-input-container">
                     <input
                         placeholder="댓글을 남겨보세요. (@를 입력하여 멘션)"

@@ -40,7 +40,7 @@ export default function MemberDetailPage() {
 
                 if (memberRes.data.success) {
                     setMember(memberRes.data.data);
-                    console.log('회원 정보:', memberRes.data.data);
+                    console.log(memberRes.data.data);
                 } else {
                     alert('회원 정보를 불러오는데 실패했습니다.');
                     router.push('/admin/admin-member');
@@ -63,17 +63,19 @@ export default function MemberDetailPage() {
                     { headers: { Authorization: token } }
                 );
 
-                console.log('게시글 데이터:', postsRes.data);
-                console.log('댓글 데이터:', commentsRes.data);
-                console.log('타임라인 데이터:', timelinesRes.data);
-
                 setPosts(postsRes.data.data || []);
                 
-                // 댓글 데이터 처리 - 데이터 구조 확인 및 필요한 필드 검증
-                const commentsData = commentsRes.data.data || [];
-                console.log('댓글 데이터 상세:', commentsData);
-                setComments(commentsData);
+                // 댓글 데이터 디버깅 로그 추가
+                console.log('댓글 데이터 응답:', commentsRes.data);
+                if (commentsRes.data && commentsRes.data.data) {
+                    console.log('댓글 데이터 상세:', commentsRes.data.data);
+                    // 첫 번째 댓글의 필드 구조 확인
+                    if (commentsRes.data.data.length > 0) {
+                        console.log('첫 번째 댓글 구조:', commentsRes.data.data[0]);
+                    }
+                }
                 
+                setComments(commentsRes.data.data || []);
                 setTimelines(timelinesRes.data.data || []);
 
                 setLoading(false);
@@ -425,11 +427,11 @@ export default function MemberDetailPage() {
                                                     // 댓글 데이터 필드 확인 및 안전하게 접근
                                                     const postTitle = comment.post_title || '제목 없음';
                                                     const postIdx = comment.post_idx || '';
-                                                    const commentContent = comment.comment_content || comment.com_cont || '내용 없음';
+                                                    const commentContent = comment.com_content || comment.content || '내용 없음';
                                                     
                                                     // 날짜 형식 확인 및 안전하게 변환
                                                     let commentDate = '날짜 정보 없음';
-                                                    const dateField = comment.comment_date || comment.com_create_date || comment.reg_date;
+                                                    const dateField = comment.com_create_date || comment.createDate;
                                                     if (dateField) {
                                                         try {
                                                             commentDate = new Date(dateField).toLocaleDateString();
@@ -440,7 +442,7 @@ export default function MemberDetailPage() {
                                                     
                                                     return (
                                                         <tr 
-                                                            key={comment.com_idx || comment.comment_idx || index} 
+                                                            key={comment.com_idx || index} 
                                                             onClick={() => postIdx && window.open(`/post/detail?post_idx=${postIdx}`, '_blank')}
                                                         >
                                                             <td>{postTitle}</td>

@@ -381,3 +381,36 @@
     padding-bottom: 25px;
     box-sizing: border-box;
 }
+
+/* 쪽지함 액션 버튼 스타일 */
+.message-action-group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;  /* 버튼 사이 간격 */
+}
+
+.message-action-btn {
+  padding: 6px 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #f8f8f8;
+  cursor: pointer;
+  font-size: 0.85em;
+  color: #333;
+  transition: all 0.2s ease;
+}
+
+.message-action-btn:hover {
+  background-color: #eee;
+}
+
+.message-action-btn.message-delete-btn {
+  background-color: #ffe0e0;
+  border-color: #ffb3b3;
+  color: #d9534f;
+}
+
+.message-action-btn.message-delete-btn:hover {
+  background-color: #ffcccc;
+}
