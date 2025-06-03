@@ -51,7 +51,7 @@ export default function LoginPage() {
             const finalUserId = userId || id;
             
             if (!userId) {
-                console.error('백엔드 응답에서 사용자 ID를 찾을 수 없습니다!');
+                // console.error('백엔드 응답에서 사용자 ID를 찾을 수 없습니다!');
                 console.log('임시로 로그인 아이디를 사용자 ID로 사용합니다:', id);
                 // alert('로그인 처리 중 오류가 발생했습니다. 백엔드에 문의해주세요.');
                 // return;
