@@ -54,7 +54,7 @@ export default function MainPage() {
             <RecommendedPosts />
 
             {/* 관리자 페이지 이동 버튼 - 조건부 렌더링 */}
-            {sessionStorage.getItem('loginSuccess') && isAdmin && (
+            {isAdmin && (
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                     <Link href="/admin/admin-board">
                         <button className="admin-button">관리자 페이지로 이동</button>
