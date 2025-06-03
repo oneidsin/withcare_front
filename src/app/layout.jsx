@@ -10,7 +10,7 @@ import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import { Provider } from "react-redux";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { store } from "@/redux/store";
 import SSEClient from "@/components/SSEClient";
 import NotificationPopup from "@/components/NotificationPopup";
@@ -21,7 +21,10 @@ export default function RootLayout({ children }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState("");
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [menuBoards, setMenuBoards] = useState([]);
+  const currentBoardIdx = searchParams.get('board_idx');
 
   // 로그인/로그아웃 상태 동기화
   const syncLoginState = () => {
@@ -95,6 +98,16 @@ export default function RootLayout({ children }) {
     location.href = "/";
   };
 
+  // 현재 선택된 게시판인지 확인하는 함수
+  const isActiveBoard = (boardIdx) => {
+    return pathname.startsWith('/post') && currentBoardIdx === String(boardIdx);
+  };
+
+  // 부모 게시판에 속한 하위 게시판 중 하나라도 활성화되어 있는지 확인
+  const hasActiveChild = (parent) => {
+    return parent.children.some(child => isActiveBoard(child.board_idx));
+  };
+
   return (
     <html lang="ko">
       <head>
@@ -113,15 +126,19 @@ export default function RootLayout({ children }) {
             <nav className="top-nav">
               {menuBoards.map((parent) => (
                 <div key={parent.board_idx} className="nav-item">
-                  <Link href={`/post?board_idx=${parent.board_idx}`}>
+                  <Link 
+                    href={`/post?board_idx=${parent.board_idx}`}
+                    className={isActiveBoard(parent.board_idx) ? 'active-nav-link' : ''}
+                  >
                     {parent.board_name}
                   </Link>
                   {parent.children.length > 0 && (
-                    <div className="dropdown">
+                    <div className={`dropdown ${hasActiveChild(parent) ? 'show-dropdown' : ''}`}>
                       {parent.children.map((child) => (
                         <Link
                           key={child.board_idx}
                           href={`/post?board_idx=${child.board_idx}`}
+                          className={isActiveBoard(child.board_idx) ? 'active-nav-link' : ''}
                         >
                           {child.board_name}
                         </Link>
