@@ -516,9 +516,50 @@
 
 .event-card-header {
     display: flex;
-    flex-direction: column;
-    gap: 5px;
-    margin-bottom: 8px;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.event-date-title {
+    flex: 1;
+}
+
+.event-actions {
+    display: flex;
+    gap: 8px;
+    margin-left: 16px;
+}
+
+.edit-btn-small, .delete-btn-small {
+    background: none;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 6px 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    min-width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.edit-btn-small:hover {
+    background-color: #e3f2fd;
+    border-color: #2196f3;
+    transform: translateY(-1px);
+}
+
+.delete-btn-small:hover {
+    background-color: #ffebee;
+    border-color: #f44336;
+    transform: translateY(-1px);
+}
+
+.edit-btn-small:active, .delete-btn-small:active {
+    transform: translateY(0);
 }
 
 .event-date {
@@ -730,4 +771,192 @@
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid var(--primary-color);
+}
+
+/* 로딩 스타일 */
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    font-size: 16px;
+    color: #666;
+}
+
+/* 반응형 - 모바일에서 버튼 크기 조정 */
+@media (max-width: 768px) {
+    .event-card-header {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .event-actions {
+        margin-left: 0;
+        align-self: flex-end;
+    }
+    
+    .edit-btn-small, .delete-btn-small {
+        min-width: 40px;
+        height: 40px;
+        font-size: 16px;
+    }
+}
+
+/* 타임라인 인라인 편집 모드 스타일 */
+.edit-mode {
+    background-color: #f8f9fa;
+    border: 2px solid #007bff;
+    border-radius: 8px;
+    padding: 16px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.edit-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.edit-row label {
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+}
+
+.edit-row input[type="text"],
+.edit-row input[type="date"],
+.edit-row textarea {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    resize: vertical;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.edit-row textarea {
+    min-height: 80px;
+    max-height: 120px;
+}
+
+.edit-row input[type="checkbox"] {
+    margin-right: 8px;
+    width: auto;
+}
+
+.edit-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    position: sticky;
+    bottom: 0;
+    background-color: #f8f9fa;
+    padding-top: 8px;
+    margin-top: 8px;
+    border-top: 1px solid #dee2e6;
+}
+
+.save-btn-small, .cancel-btn-small {
+    background: none;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    min-width: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.save-btn-small {
+    background-color: #e8f5e8;
+    border-color: #28a745;
+    color: #155724;
+}
+
+.save-btn-small:hover {
+    background-color: #d4edda;
+    transform: translateY(-1px);
+}
+
+.cancel-btn-small {
+    background-color: #f8d7da;
+    border-color: #dc3545;
+    color: #721c24;
+}
+
+.cancel-btn-small:hover {
+    background-color: #f5c6cb;
+    transform: translateY(-1px);
+}
+
+.private-badge {
+    display: inline-block;
+    background-color: #fff3cd;
+    color: #856404;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    margin-top: 8px;
+    border: 1px solid #ffeaa7;
+}
+
+/* 편집 모드일 때 이벤트 카드 높이 조정 */
+.event-card:has(.edit-mode) {
+    max-height: 420px;
+    height: auto;
+    overflow: visible;
+}
+
+/* 편집 모드 스크롤바 스타일 */
+.edit-mode::-webkit-scrollbar {
+    width: 6px;
+}
+
+.edit-mode::-webkit-scrollbar-track {
+    background: #e9ecef;
+    border-radius: 3px;
+}
+
+.edit-mode::-webkit-scrollbar-thumb {
+    background: #007bff;
+    border-radius: 3px;
+}
+
+.edit-mode::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 반응형 - 모바일에서 편집 폼 조정 */
+@media (max-width: 768px) {
+    .edit-mode {
+        max-height: 350px;
+    }
+    
+    .edit-actions {
+        flex-direction: column;
+    }
+    
+    .save-btn-small, .cancel-btn-small {
+        width: 100%;
+        min-width: unset;
+    }
+    
+    .edit-row input[type="text"],
+    .edit-row input[type="date"],
+    .edit-row textarea {
+        font-size: 16px; /* iOS 줌 방지 */
+    }
 }
