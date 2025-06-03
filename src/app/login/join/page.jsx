@@ -70,9 +70,17 @@ export default function joinPage(){
         try {
             const res = await axios.post('http://localhost/join', submitData);
             if (res.data.success) {
-                // 회원가입 성공 시 이름을 세션 스토리지에 미리 저장
+                // 회원가입 성공 시 기본 정보를 세션 스토리지에 미리 저장
                 sessionStorage.setItem('signupName', submitData.name);
-                console.log('회원가입 성공 - 이름 저장:', submitData.name);
+                sessionStorage.setItem('signupGender', submitData.gender);
+                sessionStorage.setItem('signupYear', submitData.year);
+                sessionStorage.setItem('signupEmail', submitData.email);
+                console.log('회원가입 성공 - 기본 정보 저장:', {
+                    name: submitData.name,
+                    gender: submitData.gender,
+                    year: submitData.year,
+                    email: submitData.email
+                });
                 
                 alert('회원가입이 완료되었습니다.');
                 window.location.href = '/login';
@@ -124,9 +132,15 @@ export default function joinPage(){
                 <tr>
                     <th>GENDER<span style={{color: "red"}}> *</span></th>
                     <td>
+<<<<<<< HEAD
                         <label><input className="gender" type="radio" name="gender" value="남" onChange={input}/> 남</label>
                         &nbsp;&nbsp;&nbsp;&nbsp;
                         <label><input className="gender" type="radio" name="gender" value="여" onChange={input}/> 여</label>
+=======
+                        <input type="radio" name="gender" value="M" onChange={input}/> 남
+                        &nbsp;&nbsp;&nbsp;&nbsp;
+                        <input type="radio" name="gender" value="F" onChange={input}/> 여
+>>>>>>> 76e93a8467bc66ec35e1d2e23af3300b3ca13e6e
                     </td>
                 </tr>
                 <tr>

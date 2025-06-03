@@ -48,6 +48,12 @@ export default function UpdatePage() {
             const timestamp = new Date().getTime();
             const storedName = sessionStorage.getItem("name");
             
+            // 회원가입 시 저장한 기본 정보 가져오기 (fallback용)
+            const signupName = sessionStorage.getItem("signupName");
+            const signupGender = sessionStorage.getItem("signupGender");
+            const signupYear = sessionStorage.getItem("signupYear");
+            const signupEmail = sessionStorage.getItem("signupEmail");
+            
             // 프로필 정보와 선택 옵션 데이터를 병렬로 요청
             const requests = [
                 axios.get(`http://localhost/profile/${id}?t=${timestamp}`, {
@@ -75,10 +81,10 @@ export default function UpdatePage() {
                 // 서버 데이터와 세션 스토리지를 조합하여 폼 데이터 설정
                 const formData = {
                     id: id,
-                    name: userData.name || storedName || "",
-                    year: userData.year || "",
-                    gender: userData.gender || "",
-                    email: userData.email || "",
+                    name: userData.name || storedName || signupName || "",
+                    year: userData.year || signupYear || "",
+                    gender: userData.gender || signupGender || "",
+                    email: userData.email || signupEmail || "",
                     cancer_idx: userData.cancer_idx || "",
                     stage_idx: userData.stage_idx || "",
                     profile_yn: userData.profile_yn ? "Y" : "N",
@@ -99,10 +105,10 @@ export default function UpdatePage() {
                 // 프로필 정보를 가져올 수 없는 경우 기본 정보라도 설정
                 const basicInfo = {
                     id: id,
-                    name: storedName || "",
-                    year: "",
-                    gender: "",
-                    email: "",
+                    name: storedName || signupName || "",
+                    year: signupYear || "",
+                    gender: signupGender || "",
+                    email: signupEmail || "",
                     cancer_idx: "",
                     stage_idx: "",
                     profile_yn: "Y",
@@ -139,10 +145,10 @@ export default function UpdatePage() {
             const storedName = sessionStorage.getItem("name");
             const basicInfo = {
                 id: id,
-                name: storedName || "",
-                year: "",
-                gender: "",
-                email: "",
+                name: storedName || signupName || "",
+                year: signupYear || "",
+                gender: signupGender || "",
+                email: signupEmail || "",
                 cancer_idx: "",
                 stage_idx: "",
                 profile_yn: "Y",
@@ -191,9 +197,9 @@ export default function UpdatePage() {
         }
         
         try {
-            // 데이터 유효성 검사
-            if (!info.id || !info.name) {
-                alert("이름은 필수 항목입니다.");
+            // 데이터 유효성 검사 - 필수 항목만 체크
+            if (!info.id || !info.name || !info.year) {
+                alert("아이디, 이름, 출생연도는 필수 항목입니다.");
                 return;
             }
 
@@ -207,12 +213,19 @@ export default function UpdatePage() {
                 email: info.email || "",
                 year: parseInt(info.year) || 0,
                 gender: info.gender || "",
-                cancer_idx: (info.cancer_idx && info.cancer_idx !== "") ? parseInt(info.cancer_idx) : null,
-                stage_idx: (info.stage_idx && info.stage_idx !== "") ? parseInt(info.stage_idx) : null,
                 profile_yn: info.profile_yn === "Y",
                 intro: info.intro || "",
                 profile_photo: info.profile_photo  // 기존 이미지 URL 유지
             };
+
+            // cancer_idx와 stage_idx는 유효한 값이 있을 때만 추가
+            if (info.cancer_idx && info.cancer_idx !== "" && parseInt(info.cancer_idx) > 0) {
+                profileData.cancer_idx = parseInt(info.cancer_idx);
+            }
+            
+            if (info.stage_idx && info.stage_idx !== "" && parseInt(info.stage_idx) > 0) {
+                profileData.stage_idx = parseInt(info.stage_idx);
+            }
 
             console.log("프로필 수정 요청 데이터:", profileData);
 
@@ -300,6 +313,92 @@ export default function UpdatePage() {
         }
     };
 
+    // 회원탈퇴 함수
+    const handleWithdraw = async () => {
+        const token = sessionStorage.getItem("token");
+        const id = sessionStorage.getItem("id");
+        
+        if (!token || !id) {
+            alert("로그인 세션이 만료되었습니다. 다시 로그인해주세요.");
+            sessionStorage.clear();
+            router.push("/login");
+            return;
+        }
+
+        // 탈퇴 확인
+        const confirmMessage = `정말로 회원탈퇴를 하시겠습니까?\n\n탈퇴 후에는 계정 복구가 어려울 수 있습니다.\n계속 진행하시려면 확인을 클릭하세요.`;
+        
+        if (!window.confirm(confirmMessage)) {
+            return;
+        }
+
+        // 추가 확인
+        const finalConfirm = `마지막 확인입니다.\n\n회원ID: ${id}\n정말로 탈퇴하시겠습니까?`;
+        
+        if (!window.confirm(finalConfirm)) {
+            return;
+        }
+
+        try {
+            console.log("회원탈퇴 요청 시작:", id);
+
+            const response = await fetch(`http://localhost:80/delete/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': token,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                let errorMessage = `회원탈퇴에 실패했습니다. (${response.status})`;
+                
+                if (response.status === 401) {
+                    alert("로그인 세션이 만료되었습니다. 다시 로그인해주세요.");
+                    sessionStorage.clear();
+                    router.push("/login");
+                    return;
+                }
+                
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.msg || errorMessage;
+                } catch (e) {
+                    // JSON 파싱 실패 시 기본 메시지 사용
+                }
+                throw new Error(errorMessage);
+            }
+
+            const data = await response.json();
+            
+            if (data.success) {
+                alert("회원탈퇴가 완료되었습니다.\n그동안 이용해주셔서 감사합니다.");
+                
+                // 모든 세션 데이터 삭제
+                sessionStorage.clear();
+                
+                // 로그아웃 상태 업데이트를 위한 이벤트 발생
+                window.dispatchEvent(new Event('logout'));
+                
+                // 메인 페이지로 이동
+                location.href = "/";
+            } else {
+                throw new Error(data.msg || "회원탈퇴에 실패했습니다.");
+            }
+        } catch (error) {
+            console.error("회원탈퇴 실패:", error);
+            
+            if (error.response && error.response.status === 401) {
+                alert("로그인 세션이 만료되었습니다. 다시 로그인해주세요.");
+                sessionStorage.clear();
+                router.push("/login");
+                return;
+            }
+            
+            alert(error.message || "회원탈퇴 중 오류가 발생했습니다.");
+        }
+    };
+
     // 유효한 이미지 URL 생성 함수
     const getValidImageUrl = (url) => {
         if (!url || url === 'null' || url === 'undefined') {
@@ -384,7 +483,7 @@ export default function UpdatePage() {
 
                 <div className="form-group">
                     <label>성별</label>
-                    <select name="gender" value={info.gender} onChange={handleChange} required>
+                    <select name="gender" value={info.gender} onChange={handleChange}>
                         <option value="">선택하세요</option>
                         <option value="M">남성</option>
                         <option value="F">여성</option>
@@ -398,12 +497,11 @@ export default function UpdatePage() {
                         name="email"
                         value={info.email}
                         onChange={handleChange}
-                        required
                     />
                 </div>
 
                 <div className="form-group">
-                    <label>암 종류</label>
+                    <label>암 종류 (선택사항)</label>
                     <select
                         name="cancer_idx"
                         value={info.cancer_idx || ""}
@@ -419,7 +517,7 @@ export default function UpdatePage() {
                 </div>
 
                 <div className="form-group">
-                    <label>병기</label>
+                    <label>병기 (선택사항)</label>
                     <select
                         name="stage_idx"
                         value={info.stage_idx || ""}
@@ -455,6 +553,12 @@ export default function UpdatePage() {
                 <div className="button-group">
                     <button type="submit">수정하기</button>
                     <button type="button" onClick={() => router.push("/profile")}>취소</button>
+                </div>
+                
+                <div className="button-group">
+                    <button type="button" className="withdraw-btn" onClick={handleWithdraw}>
+                        회원탈퇴
+                    </button>
                 </div>
             </form>
         </div>
