@@ -91,6 +91,8 @@ export default function ProfileLevelPage() {
             if (response.ok) {
                 const data = await response.json();
                 console.log('User activity data:', data);
+                console.log('=== 타임라인 카운트 분석 ===');
+                console.log('백엔드 timelineCount:', data.timelineCount);
                 
                 // API 응답 상태 확인
                 if (data.status === 'success') {
@@ -102,6 +104,8 @@ export default function ProfileLevelPage() {
                         time_cnt: data.timelineCount || 0,
                         access_cnt: 0 // 기본값
                     };
+                    
+                    console.log('초기 stats (백엔드):', stats);
                     
                     // 추가로 프로필 정보에서 access_cnt 가져오기
                     try {
@@ -123,7 +127,28 @@ export default function ProfileLevelPage() {
                         console.warn('프로필에서 방문 수 조회 실패:', profileError);
                     }
                     
-                    console.log('User stats from backend counts:', stats);
+                    // 로컬 스토리지에서 임시 카운트 확인 (백엔드 API가 구현되지 않은 경우 대비)
+                    const localTimelineCount = parseInt(localStorage.getItem(`timelineCount_${userId}`) || '0');
+                    const localVisitCount = parseInt(localStorage.getItem(`visitCount_${userId}`) || '0');
+                    
+                    console.log('로컬 타임라인 카운트:', localTimelineCount);
+                    console.log('로컬 방문 카운트:', localVisitCount);
+                    
+                    // 타임라인 카운트: 로컬 데이터가 있으면 로컬 우선, 없으면 백엔드 사용
+                    if (localTimelineCount > 0) {
+                        console.log('로컬 타임라인 카운트 사용 (백엔드 집계 문제로 인해):', localTimelineCount);
+                        stats.time_cnt = localTimelineCount;
+                    } else if (stats.time_cnt === 0) {
+                        console.log('타임라인 카운트 없음 (로컬, 백엔드 모두 0)');
+                    }
+                    
+                    // 방문수: 백엔드 데이터가 0이고 로컬 데이터가 있는 경우만 로컬 사용
+                    if (stats.access_cnt === 0 && localVisitCount > 0) {
+                        console.log('백엔드 방문 카운트가 0이므로 로컬 데이터 사용:', localVisitCount);
+                        stats.access_cnt = localVisitCount;
+                    }
+                    
+                    console.log('최종 stats (로컬 병합 후):', stats);
                     setUserStats(stats);
                     
                     // 현재 사용자 레벨 계산

@@ -45,16 +45,57 @@ export default function ProfilePage() {
     const fetchData = async (id, token) => {
         try {
             // 프로필 조회 전에 방문 수 증가 API 호출
+            console.log('=== 방문수 증가 API 호출 시작 ===');
+            console.log('사용자 ID:', id);
+            console.log('토큰:', token ? '존재함' : '없음');
+            
+            // 방문수 증가 API가 백엔드에서 구현되지 않았으므로 주석 처리
+            // 방문수는 백엔드에서 다른 방식으로 관리되고 있음 (레벨 페이지에서 access_cnt 확인됨)
+            console.log('ℹ️ 방문수 증가 API는 백엔드에서 구현되지 않았지만, 방문수 데이터는 정상적으로 관리되고 있습니다.');
+            
+            /*
             try {
                 console.log('프로필 방문 수 증가 시도...');
-                await axios.post(`http://localhost:80/profile/visit/${id}`, {}, {
+                const visitResponse = await axios.post(`http://localhost:80/profile/visit/${id}`, {}, {
                     headers: { Authorization: token }
                 });
-                console.log('프로필 방문 수 증가 완료');
+                console.log('프로필 방문 수 증가 완료, 응답:', visitResponse.data);
+                console.log('방문수 증가 API 상태 코드:', visitResponse.status);
             } catch (visitError) {
-                console.warn('방문 수 증가 실패 (무시하고 계속):', visitError);
+                console.error('=== 방문 수 증가 실패 ===');
+                console.error('에러 객체:', visitError);
+                if (visitError.response) {
+                    console.error('방문 수 증가 실패 응답 상태:', visitError.response.status);
+                    console.error('방문 수 증가 실패 응답 데이터:', visitError.response.data);
+                    
+                    // 404 에러인 경우 API가 구현되지 않은 것으로 판단
+                    if (visitError.response.status === 404) {
+                        console.warn('⚠️ 방문 수 증가 API가 구현되지 않았습니다. 백엔드에서 해당 API를 구현해야 합니다.');
+                        console.warn('필요한 API: POST /profile/visit/{id}');
+                        
+                        // 로컬 스토리지에 방문 카운트 증가 (백엔드 미구현 대비)
+                        const currentVisitCount = parseInt(localStorage.getItem(`visitCount_${id}`) || '0');
+                        localStorage.setItem(`visitCount_${id}`, (currentVisitCount + 1).toString());
+                        console.log('로컬 방문 카운트 증가:', currentVisitCount + 1);
+                    } else if (visitError.response.status === 500) {
+                        console.error('⚠️ 서버 내부 오류로 방문수 증가 실패');
+                    }
+                } else if (visitError.request) {
+                    console.error('⚠️ 네트워크 오류: 서버에 요청을 보낼 수 없음');
+                    console.error('요청 정보:', visitError.request);
+                    
+                    // 네트워크 오류인 경우에도 로컬 카운트 증가
+                    const currentVisitCount = parseInt(localStorage.getItem(`visitCount_${id}`) || '0');
+                    localStorage.setItem(`visitCount_${id}`, (currentVisitCount + 1).toString());
+                    console.log('네트워크 오류로 인한 로컬 방문 카운트 증가:', currentVisitCount + 1);
+                } else {
+                    console.error('⚠️ 요청 설정 오류:', visitError.message);
+                }
                 // 방문 수 증가 실패해도 프로필 조회는 계속 진행
             }
+            */
+            
+            console.log('=== 방문수 증가 API 호출 완료 ===');
             
             // 암 종류와 병기 데이터 가져오기 (실패해도 계속 진행)
             let cancerList = [];
