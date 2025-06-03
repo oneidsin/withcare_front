@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Calendar from "react-calendar";
 import { useRouter } from "next/navigation";
+import { AiOutlineUser } from "react-icons/ai";
 import "react-calendar/dist/Calendar.css";
 import "../profile.css";
 
@@ -61,8 +62,8 @@ export default function TimelinePage() {
             {/* 왼쪽 */}
             <div className="left-panel">
                 <div className="profile-mini">
-                    <img src="/icons/profile.svg" alt="프로필" className="mini-img" />
-                    <div className="mini-name">admin님</div>
+                    <AiOutlineUser className="mini-img" style={{ fontSize: '40px', color: '#666' }} />
+                    <div className="mini-name"></div>
                 </div>
                 <div className="event-list">
                     {events.map((e, idx) => (
