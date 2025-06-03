@@ -69,44 +69,63 @@ export default function ViewUserBadge() {
 
             setUserInfo(userInfoResponse.data.user);
 
-            // 2. 전체 배지 목록 조회
-            const badgesResponse = await axios.get(`${API_BASE_URL}/admin/bdg/list`, {
-                headers: { Authorization: token }
-            });
+            // 2. 전체 배지 목록 조회 (사용자별 배지 API 사용)
+            let allBadges = [];
 
-            if (!badgesResponse.data.success) {
-                throw new Error('배지 목록 조회 실패');
-            }
-
-            const allBadges = badgesResponse.data.badges || [];
-            setBadges(allBadges);
-
-            // 3. 해당 사용자의 획득 배지 정보 조회 (가상의 API)
-            // 현재 API가 구현되지 않았으므로 바로 데모 데이터 사용
-            console.log('사용자 배지 API 아직 구현되지 않음, 데모 데이터 사용');
-            simulateUserBadges(allBadges);
-
-            // 실제 백엔드 API 구현 후 아래 주석을 해제하고 사용
-            /*
+            // 1. 전체 배지 목록 조회 (사용자별 배지 API 사용)
             try {
-                const userBadgesResponse = await axios.get(`${API_BASE_URL}/profile/badges/${targetUserId}`, {
+                console.log('배지 목록 조회 시작...');
+                
+                const badgesResponse = await axios.get(`${API_BASE_URL}/${targetUserId}/badge/list`, {
                     headers: { Authorization: token }
                 });
 
-                if (userBadgesResponse.data.success) {
-                    setUserBadges(userBadgesResponse.data.userBadges || []);
-                    setMainBadge(userBadgesResponse.data.mainBadge || null);
+                if (badgesResponse.data.result) {
+                    allBadges = badgesResponse.data.result || [];
+                    console.log('배지 목록 조회 성공:', allBadges.length, '개');
                 } else {
-                    // API가 없는 경우 임시로 몇 개 배지를 획득한 것으로 시뮬레이션
-                    console.log('사용자 배지 API 없음, 데모 데이터 사용');
-                    simulateUserBadges(allBadges);
+                    console.log('배지 목록 조회 실패:', badgesResponse.data);
+                    allBadges = [];
                 }
-            } catch (error) {
-                // API가 없는 경우 임시로 데모 데이터 사용
-                console.log('사용자 배지 API 없음, 데모 데이터 사용');
-                simulateUserBadges(allBadges);
+            } catch (badgeError) {
+                console.log('배지 목록 조회 실패:', badgeError.response?.data || badgeError.message);
+                // 오류 시에도 빈 배열로 설정하여 계속 진행
+                allBadges = [];
             }
-            */
+
+            setBadges(allBadges);
+
+            // 2. 백엔드에서 이미 획득 정보를 포함해서 보내주므로 별도 처리
+            if (allBadges.length > 0) {
+                // 획득한 배지들 필터링
+                const acquiredBadges = allBadges
+                    .filter(badge => badge.is_acquired)
+                    .map(badge => ({
+                        bdg_idx: badge.bdg_idx,
+                        acquired_date: new Date().toISOString() // 백엔드에서 날짜를 제공하지 않으므로 현재 날짜 사용
+                    }));
+
+                setUserBadges(acquiredBadges);
+
+                // 대표 배지 설정 (bdg_sym_yn이 true인 배지)
+                const mainBadgeInfo = allBadges.find(badge => badge.bdg_sym_yn);
+                if (mainBadgeInfo) {
+                    setMainBadge(mainBadgeInfo.bdg_idx);
+                    console.log('대표 배지 설정:', mainBadgeInfo.bdg_idx, mainBadgeInfo.bdg_name);
+                } else {
+                    setMainBadge(null);
+                    console.log('설정된 대표 배지 없음');
+                }
+
+                console.log('배지 데이터 처리 완료:');
+                console.log('- 전체 배지:', allBadges.length, '개');
+                console.log('- 획득한 배지:', acquiredBadges.length, '개');
+                console.log('- 대표 배지:', mainBadgeInfo ? mainBadgeInfo.bdg_name : '없음');
+            } else {
+                setUserBadges([]);
+                setMainBadge(null);
+                console.log('배지 데이터 없음');
+            }
 
         } catch (error) {
             console.error('배지 정보 로딩 실패:', error);
@@ -120,53 +139,15 @@ export default function ViewUserBadge() {
         }
     };
 
-    // 임시 데모 데이터 (실제 API 구현 전까지)
-    const simulateUserBadges = (allBadges) => {
-        if (allBadges.length > 0) {
-            // 사용자 ID를 기반으로 일관된 배지 할당
-            const userIdNum = parseInt(targetUserId) || 1;
-            const numBadges = Math.min(2 + (userIdNum % 3), allBadges.length); // 2-4개 배지
-            
-            const acquiredBadges = allBadges.slice(0, numBadges).map(badge => ({
-                bdg_idx: badge.bdg_idx,
-                acquired_date: new Date().toISOString()
-            }));
-            
-            setUserBadges(acquiredBadges);
-            
-            // 해당 사용자의 메인 배지를 로컬 스토리지에서 불러오기
-            const savedMainBadge = sessionStorage.getItem(`mainBadge_${targetUserId}`);
-            if (savedMainBadge) {
-                const mainBadgeIdx = parseInt(savedMainBadge);
-                // 저장된 메인 배지가 획득한 배지 중에 있는지 확인
-                const isValidMainBadge = acquiredBadges.some(badge => badge.bdg_idx === mainBadgeIdx);
-                if (isValidMainBadge) {
-                    setMainBadge(mainBadgeIdx);
-                } else {
-                    // 저장된 메인 배지가 더 이상 유효하지 않으면 첫 번째 배지로 설정
-                    const firstBadgeIdx = acquiredBadges[0].bdg_idx;
-                    setMainBadge(firstBadgeIdx);
-                    localStorage.setItem(`mainBadge_${targetUserId}`, firstBadgeIdx.toString());
-                }
-            } else {
-                // 저장된 메인 배지가 없으면 첫 번째 획득 배지를 메인 배지로 설정
-                if (acquiredBadges.length > 0) {
-                    const firstBadgeIdx = acquiredBadges[0].bdg_idx;
-                    setMainBadge(firstBadgeIdx);
-                    localStorage.setItem(`mainBadge_${targetUserId}`, firstBadgeIdx.toString());
-                }
-            }
-        }
-    };
-
     // 배지 획득 여부 확인
     const isBadgeAcquired = (badgeIdx) => {
-        return userBadges.some(userBadge => userBadge.bdg_idx === badgeIdx);
+        return badges.some(badge => badge.bdg_idx === badgeIdx && badge.is_acquired);
     };
 
     // 메인 배지 여부 확인
     const isMainBadge = (badgeIdx) => {
-        return mainBadge === badgeIdx;
+        const badge = badges.find(b => b.bdg_idx === badgeIdx);
+        return badge && badge.bdg_sym_yn;
     };
 
     // 뒤로가기
@@ -205,10 +186,10 @@ export default function ViewUserBadge() {
     }
 
     // 획득한 배지들
-    const acquiredBadges = badges.filter(badge => isBadgeAcquired(badge.bdg_idx) && badge.bdg_active_yn);
+    const acquiredBadges = badges.filter(badge => badge.is_acquired);
     
     // 미획득 배지들
-    const unacquiredBadges = badges.filter(badge => !isBadgeAcquired(badge.bdg_idx) && badge.bdg_active_yn);
+    const unacquiredBadges = badges.filter(badge => !badge.is_acquired);
 
     return (
         <div className="profile-badge-container">
