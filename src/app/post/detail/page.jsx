@@ -467,9 +467,25 @@ export default function PostDetailPage() {
 
             <div className="detail-content">
                 {post.post_content.split('\n').map((line, idx) => <p key={idx}>{line}</p>)}
-                {photos.map((photo, idx) => (
-                    <img key={idx} src={`http://localhost/file/${photo.file_url}`} alt="첨부 이미지" className="attached-image" />
-                ))}
+                {photos.map((photo, idx) => {
+                    // 이미지 URL이 이미 http:// 또는 https://로 시작하는지 확인
+                    const imgSrc = photo.file_url.startsWith('http://') || photo.file_url.startsWith('https://')
+                        ? photo.file_url  // 이미 전체 URL이면 그대로 사용
+                        : `http://localhost/file/${photo.file_url}`;  // 아니면 경로 추가
+                    
+                    return (
+                        <img 
+                            key={idx} 
+                            src={imgSrc} 
+                            alt="첨부 이미지" 
+                            className="attached-image" 
+                            onError={(e) => {
+                                console.error("이미지 로드 실패:", imgSrc);
+                                e.target.style.display = 'none'; // 이미지 로드 실패 시 숨김 처리
+                            }}
+                        />
+                    );
+                })}
             </div>
 
             <div className="recommend-box">
