@@ -432,6 +432,7 @@ footer {
   vertical-align: middle;
   display: inline-flex;
   align-items: center;
+  justify-content: space-between;
 }
 
 .top-nav-icon:hover {
@@ -757,7 +758,7 @@ footer {
   position: relative;
   display: inline-flex;
   align-items: center;
-  margin-right: 18px;
+  margin-top: 3px;
 }
 
 .notification-badge {
