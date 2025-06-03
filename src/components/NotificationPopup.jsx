@@ -46,26 +46,35 @@ export default function NotificationPopup() {
       }
     }
 
-    let link;
-
-    // 알림 타입에 따라 이동할 경로 결정
-    switch (notification.noti_type) {
-      case 'comment':
-        link = `/msg/detail?id=${notification.relate_item_id}&type=inbox`;
-        break;
-      case 'mention':
-        link = `/mention/${notification.relate_item_id}`;
-        break;
-      case 'message':
-        link = `/msg/detail?id=${notification.relate_item_id}&type=inbox`;
-        break;
-      default:
-        console.warn('알 수 없는 알림 타입:', notification.noti_type);
-        return;
+    // 알림 타입별 페이지 이동 처리
+    try {
+      if (notification.noti_type === 'comment') {
+        const res = await fetch(`http://localhost/api/comment/${notification.relate_item_id}/post-id`);
+        if (res.ok) {
+          const postIdx = await res.json();
+          window.open(`post/detail?post_idx=${postIdx}`, '_blank');
+        } else {
+          alert('댓글이 작성된 게시글을 찾을 수 없습니다.');
+        }
+      } else if (notification.noti_type === 'mention') {
+        const res = await fetch(`http://localhost/api/mention/${notification.relate_item_id}/post-id`);
+        if (res.ok) {
+          const postIdx = await res.json();
+          window.open(`post/detail?post_idx=${postIdx}`, '_blank');
+        } else {
+          alert('댓글이 작성된 게시글을 찾을 수 없습니다.');
+        }
+      } else if (notification.noti_type === 'report') {
+        window.open(`/admin/admin-report`, '_blank');
+      } else {
+        // 쪽지로 이동
+        window.open(`/msg/detail?id=${notification.relate_item_id}&type=inbox`, '_blank');
+      }
+    } catch (error) {
+      console.error('알림 타입별 페이지 이동 처리 오류:', error);
     }
 
-    // 페이지 이동
-    window.location.href = link;
+
   };
 
 
