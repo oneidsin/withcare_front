@@ -11,29 +11,30 @@ export default function TimelinePage() {
     const router = useRouter();
 
     // 선택된 연도 상태
-    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
+    const [selectedYr, setSelectedYr] = useState(new Date().getFullYear().toString());
 
     // 이벤트 목록 및 로딩 상태
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
 
+
     // 프로필 상태
     const [profile, setProfile] = useState({
         id: '',
         introduction: '',
-        profile_image: '/profile.jpg'
+        profile_image: '/defaultProfileImg.png'
     });
 
     // 현재 연도부터 과거 10년까지 리스트 생성
-    const currentYear = new Date().getFullYear();
-    const allYears = Array.from({ length: 11 }, (_, i) => currentYear - i);
+    const currentYr = new Date().getFullYear();
+    const allYrs = Array.from({ length: 11 }, (_, i) => currentYr - i);
 
     // 연도 페이지네이션 처리
-    const YEARS_PER_PAGE = 5;
-    const [yearPage, setYearPage] = useState(0);
-    const displayedYears = allYears.slice(yearPage * YEARS_PER_PAGE, (yearPage + 1) * YEARS_PER_PAGE);
-    const hasNextPage = (yearPage + 1) * YEARS_PER_PAGE < allYears.length;
-    const hasPrevPage = yearPage > 0;
+    const YR_PER_PAGE = 4;
+    const [yrPage, setYrPage] = useState(0);
+    const displayedYrs = allYrs.slice(yrPage * YR_PER_PAGE, (yrPage + 1) * YR_PER_PAGE);
+    const hasNextPage = (yrPage + 1) * YR_PER_PAGE < allYrs.length;
+    const hasPrevPage = yrPage > 0;
 
     // 페이지 로딩 시 프로필과 이벤트 데이터 불러오기
     useEffect(() => {
@@ -51,21 +52,21 @@ export default function TimelinePage() {
             return;
         }
 
-        const response = await axios.get(`http://localhost:80/profile/${id}`, {
+        const res = await axios.get(`http://localhost:80/profile/${id}`, {
             headers: {
                 'Authorization': token,
                 'Content-Type': 'application/json'
             }
         });
 
-        const profileData = response.data.data;
+        const profileData = res.data.data;
 
         setProfile({
             id: profileData.id || id,
             introduction: profileData.intro || '소개글이 없습니다.',
-            profile_image: profileData.profile_photo ?
+            profile_image: profileData.profile_photo && profileData.profile_photo !== '' ?
                 `http://localhost:80/file/${profileData.profile_photo}` :
-                '/profile.jpg'
+                '/defaultProfileImg.png'
         });
     };
 
@@ -77,14 +78,14 @@ export default function TimelinePage() {
             return;
         }
 
-        const response = await axios.get('http://localhost:80/timeline/list', {
+        const res = await axios.get('http://localhost:80/timeline/list', {
             headers: {
                 'Authorization': token,
                 'Content-Type': 'application/json'
             }
         });
 
-        const allEvents = Object.values(response.data.data)
+        const allEvents = Object.values(res.data.data)
             .flat()
             .sort((a, b) => new Date(b.day) - new Date(a.day));
 
@@ -93,17 +94,17 @@ export default function TimelinePage() {
     };
 
     // 연도 페이지네이션 제어 함수
-    const handleNextYearPage = () => {
-        if (hasNextPage) setYearPage(prev => prev + 1);
+    const handleNextYrPage = () => {
+        if (hasNextPage) setYrPage(prev => prev + 1);
     };
 
-    const handlePrevYearPage = () => {
-        if (hasPrevPage) setYearPage(prev => prev - 1);
+    const handlePrevYrPage = () => {
+        if (hasPrevPage) setYrPage(prev => prev - 1);
     };
 
     // 선택된 연도의 이벤트 필터링
     const filteredEvents = events.filter(
-        (e) => new Date(e.day).getFullYear().toString() === selectedYear
+        (e) => new Date(e.day).getFullYear().toString() === selectedYr
     );
 
     // 날짜 클릭 시 글쓰기 페이지 이동
@@ -138,6 +139,10 @@ export default function TimelinePage() {
                                 src={profile.profile_image}
                                 alt="프로필 이미지"
                                 className="profile-image"
+                                onError={(e) => {
+                                    e.target.onerror = null; // 무한 루프 방지
+                                    e.target.src = '/defaultProfileImg.png';
+                                }}
                             />
                         </div>
                         <div className="profile-text">
@@ -148,23 +153,23 @@ export default function TimelinePage() {
                     <div className="year-selector">
                         <button
                             className="year-nav-button"
-                            onClick={handlePrevYearPage}
+                            onClick={handlePrevYrPage}
                             disabled={!hasPrevPage}
                         >
                             &#8249;
                         </button>
-                        {displayedYears.map((year) => (
+                        {displayedYrs.map((year) => (
                             <button
                                 key={year}
-                                onClick={() => setSelectedYear(year.toString())}
-                                className={selectedYear === year.toString() ? "active-year" : ""}
+                                onClick={() => setSelectedYr(year.toString())}
+                                className={selectedYr === year.toString() ? "active-year" : ""}
                             >
                                 {year}
                             </button>
                         ))}
                         <button
                             className="year-nav-button"
-                            onClick={handleNextYearPage}
+                            onClick={handleNextYrPage}
                             disabled={!hasNextPage}
                         >
                             &#8250;
@@ -191,7 +196,7 @@ export default function TimelinePage() {
                     </div>
 
                     <div className="events-section">
-                        <h3 className="events-title">{selectedYear}년의 기록</h3>
+                        <h3 className="events-title">📝 {selectedYr}년의 기록</h3>
                         <div className="event-panel">
                             {loading ? (
                                 <div className="empty-message">
@@ -202,7 +207,7 @@ export default function TimelinePage() {
                                     <div
                                         key={idx}
                                         className="event-card"
-                                        onClick={() => handleEventClick(event.day)}
+                                        // onClick={() => handleEventClick(event.day)}
                                     >
                                         <div className="event-card-header">
                                             <span className="event-date">{formatDate(event.day)}</span>
@@ -213,12 +218,12 @@ export default function TimelinePage() {
                                 ))
                             ) : (
                                 <div className="empty-message">
-                                    <p>해당 연도에 기록된 이벤트가 없습니다.</p>
+                                    <p>해당 연도에 기록된 타임라인이 없습니다.</p>
                                     <button
                                         className="add-event-button"
                                         onClick={() => handleCalendarClick(new Date())}
                                     >
-                                        새로운 기록 작성하기
+                                        새로운 타임라인 작성하기
                                     </button>
                                 </div>
                             )}
