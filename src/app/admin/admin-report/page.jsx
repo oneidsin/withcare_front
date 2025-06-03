@@ -100,8 +100,8 @@ export default function AdminReport() {
       );
     }
 
+    // 신고 상세보기 페이지로 이동 (새 탭에서 열기)
     const handleDetailView = (rep_idx) => {
-      // 신고 상세보기 페이지로 이동 (새 탭에서 열기)
       console.log('rep_idx:', rep_idx);
       router.push(`/admin/admin-report/detail?rep_idx=${rep_idx}`);
     };
@@ -114,6 +114,7 @@ export default function AdminReport() {
         <td>{report.rep_idx}</td>
         <td>{report.reporter_id}</td>
         <td>{report.cate_name}</td>
+        <td>{report.rep_item_type}</td>
         <td>
           <span className="detail-link"
             onClick={() => handleDetailView(report.rep_idx)}
@@ -167,6 +168,7 @@ export default function AdminReport() {
           <tr>
             <th>번호</th>
             <th>신고자</th>
+            <th>카테고리</th>
             <th>신고 유형</th>
             <th>대상 유저</th>
             <th>신고 날짜</th>

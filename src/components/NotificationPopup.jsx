@@ -73,8 +73,6 @@ export default function NotificationPopup() {
     } catch (error) {
       console.error('알림 타입별 페이지 이동 처리 오류:', error);
     }
-
-
   };
 
 
