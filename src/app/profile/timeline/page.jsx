@@ -16,7 +16,13 @@ export default function TimelinePage() {
     // 이벤트 목록 및 로딩 상태
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
-
+    const [editingId, setEditingId] = useState(null);
+    const [editForm, setEditForm] = useState({
+        time_title: '',
+        time_content: '',
+        day: '',
+        time_public_yn: true
+    });
 
     // 프로필 상태
     const [profile, setProfile] = useState({
@@ -128,6 +134,66 @@ export default function TimelinePage() {
         }).format(date);
     };
 
+    // 수정 모드 시작
+    const handleEditStart = (event) => {
+        console.log('수정 시작:', event); // 디버깅용
+        setEditingId(event.time_idx);
+        setEditForm({
+            time_title: event.time_title,
+            time_content: event.time_content,
+            day: event.day,
+            time_public_yn: Number(event.time_public_yn) === 1
+        });
+    };
+
+    // 수정 취소
+    const handleEditCancel = () => {
+        setEditingId(null);
+    };
+
+    // 수정 폼 입력 처리
+    const handleEditFormChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setEditForm(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
+    };
+
+    // 수정 저장
+    const handleEditSave = async (timeIdx) => {
+        const token = sessionStorage.getItem('token');
+        const userId = sessionStorage.getItem('id');
+        
+        if (!token || !userId) {
+            router.push('/login');
+            return;
+        }
+
+        const response = await axios.put('http://localhost/timeline/update',
+            {
+                time_idx: timeIdx,
+                time_user_id: userId,
+                ...editForm,
+                time_public_yn: editForm.time_public_yn ? 1 : 0
+            },
+            {
+                headers: {
+                    'Authorization': token,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+
+        if (response.data.loginYN === 'success') {
+            alert(response.data.msg);
+            setEditingId(null);
+            fetchEvents();
+        } else {
+            alert(response.data.msg);
+        }
+    };
+
     // 타임라인 삭제 핸들러
     const handleEventDelete = async (timeIdx) => {
         if (!window.confirm('정말 이 타임라인을 삭제하시겠습니까?')) {
@@ -140,27 +206,22 @@ export default function TimelinePage() {
             return;
         }
 
-        try {
-            const response = await axios.delete('http://localhost/timeline/delete', {
-                headers: {
-                    'Authorization': token,
-                    'Content-Type': 'application/json'
-                },
-                data: {
-                    time_idx: timeIdx,
-                    time_user_id: sessionStorage.getItem('id')
-                }
-            });
-
-            if (response.data.loginYN === 'success') {
-                alert(response.data.msg);
-                fetchEvents(); // 타임라인 목록 새로고침
-            } else {
-                alert(response.data.msg);
+        const response = await axios.delete('http://localhost/timeline/delete', {
+            headers: {
+                'Authorization': token,
+                'Content-Type': 'application/json'
+            },
+            data: {
+                time_idx: timeIdx,
+                time_user_id: sessionStorage.getItem('id')
             }
-        } catch (error) {
-            console.error('타임라인 삭제 중 오류 발생:', error);
-            alert('타임라인 삭제 중 오류가 발생했습니다.');
+        });
+
+        if (response.data.loginYN === 'success') {
+            alert(response.data.msg);
+            fetchEvents();
+        } else {
+            alert(response.data.msg);
         }
     };
 
@@ -244,20 +305,100 @@ export default function TimelinePage() {
                                         key={idx}
                                         className="event-card"
                                     >
-                                        <div className="event-card-header">
-                                            <div className="event-card-content">
-                                                <span className="event-date">{formatDate(event.day)}</span>
-                                                <h4 className="event-title">{event.time_title}</h4>
+                                        {editingId === event.time_idx ? (
+                                            <div className="edit-mode">
+                                                <div className="edit-form">
+                                                    <div className="edit-row">
+                                                        <label>날짜</label>
+                                                        <input
+                                                            type="date"
+                                                            name="day"
+                                                            value={editForm.day}
+                                                            onChange={handleEditFormChange}
+                                                        />
+                                                    </div>
+                                                    <div className="edit-row">
+                                                        <label>제목 (최대 50자)</label>
+                                                        <input
+                                                            type="text"
+                                                            name="time_title"
+                                                            value={editForm.time_title}
+                                                            onChange={handleEditFormChange}
+                                                            maxLength={50}
+                                                        />
+                                                        <small className="char-count">{editForm.time_title.length}/50</small>
+                                                    </div>
+                                                    <div className="edit-row">
+                                                        <label>내용</label>
+                                                        <textarea
+                                                            name="time_content"
+                                                            value={editForm.time_content}
+                                                            onChange={handleEditFormChange}
+                                                        />
+                                                    </div>
+                                                    <div className="edit-row">
+                                                        <label>
+                                                            <input
+                                                                type="checkbox"
+                                                                name="time_public_yn"
+                                                                checked={editForm.time_public_yn}
+                                                                onChange={handleEditFormChange}
+                                                            />
+                                                            공개
+                                                        </label>
+                                                    </div>
+                                                    <div className="edit-actions">
+                                                        <button
+                                                            className="save-btn-small"
+                                                            onClick={() => handleEditSave(event.time_idx)}
+                                                        >
+                                                            저장
+                                                        </button>
+                                                        <button
+                                                            className="cancel-btn-small"
+                                                            onClick={handleEditCancel}
+                                                        >
+                                                            취소
+                                                        </button>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <button 
-                                                className="event-delete-btn" 
-                                                onClick={() => handleEventDelete(event.time_idx)}
-                                                title="삭제"
-                                            >
-                                                ×
-                                            </button>
-                                        </div>
-                                        <p className="event-content">{event.time_content}</p>
+                                        ) : (
+                                            <>
+                                                <div className="event-card-header">
+                                                    <div className="event-card-content">
+                                                        <span className="event-date">{formatDate(event.day)}</span>
+                                                        <div className="title-wrapper">
+                                                            <h4 className="event-title" title={event.time_title}>
+                                                                {event.time_title}
+                                                            </h4>
+                                                            {!event.time_public_yn && <span className="private-badge">비공개</span>}
+                                                        </div>
+                                                    </div>
+                                                    {sessionStorage.getItem('id') === profile.id && (
+                                                        <div className="event-actions">
+                                                            <button 
+                                                                className="event-edit-btn" 
+                                                                onClick={() => handleEditStart(event)}
+                                                                title="수정"
+                                                            >
+                                                                ✍🏻
+                                                            </button>
+                                                            <button 
+                                                                className="event-delete-btn" 
+                                                                onClick={() => handleEventDelete(event.time_idx)}
+                                                                title="삭제"
+                                                            >
+                                                                ×
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <p className="event-content" title={event.time_content}>
+                                                    {event.time_content}
+                                                </p>
+                                            </>
+                                        )}
                                     </div>
                                 ))
                             ) : (
