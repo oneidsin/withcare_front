@@ -281,10 +281,12 @@ export default function Inbox() {
         </div>
       </div>
 
+      <p>현재 페이지: {currentPage} / 전체 페이지: {Math.max(pages, 1)}</p>
+
       {/* 쪽지 테이블 */}
       <table className='message-table'>
         <thead>
-          <tr>
+        <tr>
             <th>
               <input
                 type="checkbox"
