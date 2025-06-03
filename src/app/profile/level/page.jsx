@@ -80,8 +80,8 @@ export default function ProfileLevelPage() {
             
             console.log('Fetching user stats for userId:', userId);
             
-            // profile/activity/{id} API를 사용해서 활동 데이터와 카운트 정보 가져오기
-            const response = await fetch(`http://localhost:80/profile/activity/${userId}`, {
+            // 1. 레벨 전용 activity API 사용 (access_count 포함)
+            const response = await fetch(`http://localhost:80/${userId}/level/activity`, {
                 headers: {
                     'Authorization': token,
                     'Content-Type': 'application/json'
@@ -90,65 +90,65 @@ export default function ProfileLevelPage() {
 
             if (response.ok) {
                 const data = await response.json();
-                console.log('User activity data:', data);
-                console.log('=== 타임라인 카운트 분석 ===');
-                console.log('백엔드 timelineCount:', data.timelineCount);
+                console.log('User level activity data:', data);
                 
                 // API 응답 상태 확인
-                if (data.status === 'success') {
-                    // 백엔드에서 제공하는 전체 개수 필드 사용
+                if (data.loginYN && data.result) {
+                    const activityData = data.result;
+                    
+                    // 백엔드에서 제공하는 정확한 필드명 사용
                     let stats = {
-                        post_cnt: data.postCount || 0,
-                        com_cnt: data.commentCount || 0,
-                        like_cnt: data.likeCount || 0,
-                        time_cnt: data.timelineCount || 0,
-                        access_cnt: 0 // 기본값
+                        post_cnt: activityData.post_count || 0,
+                        com_cnt: activityData.comment_count || 0,
+                        like_cnt: activityData.like_count || 0,
+                        time_cnt: activityData.timeline_count || 0,
+                        access_cnt: activityData.access_count || 0
                     };
                     
-                    console.log('초기 stats (백엔드):', stats);
+                    console.log('레벨 activity API에서 가져온 stats:', stats);
                     
-                    // 추가로 프로필 정보에서 access_cnt 가져오기
+                    // 2. 타임라인 데이터를 직접 API에서 가져와서 정확한 개수 계산 (선택적)
                     try {
-                        console.log('프로필에서 방문 수 조회 시도...');
-                        const profileResponse = await fetch(`http://localhost:80/profile/${userId}`, {
-                            headers: { 'Authorization': token }
-                        });
-                        
-                        if (profileResponse.ok) {
-                            const profileData = await profileResponse.json();
-                            console.log('Profile data for access_cnt:', profileData);
-                            
-                            if (profileData.data && profileData.data.access_cnt !== undefined) {
-                                stats.access_cnt = profileData.data.access_cnt || 0;
-                                console.log('방문 수 조회 성공:', stats.access_cnt);
+                        console.log('타임라인 목록 직접 조회...');
+                        const timelineResponse = await axios.get('http://localhost:80/timeline/list', {
+                            headers: {
+                                'Authorization': token,
+                                'Content-Type': 'application/json'
                             }
+                        });
+
+                        if (timelineResponse.data && timelineResponse.data.data) {
+                            // 타임라인 데이터 구조 분석
+                            const timelineData = timelineResponse.data.data;
+                            console.log('타임라인 원본 데이터:', timelineData);
+                            
+                            // 모든 타임라인 항목 수집
+                            let allTimelineEvents = [];
+                            if (Array.isArray(timelineData)) {
+                                allTimelineEvents = timelineData;
+                            } else if (typeof timelineData === 'object') {
+                                // 객체 형태인 경우 모든 값들을 플랫하게 합치기
+                                allTimelineEvents = Object.values(timelineData).flat();
+                            }
+                            
+                            const actualTimelineCount = allTimelineEvents.length;
+                            console.log('실제 타임라인 개수:', actualTimelineCount);
+                            console.log('백엔드 DB 타임라인 개수:', stats.time_cnt);
+                            
+                            // 백엔드 DB 카운트와 실제 데이터 비교 (참고용)
+                            if (actualTimelineCount !== stats.time_cnt) {
+                                console.log(`타임라인 카운트 차이: DB=${stats.time_cnt}, 실제=${actualTimelineCount}`);
+                                // 백엔드 DB 값을 우선 사용 (DB가 더 정확할 가능성이 높음)
+                            }
+                        } else {
+                            console.log('타임라인 데이터 구조가 예상과 다름:', timelineResponse.data);
                         }
-                    } catch (profileError) {
-                        console.warn('프로필에서 방문 수 조회 실패:', profileError);
+                    } catch (timelineError) {
+                        console.warn('타임라인 직접 조회 실패:', timelineError);
+                        // 타임라인 조회 실패 시 백엔드 DB 값 사용
                     }
                     
-                    // 로컬 스토리지에서 임시 카운트 확인 (백엔드 API가 구현되지 않은 경우 대비)
-                    const localTimelineCount = parseInt(localStorage.getItem(`timelineCount_${userId}`) || '0');
-                    const localVisitCount = parseInt(localStorage.getItem(`visitCount_${userId}`) || '0');
-                    
-                    console.log('로컬 타임라인 카운트:', localTimelineCount);
-                    console.log('로컬 방문 카운트:', localVisitCount);
-                    
-                    // 타임라인 카운트: 로컬 데이터가 있으면 로컬 우선, 없으면 백엔드 사용
-                    if (localTimelineCount > 0) {
-                        console.log('로컬 타임라인 카운트 사용 (백엔드 집계 문제로 인해):', localTimelineCount);
-                        stats.time_cnt = localTimelineCount;
-                    } else if (stats.time_cnt === 0) {
-                        console.log('타임라인 카운트 없음 (로컬, 백엔드 모두 0)');
-                    }
-                    
-                    // 방문수: 백엔드 데이터가 0이고 로컬 데이터가 있는 경우만 로컬 사용
-                    if (stats.access_cnt === 0 && localVisitCount > 0) {
-                        console.log('백엔드 방문 카운트가 0이므로 로컬 데이터 사용:', localVisitCount);
-                        stats.access_cnt = localVisitCount;
-                    }
-                    
-                    console.log('최종 stats (로컬 병합 후):', stats);
+                    console.log('최종 stats:', stats);
                     setUserStats(stats);
                     
                     // 현재 사용자 레벨 계산
@@ -156,11 +156,11 @@ export default function ProfileLevelPage() {
                         calculateUserLevel(stats, levels);
                     }
                 } else {
-                    console.error('API returned error status:', data.status, data.message);
-                    throw new Error(data.message || 'API 응답 오류');
+                    console.error('API returned invalid response:', data);
+                    throw new Error('API 응답 오류: ' + (data.message || 'loginYN false 또는 result 없음'));
                 }
             } else {
-                console.error('Failed to fetch user activity data, status:', response.status);
+                console.error('Failed to fetch user level activity data, status:', response.status);
                 const errorText = await response.text();
                 console.error('Error response:', errorText);
                 throw new Error('API 호출 실패');

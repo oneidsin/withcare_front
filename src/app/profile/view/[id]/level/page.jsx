@@ -82,7 +82,8 @@ export default function ViewProfileLevelPage() {
             // 먼저 대상 사용자의 관리자 권한 확인
             const isAdmin = await checkTargetUserAdminStatus(id);
 
-            const response = await fetch(`http://localhost:80/profile/activity/${id}`, {
+            // 1. 레벨 전용 activity API 사용
+            const response = await fetch(`http://localhost:80/${id}/level/activity`, {
                 headers: {
                     'Authorization': token,
                     'Content-Type': 'application/json'
@@ -91,23 +92,76 @@ export default function ViewProfileLevelPage() {
 
             if (response.ok) {
                 const data = await response.json();
-                console.log('Target user activity data:', data);
+                console.log('Target user level activity data:', data);
                 
                 // API 응답 상태 확인
-                if (data.status === 'success') {
+                if (data.loginYN && data.result) {
+                    const activityData = data.result;
+                    
                     // 기본 프로필 정보는 별도로 설정 (activity API에는 프로필 정보가 없음)
                     setProfileData({ m_name: `사용자 ${id}` }); // 임시로 설정
                     
-                    // 백엔드에서 제공하는 전체 개수 필드 사용
-                    const userStats = {
-                        post_cnt: data.postCount || 0,
-                        com_cnt: data.commentCount || 0,
-                        like_cnt: data.likeCount || 0,
-                        time_cnt: data.timelineCount || 0,
-                        access_cnt: 0 // activity API에는 accessCnt가 없으므로 0으로 설정
+                    // 백엔드에서 제공하는 정확한 필드명 사용
+                    let userStats = {
+                        post_cnt: activityData.post_count || 0,
+                        com_cnt: activityData.comment_count || 0,
+                        like_cnt: activityData.like_count || 0,
+                        time_cnt: activityData.timeline_count || 0,
+                        access_cnt: activityData.access_count || 0
                     };
                     
-                    console.log('Target user stats from backend counts:', userStats);
+                    console.log('레벨 activity API에서 가져온 타겟 사용자 stats:', userStats);
+                    
+                    // 2. 해당 사용자의 타임라인 데이터를 직접 조회해서 공개 타임라인만 계산 (선택적)
+                    try {
+                        console.log(`사용자 ${id}의 타임라인 목록 직접 조회...`);
+                        
+                        // 다른 사용자의 타임라인 조회 시 공개 설정된 것만 보이는지 확인 필요
+                        const timelineResponse = await axios.get('http://localhost:80/timeline/list', {
+                            headers: {
+                                'Authorization': token,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+
+                        if (timelineResponse.data && timelineResponse.data.data) {
+                            // 타임라인 데이터 구조 분석
+                            const timelineData = timelineResponse.data.data;
+                            console.log('타임라인 원본 데이터:', timelineData);
+                            
+                            // 모든 타임라인 항목 수집
+                            let allTimelineEvents = [];
+                            if (Array.isArray(timelineData)) {
+                                allTimelineEvents = timelineData;
+                            } else if (typeof timelineData === 'object') {
+                                // 객체 형태인 경우 모든 값들을 플랫하게 합치기
+                                allTimelineEvents = Object.values(timelineData).flat();
+                            }
+                            
+                            // 다른 사용자 프로필 보기에서는 해당 사용자의 공개 타임라인만 필터링
+                            const userTimelineEvents = allTimelineEvents.filter(event => 
+                                event.time_user_id === id && event.time_public_yn === 1
+                            );
+                            
+                            const publicTimelineCount = userTimelineEvents.length;
+                            console.log(`사용자 ${id}의 공개 타임라인 개수:`, publicTimelineCount);
+                            console.log(`사용자 ${id}의 전체 타임라인 개수 (DB):`, userStats.time_cnt);
+                            
+                            // 다른 사용자 프로필에서는 공개 타임라인 개수만 표시
+                            // (프라이버시 보호를 위해)
+                            userStats.time_cnt = publicTimelineCount;
+                            console.log('공개 타임라인만으로 업데이트된 카운트:', userStats.time_cnt);
+                            
+                        } else {
+                            console.log('타임라인 데이터 구조가 예상과 다름:', timelineResponse.data);
+                        }
+                    } catch (timelineError) {
+                        console.warn('타임라인 직접 조회 실패:', timelineError);
+                        // 타임라인 조회 실패 시 백엔드 DB 값 사용 (전체 개수이지만 어쩔 수 없음)
+                        console.log('타임라인 조회 실패로 백엔드 전체 카운트 사용:', userStats.time_cnt);
+                    }
+                    
+                    console.log('최종 타겟 사용자 stats:', userStats);
                     setUserStats(userStats);
                     
                     // 현재 사용자 레벨 계산
@@ -115,13 +169,13 @@ export default function ViewProfileLevelPage() {
                         calculateUserLevel(userStats, levels, isAdmin);
                     }
                 } else {
-                    console.error('API returned error status:', data.status, data.message);
-                    setError(data.message || 'API 응답 오류');
+                    console.error('API returned invalid response:', data);
+                    setError('API 응답 오류: ' + (data.message || 'loginYN false 또는 result 없음'));
                 }
             } else if (response.status === 404) {
                 setError('존재하지 않는 사용자입니다.');
             } else {
-                console.error('Failed to fetch target user profile data, status:', response.status);
+                console.error('Failed to fetch target user level activity data, status:', response.status);
                 const errorText = await response.text();
                 console.error('Error response:', errorText);
                 setError('프로필 정보를 불러오는데 실패했습니다.');
