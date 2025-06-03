@@ -95,13 +95,33 @@ export default function ProfileLevelPage() {
                 // API 응답 상태 확인
                 if (data.status === 'success') {
                     // 백엔드에서 제공하는 전체 개수 필드 사용
-                    const stats = {
+                    let stats = {
                         post_cnt: data.postCount || 0,
                         com_cnt: data.commentCount || 0,
                         like_cnt: data.likeCount || 0,
                         time_cnt: data.timelineCount || 0,
-                        access_cnt: 0 // activity API에는 accessCnt가 없으므로 0으로 설정
+                        access_cnt: 0 // 기본값
                     };
+                    
+                    // 추가로 프로필 정보에서 access_cnt 가져오기
+                    try {
+                        console.log('프로필에서 방문 수 조회 시도...');
+                        const profileResponse = await fetch(`http://localhost:80/profile/${userId}`, {
+                            headers: { 'Authorization': token }
+                        });
+                        
+                        if (profileResponse.ok) {
+                            const profileData = await profileResponse.json();
+                            console.log('Profile data for access_cnt:', profileData);
+                            
+                            if (profileData.data && profileData.data.access_cnt !== undefined) {
+                                stats.access_cnt = profileData.data.access_cnt || 0;
+                                console.log('방문 수 조회 성공:', stats.access_cnt);
+                            }
+                        }
+                    } catch (profileError) {
+                        console.warn('프로필에서 방문 수 조회 실패:', profileError);
+                    }
                     
                     console.log('User stats from backend counts:', stats);
                     setUserStats(stats);

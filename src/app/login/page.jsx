@@ -27,12 +27,39 @@ export default function LoginPage() {
         console.log('로그인 응답 데이터:', data); // 응답 데이터 확인
 
         if (data.success) {
-            console.log('저장하려는 id:', data);
-            console.log('저장하려는 id:', data.id);
-            console.log('저장하려는 token:', data.token);
+            console.log('=== 로그인 응답 상세 분석 ===');
+            console.log('전체 응답 데이터:', JSON.stringify(data, null, 2));
+            console.log('Object.keys(data):', Object.keys(data));
+            
+            // 모든 가능한 ID 필드 확인
+            console.log('data.id:', data.id, typeof data.id);
+            console.log('data.user_id:', data.user_id, typeof data.user_id);
+            console.log('data.userId:', data.userId, typeof data.userId);
+            console.log('data.member_id:', data.member_id, typeof data.member_id);
+            console.log('data.memberId:', data.memberId, typeof data.memberId);
+            console.log('data.userIdx:', data.userIdx, typeof data.userIdx);
+            console.log('data.user_idx:', data.user_idx, typeof data.user_idx);
+            console.log('data.loginId:', data.loginId, typeof data.loginId);
+            console.log('data.token:', data.token);
+            
+            // 사용자 ID 결정 (여러 가능한 필드명 확인)
+            const userId = data.id || data.user_id || data.userId || data.member_id || data.memberId || data.userIdx || data.user_idx;
+            
+            console.log('최종 결정된 userId:', userId, typeof userId);
+            
+            // 임시 해결책: userId가 없으면 로그인 아이디를 사용
+            const finalUserId = userId || id;
+            
+            if (!userId) {
+                console.error('백엔드 응답에서 사용자 ID를 찾을 수 없습니다!');
+                console.log('임시로 로그인 아이디를 사용자 ID로 사용합니다:', id);
+                // alert('로그인 처리 중 오류가 발생했습니다. 백엔드에 문의해주세요.');
+                // return;
+            }
 
             sessionStorage.setItem('token', data.token);
-            sessionStorage.setItem('id', id);
+            sessionStorage.setItem('id', finalUserId.toString());  // 문자열로 변환하여 저장
+            sessionStorage.setItem('loginId', id);   // 로그인 아이디는 별도 저장 (필요시)
             sessionStorage.setItem('loginSuccess', 'true'); // alert 용
 
             // 회원가입에서 저장된 이름이 있는지 확인
@@ -53,7 +80,7 @@ export default function LoginPage() {
             } else {
                 // 회원가입 이름이 없으면 프로필 API에서 가져오기
                 try {
-                    const profileRes = await fetch(`http://localhost:80/profile/${id}`, {
+                    const profileRes = await fetch(`http://localhost:80/profile/${id}`, {  // 로그인 아이디로 프로필 조회
                         headers: { 'Authorization': data.token }
                     });
                     
@@ -95,7 +122,7 @@ export default function LoginPage() {
                 }
             }, 100); // sessionStorage 저장 후 약간의 지연
 
-            dispatch(setUser({ id: data.id, token: data.token }));
+            dispatch(setUser({ id: finalUserId, token: data.token }));
             router.push('/');
         } else {
             alert("로그인 실패: 아이디 또는 비밀번호 확인해주세요.");

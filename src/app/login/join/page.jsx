@@ -132,15 +132,9 @@ export default function joinPage(){
                 <tr>
                     <th>GENDER<span style={{color: "red"}}> *</span></th>
                     <td>
-<<<<<<< HEAD
-                        <label><input className="gender" type="radio" name="gender" value="남" onChange={input}/> 남</label>
+                        <label><input className="gender" type="radio" name="gender" value="M" onChange={input}/> 남</label>
                         &nbsp;&nbsp;&nbsp;&nbsp;
-                        <label><input className="gender" type="radio" name="gender" value="여" onChange={input}/> 여</label>
-=======
-                        <input type="radio" name="gender" value="M" onChange={input}/> 남
-                        &nbsp;&nbsp;&nbsp;&nbsp;
-                        <input type="radio" name="gender" value="F" onChange={input}/> 여
->>>>>>> 76e93a8467bc66ec35e1d2e23af3300b3ca13e6e
+                        <label><input className="gender" type="radio" name="gender" value="F" onChange={input}/> 여</label>
                     </td>
                 </tr>
                 <tr>

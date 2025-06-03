@@ -44,6 +44,18 @@ export default function ProfilePage() {
     // 페이지 로드 시 항상 새로운 데이터 가져오기 (캐시 무시)
     const fetchData = async (id, token) => {
         try {
+            // 프로필 조회 전에 방문 수 증가 API 호출
+            try {
+                console.log('프로필 방문 수 증가 시도...');
+                await axios.post(`http://localhost:80/profile/visit/${id}`, {}, {
+                    headers: { Authorization: token }
+                });
+                console.log('프로필 방문 수 증가 완료');
+            } catch (visitError) {
+                console.warn('방문 수 증가 실패 (무시하고 계속):', visitError);
+                // 방문 수 증가 실패해도 프로필 조회는 계속 진행
+            }
+            
             // 암 종류와 병기 데이터 가져오기 (실패해도 계속 진행)
             let cancerList = [];
             let stageList = [];
