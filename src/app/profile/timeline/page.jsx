@@ -128,6 +128,42 @@ export default function TimelinePage() {
         }).format(date);
     };
 
+    // 타임라인 삭제 핸들러
+    const handleEventDelete = async (timeIdx) => {
+        if (!window.confirm('정말 이 타임라인을 삭제하시겠습니까?')) {
+            return;
+        }
+
+        const token = sessionStorage.getItem('token');
+        if (!token) {
+            router.push('/login');
+            return;
+        }
+
+        try {
+            const response = await axios.delete('http://localhost/timeline/delete', {
+                headers: {
+                    'Authorization': token,
+                    'Content-Type': 'application/json'
+                },
+                data: {
+                    time_idx: timeIdx,
+                    time_user_id: sessionStorage.getItem('id')
+                }
+            });
+
+            if (response.data.loginYN === 'success') {
+                alert(response.data.msg);
+                fetchEvents(); // 타임라인 목록 새로고침
+            } else {
+                alert(response.data.msg);
+            }
+        } catch (error) {
+            console.error('타임라인 삭제 중 오류 발생:', error);
+            alert('타임라인 삭제 중 오류가 발생했습니다.');
+        }
+    };
+
     return (
         <div className="timeline-page">
             <div className="timeline-container">
@@ -207,11 +243,19 @@ export default function TimelinePage() {
                                     <div
                                         key={idx}
                                         className="event-card"
-                                        // onClick={() => handleEventClick(event.day)}
                                     >
                                         <div className="event-card-header">
-                                            <span className="event-date">{formatDate(event.day)}</span>
-                                            <h4 className="event-title">{event.time_title}</h4>
+                                            <div className="event-card-content">
+                                                <span className="event-date">{formatDate(event.day)}</span>
+                                                <h4 className="event-title">{event.time_title}</h4>
+                                            </div>
+                                            <button 
+                                                className="event-delete-btn" 
+                                                onClick={() => handleEventDelete(event.time_idx)}
+                                                title="삭제"
+                                            >
+                                                ×
+                                            </button>
                                         </div>
                                         <p className="event-content">{event.time_content}</p>
                                     </div>

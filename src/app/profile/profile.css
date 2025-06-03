@@ -512,6 +512,7 @@
     border: 1px solid var(--background-medium);
     max-height: 120px;
     overflow: hidden;
+    position: relative;
 }
 
 .event-card-header {
@@ -521,50 +522,15 @@
     margin-bottom: 12px;
 }
 
-.event-date-title {
+.event-card-content {
     flex: 1;
-}
-
-.event-actions {
-    display: flex;
-    gap: 8px;
-    margin-left: 16px;
-}
-
-.edit-btn-small, .delete-btn-small {
-    background: none;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    padding: 6px 8px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.2s ease;
-    min-width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.edit-btn-small:hover {
-    background-color: #e3f2fd;
-    border-color: #2196f3;
-    transform: translateY(-1px);
-}
-
-.delete-btn-small:hover {
-    background-color: #ffebee;
-    border-color: #f44336;
-    transform: translateY(-1px);
-}
-
-.edit-btn-small:active, .delete-btn-small:active {
-    transform: translateY(0);
 }
 
 .event-date {
     color: var(--text-secondary);
     font-size: 14px;
+    display: block;
+    margin-bottom: 4px;
 }
 
 .event-title {
@@ -572,6 +538,28 @@
     font-size: 19px;
     font-weight: 500;
     margin: 0;
+}
+
+.event-delete-btn {
+    background: none;
+    border: none;
+    color: #dc3545;
+    font-size: 24px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    margin-left: 8px;
+}
+
+.event-delete-btn:hover {
+    background-color: #ffebee;
+    transform: scale(1.1);
 }
 
 .event-content {
@@ -584,6 +572,7 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
+    text-align: left;
 }
 
 .empty-message {
@@ -788,11 +777,6 @@
     .event-card-header {
         flex-direction: column;
         gap: 12px;
-    }
-    
-    .event-actions {
-        margin-left: 0;
-        align-self: flex-end;
     }
     
     .edit-btn-small, .delete-btn-small {
