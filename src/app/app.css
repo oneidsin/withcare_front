@@ -371,8 +371,33 @@ footer {
   display: inline-block;
 }
 
+/* 현재 선택된 메뉴 스타일 */
+.active-nav-link {
+  color: #0066ff !important;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+/* 선택된 메뉴 밑줄 스타일 */
+.active-nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: #0066ff;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
 .nav-item:hover .dropdown {
   display: block;
+}
+
+/* 드롭다운 보이게 */
+.show-dropdown {
+  display: block !important;
 }
 
 .dropdown {
@@ -407,6 +432,7 @@ footer {
   vertical-align: middle;
   display: inline-flex;
   align-items: center;
+  justify-content: space-between;
 }
 
 .top-nav-icon:hover {
@@ -732,7 +758,7 @@ footer {
   position: relative;
   display: inline-flex;
   align-items: center;
-  margin-right: 18px;
+  margin-top: 3px;
 }
 
 .notification-badge {
