@@ -33,39 +33,171 @@ export function NotificationProvider({ children }) {
     console.log('Context - unreadCount 설정:', unread);
   };
 
-  // 알림 읽음 처리
-  const markAsRead = (noti_idx) => {
-    setNotifications(prev =>
-      prev.map(n =>
-        n.noti_idx === noti_idx ? { ...n, noti_read_yn: true } : n
-      )
-    );
-    setUnreadCount(prev => Math.max(0, prev - 1));
-  };
+  // 알림 읽음 처리 (백엔드 API 호출 포함)
+  const markAsRead = async (noti_idx) => {
+    try {
+      const id = sessionStorage.getItem("id");
+      const token = sessionStorage.getItem("token");
 
-  // 모든 알림 읽음 처리
-  const markAllAsRead = () => {
-    setNotifications(prev =>
-      prev.map(n => ({ ...n, noti_read_yn: true }))
-    );
-    setUnreadCount(0);
-  };
-
-  // 알림 삭제
-  const deleteNotification = (noti_idx) => {
-    setNotifications(prev => {
-      const notification = prev.find(n => n.noti_idx === noti_idx);
-      if (notification && !notification.noti_read_yn) {
-        setUnreadCount(count => Math.max(0, count - 1));
+      if (!id || !token) {
+        console.error('로그인 정보가 없습니다.');
+        return false;
       }
-      return prev.filter(n => n.noti_idx !== noti_idx);
-    });
+
+      console.log(`알림 읽음 처리 API 호출: ${id}/${noti_idx}`);
+
+      const response = await fetch(`http://localhost:80/noti/read/${id}/${noti_idx}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': token,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const result = await response.json();
+      console.log('알림 읽음 처리 결과:', result);
+
+      if (result.success) {
+        // 백엔드 성공 시에만 프론트엔드 상태 업데이트
+        setNotifications(prev =>
+          prev.map(n =>
+            n.noti_idx === noti_idx ? { ...n, noti_read_yn: true } : n
+          )
+        );
+        setUnreadCount(prev => Math.max(0, prev - 1));
+        return true;
+      } else {
+        console.error('알림 읽음 처리 실패');
+        return false;
+      }
+    } catch (error) {
+      console.error('알림 읽음 처리 오류:', error);
+      return false;
+    }
   };
 
-  // 모든 알림 삭제
-  const deleteAllNotifications = () => {
-    setNotifications([]);
-    setUnreadCount(0);
+  // 모든 알림 읽음 처리 (백엔드 API 호출 포함)
+  const markAllAsRead = async () => {
+    try {
+      const id = sessionStorage.getItem("id");
+      const token = sessionStorage.getItem("token");
+
+      if (!id || !token) {
+        console.error('로그인 정보가 없습니다.');
+        return false;
+      }
+
+      console.log(`모든 알림 읽음 처리 API 호출: ${id}`);
+
+      const response = await fetch(`http://localhost:80/noti/readAll/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': token,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const result = await response.json();
+      console.log('모든 알림 읽음 처리 결과:', result);
+
+      if (result.success) {
+        // 백엔드 성공 시에만 프론트엔드 상태 업데이트
+        setNotifications(prev =>
+          prev.map(n => ({ ...n, noti_read_yn: true }))
+        );
+        setUnreadCount(0);
+        return true;
+      } else {
+        console.error('모든 알림 읽음 처리 실패');
+        return false;
+      }
+    } catch (error) {
+      console.error('모든 알림 읽음 처리 오류:', error);
+      return false;
+    }
+  };
+
+  // 알림 삭제 (백엔드 API 호출 포함)
+  const deleteNotification = async (noti_idx) => {
+    try {
+      const id = sessionStorage.getItem("id");
+      const token = sessionStorage.getItem("token");
+
+      if (!id || !token) {
+        console.error('로그인 정보가 없습니다.');
+        return false;
+      }
+
+      console.log(`알림 삭제 API 호출: ${id}/${noti_idx}`);
+
+      const response = await fetch(`http://localhost:80/noti/del/${id}/${noti_idx}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': token,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const result = await response.json();
+      console.log('알림 삭제 결과:', result);
+
+      if (result.success) {
+        // 백엔드 성공 시에만 프론트엔드 상태 업데이트
+        setNotifications(prev => {
+          const notification = prev.find(n => n.noti_idx === noti_idx);
+          if (notification && !notification.noti_read_yn) {
+            setUnreadCount(count => Math.max(0, count - 1));
+          }
+          return prev.filter(n => n.noti_idx !== noti_idx);
+        });
+        return true;
+      } else {
+        console.error('알림 삭제 실패');
+        return false;
+      }
+    } catch (error) {
+      console.error('알림 삭제 오류:', error);
+      return false;
+    }
+  };
+
+  // 모든 알림 삭제 (백엔드 API 호출 포함)
+  const deleteAllNotifications = async () => {
+    try {
+      const id = sessionStorage.getItem("id");
+      const token = sessionStorage.getItem("token");
+
+      if (!id || !token) {
+        console.error('로그인 정보가 없습니다.');
+        return false;
+      }
+
+      console.log(`모든 알림 삭제 API 호출: ${id}`);
+
+      const response = await fetch(`http://localhost:80/noti/delAll/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': token,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const result = await response.json();
+      console.log('모든 알림 삭제 결과:', result);
+
+      if (result.success) {
+        // 백엔드 성공 시에만 프론트엔드 상태 업데이트
+        setNotifications([]);
+        setUnreadCount(0);
+        return true;
+      } else {
+        console.error('모든 알림 삭제 실패');
+        return false;
+      }
+    } catch (error) {
+      console.error('모든 알림 삭제 오류:', error);
+      return false;
+    }
   };
 
   // 팝업 토글

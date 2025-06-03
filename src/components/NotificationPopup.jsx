@@ -38,9 +38,13 @@ export default function NotificationPopup() {
   if (!isPopupOpen) return null;
 
   // 알림 클릭 시 처리
-  const handleNotificationClick = (notification) => {
+  const handleNotificationClick = async (notification) => {
     if (!notification.noti_read_yn) {
-      markAsRead(notification.noti_idx);
+      const success = await markAsRead(notification.noti_idx);
+      if (!success) {
+        console.error('알림 읽음 처리 실패');
+        // 실패해도 페이지 이동은 계속 진행
+      }
     }
 
     // 알림 타입에 따른 페이지 이동
@@ -50,20 +54,30 @@ export default function NotificationPopup() {
   };
 
   // 모든 알림 읽음 처리
-  const handleMarkAllAsRead = () => {
-    markAllAsRead();
+  const handleMarkAllAsRead = async () => {
+    const success = await markAllAsRead();
+    if (!success) {
+      alert('모든 알림 읽음 처리에 실패했습니다. 다시 시도해주세요.');
+    }
   };
 
   // 알림 삭제 시 처리
-  const handleDeleteNotification = (e, noti_idx) => {
+  const handleDeleteNotification = async (e, noti_idx) => {
     e.stopPropagation(); // 부모 요소(알림 아이템)의 클릭 이벤트 전파 방지
-    deleteNotification(noti_idx);
+
+    const success = await deleteNotification(noti_idx);
+    if (!success) {
+      alert('알림 삭제에 실패했습니다. 다시 시도해주세요.');
+    }
   };
 
   // 알림 전체 삭제 처리
-  const handleDeleteAllNotifications = () => {
+  const handleDeleteAllNotifications = async () => {
     if (window.confirm('모든 알림을 삭제하시겠습니까?')) {
-      deleteAllNotifications();
+      const success = await deleteAllNotifications();
+      if (!success) {
+        alert('모든 알림 삭제에 실패했습니다. 다시 시도해주세요.');
+      }
     }
   };
 
