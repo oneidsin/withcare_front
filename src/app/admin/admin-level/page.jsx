@@ -281,6 +281,7 @@ export default function LevelManagePage() {
                             accept="image/*"
                             onChange={handleFileChange}
                         />
+                        <p className="max-img-size">이미지는 최대 10MB만 등록이 가능합니다.</p>
                         {filePreview && (
                             <img src={filePreview} alt="Preview" className="icon-preview" />
                         )}

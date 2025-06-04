@@ -449,7 +449,6 @@ export default function PostDetailPage() {
                 <div className="meta-left">
                     <div className="meta-author-line">
                         <span>{isAnonymousBoard ? '익명' : (post.id || '익명')}</span>
-                        {!isAnonymousBoard && post.id === 'admin' && <span className="badge">관리자</span>}
                     </div>
                     <div className="meta-date-line">
                         {post.post_create_date.slice(0, 10)} · 조회 {post.post_view_cnt}

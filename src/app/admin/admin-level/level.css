@@ -198,3 +198,10 @@
         opacity: 0.6;
     }
 }
+
+.max-img-size{
+    margin-top: 4px;  /* 거의 붙게 */
+    margin-bottom: 8px; /* 아래 이미지와 여백은 조금 */
+    font-size: 12px;
+    color: #888;
+}
