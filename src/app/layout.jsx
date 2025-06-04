@@ -161,6 +161,7 @@ export default function RootLayout({ children }) {
 // 헤더 컴포넌트 분리
 function HeaderComponent({ isLoggedIn, username, handleLogout }) {
   const { unreadCount, togglePopup, setNotificationList } = useNotification();
+  const router = useRouter();
 
   // unreadCount 변화 디버깅
   useEffect(() => {
@@ -213,6 +214,14 @@ function HeaderComponent({ isLoggedIn, username, handleLogout }) {
     }
   };
 
+  const handleMessageClick = (e) => {
+    if (!isLoggedIn) {
+      e.preventDefault();
+      router.push('/login');
+      alert('로그인이 필요한 서비스입니다.');
+    }
+  };
+
   return (
     <header className="header">
       <Link href="/">
@@ -237,9 +246,18 @@ function HeaderComponent({ isLoggedIn, username, handleLogout }) {
         <Link href="/search">
           <SearchOutlinedIcon className="top-nav-icon" title="검색" />
         </Link>
-        <Link href="/msg">
-          <EmailOutlinedIcon className="top-nav-icon" title="메일" />
-        </Link>
+        {isLoggedIn ? (
+          <Link href="/msg">
+            <EmailOutlinedIcon className="top-nav-icon" title="쪽지" />
+          </Link>
+        ) : (
+          <EmailOutlinedIcon 
+            className="top-nav-icon" 
+            title="쪽지" 
+            onClick={handleMessageClick} 
+            style={{ cursor: 'pointer' }}
+          />
+        )}
         <div className="notification-container">
           <NotificationsOutlinedIcon
             className="top-nav-icon"
