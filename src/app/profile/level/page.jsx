@@ -10,6 +10,9 @@ export default function ProfileLevelPage() {
     const [userStats, setUserStats] = useState(null);
     const [currentUserLevel, setCurrentUserLevel] = useState(null);
     const [isAdmin, setIsAdmin] = useState(false);
+    const [levelUpLoading, setLevelUpLoading] = useState(false);
+    const [canLevelUp, setCanLevelUp] = useState(false);
+    const [nextLevel, setNextLevel] = useState(null);
 
     const fetchLevels = async () => {
         try {
@@ -194,6 +197,8 @@ export default function ProfileLevelPage() {
             const adminLevel = sortedLevels.find(level => level.lv_no === 0);
             if (adminLevel) {
                 setCurrentUserLevel(adminLevel);
+                setCanLevelUp(false);
+                setNextLevel(null);
                 return;
             }
         }
@@ -221,6 +226,106 @@ export default function ProfileLevelPage() {
         }
         
         setCurrentUserLevel(currentLevel);
+        
+        // 다음 레벨과 레벨업 가능 여부 확인
+        checkLevelUpPossibility(stats, currentLevel, sortedLevels);
+    };
+
+    const checkLevelUpPossibility = (stats, currentLevel, sortedLevels) => {
+        if (!currentLevel || isAdmin) {
+            setCanLevelUp(false);
+            setNextLevel(null);
+            return;
+        }
+
+        // 현재 레벨보다 바로 다음 레벨 찾기 (레벨 0 제외)
+        const availableLevels = sortedLevels.filter(level => level.lv_no !== 0);
+        const nextLevelInfo = availableLevels.find(level => level.lv_no === currentLevel.lv_no + 1);
+        
+        setNextLevel(nextLevelInfo || null);
+
+        // 다음 레벨이 있고 조건을 만족하는지 확인
+        if (nextLevelInfo) {
+            const meetsCriteria = 
+                stats.post_cnt >= nextLevelInfo.post_cnt &&
+                stats.com_cnt >= nextLevelInfo.com_cnt &&
+                stats.like_cnt >= nextLevelInfo.like_cnt &&
+                stats.time_cnt >= nextLevelInfo.time_cnt &&
+                stats.access_cnt >= nextLevelInfo.access_cnt;
+                
+            setCanLevelUp(meetsCriteria);
+        } else {
+            setCanLevelUp(false);
+        }
+    };
+
+    const handleLevelUp = async () => {
+        if (levelUpLoading) return;
+
+        try {
+            setLevelUpLoading(true);
+            const token = sessionStorage.getItem('token');
+            const userId = sessionStorage.getItem('id');
+
+            console.log('=== 레벨업 시도 시작 ===');
+            console.log('사용자 ID:', userId);
+            console.log('현재 레벨:', currentUserLevel);
+            console.log('다음 레벨:', nextLevel);
+            console.log('사용자 통계:', userStats);
+            console.log('레벨업 가능 여부:', canLevelUp);
+
+            if (nextLevel && userStats) {
+                console.log('레벨업 조건 체크:');
+                console.log(`게시글: ${userStats.post_cnt} >= ${nextLevel.post_cnt} = ${userStats.post_cnt >= nextLevel.post_cnt}`);
+                console.log(`댓글: ${userStats.com_cnt} >= ${nextLevel.com_cnt} = ${userStats.com_cnt >= nextLevel.com_cnt}`);
+                console.log(`추천: ${userStats.like_cnt} >= ${nextLevel.like_cnt} = ${userStats.like_cnt >= nextLevel.like_cnt}`);
+                console.log(`타임라인: ${userStats.time_cnt} >= ${nextLevel.time_cnt} = ${userStats.time_cnt >= nextLevel.time_cnt}`);
+                console.log(`방문: ${userStats.access_cnt} >= ${nextLevel.access_cnt} = ${userStats.access_cnt >= nextLevel.access_cnt}`);
+            }
+
+            const response = await fetch(`http://localhost:80/${userId}/level/update`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': token,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            console.log('레벨업 API 응답 상태:', response.status);
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log('레벨업 API 응답 데이터:', data);
+
+                if (data.loginYN && data.result) {
+                    const result = data.result;
+                    if (result.success) {
+                        alert(`축하합니다! ${result.msg}`);
+                        console.log('레벨업 성공! 데이터 새로고침 중...');
+                        // 데이터 새로고침
+                        await fetchUserStats();
+                        await fetchLevels();
+                    } else {
+                        console.log('레벨업 실패:', result.msg);
+                        alert(result.msg || '레벨업 조건을 만족하지 않습니다.');
+                    }
+                } else {
+                    console.error('Invalid API response structure:', data);
+                    alert('레벨업 처리 중 오류가 발생했습니다.');
+                }
+            } else {
+                const errorText = await response.text();
+                console.error('레벨업 API 오류 상태:', response.status);
+                console.error('레벨업 API 오류 내용:', errorText);
+                alert(`레벨업 API 호출에 실패했습니다. (상태: ${response.status})`);
+            }
+        } catch (error) {
+            console.error('레벨업 처리 중 예외 발생:', error);
+            alert('레벨업 처리 중 오류가 발생했습니다.');
+        } finally {
+            setLevelUpLoading(false);
+            console.log('=== 레벨업 시도 종료 ===');
+        }
     };
 
     useEffect(() => {
@@ -292,7 +397,18 @@ export default function ProfileLevelPage() {
                 </div>
             )}
 
-            <div className="level-system-title">전체 레벨 시스템</div>
+            <div className="level-system-header">
+                <div className="level-system-title">전체 레벨 시스템</div>
+                {nextLevel && (
+                    <button 
+                        className={`level-up-button-small ${canLevelUp ? 'can-level-up' : 'try-level-up'}`}
+                        onClick={handleLevelUp}
+                        disabled={levelUpLoading}
+                    >
+                        {levelUpLoading ? '레벨업 중...' : canLevelUp ? '레벨 올리기' : '레벨업 시도'}
+                    </button>
+                )}
+            </div>
             
             <div className="level-list">
                 {isLoading ? (
