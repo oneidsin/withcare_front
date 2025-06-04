@@ -17,6 +17,7 @@ export default function InfoBoard() {
     const DEFAULT_INFO_BOARD_ID = 5;
 
     useEffect(() => {
+        console.log("InfoBoard 컴포넌트 마운트");
         checkLoginStatus();
         fetchBoardInfo();
     }, []);
@@ -37,99 +38,90 @@ export default function InfoBoard() {
 
     // 로그인 상태 확인 및 게시글 로드
     const checkLoginStatus = () => {
+        console.log("checkLoginStatus 함수 실행");
         const token = sessionStorage.getItem('token');
         if (token) {
+            console.log("토큰 있음, 로그인 상태");
             setIsLoggedIn(true);
             loadCancerRelatedPosts(token);
         } else {
+            console.log("토큰 없음, 비로그인 상태");
             setIsLoggedIn(false);
-            loadDefaultRecommendedPosts();
+            loadInfoBoardPosts(); // 비로그인 사용자는 바로 정보 게시판 게시글 로드
         }
     };
 
     // 사용자 프로필에 맞는 암 관련 게시글 로드 (로그인 사용자용)
     const loadCancerRelatedPosts = async (token) => {
+        console.log("loadCancerRelatedPosts 함수 실행, 토큰:", token ? "있음" : "없음");
         setLoading(true);
         try {
-            const response = await axios.post('http://localhost/search/cancer', {}, {
+            if (!token) {
+                console.log("토큰이 없어 기본 정보 게시판 게시글을 로드합니다.");
+                loadInfoBoardPosts();
+                return;
+            }
+
+            // 암 관련 게시글 검색 API 직접 호출
+            console.log("암 관련 게시글 API 호출 시작");
+            const response = await axios.post('http://localhost/search/cancer', {
+                includePartialMatch: true
+            }, {
                 headers: {
                     'Authorization': token
                 }
             });
 
-            console.log('암 관련 게시글 응답:', response.data);
+            console.log('암 관련 게시글 API 응답:', response.data);
 
-            if (response.data && response.data.success) {
-                // 게시글 데이터 설정 (이미 board_idx 5, 6 필터링됨)
+            if (response.data && response.data.success && response.data.data && response.data.data.length > 0) {
+                // 게시글 데이터 설정
+                const posts = response.data.data;
+                console.log('받은 게시글 데이터:', posts);
+                
+                // 정보 게시판(board_idx: 5, 6)에 해당하는 게시글만 필터링
+                const filteredPosts = posts.filter(post => INFO_BOARD_IDS.includes(post.board_idx));
+                console.log('필터링된 정보 게시판 게시글:', filteredPosts);
+
+                if (filteredPosts.length === 0) {
+                    console.log('필터링 후 게시글이 없어 기본 정보 게시판 게시글을 로드합니다.');
+                    loadInfoBoardPosts();
+                    return;
+                }
+
                 // 추천수(like_count) 기준으로 내림차순 정렬
-                const sortedPosts = (response.data.data || [])
+                const sortedPosts = filteredPosts
                     .sort((a, b) => (b.like_count || 0) - (a.like_count || 0))
                     // 데이터 구조 정규화 - title 필드 확인 및 표준화
                     .map(post => ({
                         ...post,
-                        title: post.title || post.post_title || '제목 없음' // title이 없으면 post_title 사용, 둘 다 없으면 기본값
+                        title: post.title || post.post_title || '제목 없음', // title이 없으면 post_title 사용, 둘 다 없으면 기본값
+                        like_count: post.like_count || 0 // like_count가 없으면 0으로 설정
                     }));
                 
-                console.log('정규화된 게시글 데이터:', sortedPosts);
+                console.log('정규화 및 정렬된 게시글 데이터:', sortedPosts);
                 setCancerPosts(sortedPosts);
                 
-                // 백엔드에서 프로필 정보도 함께 제공하는 경우 (없으면 생략)
-                if (response.data.profile) {
-                    setUserProfile(response.data.profile);
+                // 사용자 프로필 정보 가져오기 (표시용)
+                try {
+                    const profileResponse = await axios.post('http://localhost/search/cancer', {
+                        headers: {
+                            'Authorization': token
+                        }
+                    });
+                    
+                    if (profileResponse.data && profileResponse.data.success) {
+                        setUserProfile(profileResponse.data.data);
+                    }
+                } catch (profileErr) {
+                    console.error('프로필 정보 로드 오류:', profileErr);
                 }
             } else {
-                console.warn('암 관련 게시글 로드 실패:', response.data.message);
-                // 실패 시 기본 추천 게시글 로드로 폴백
-                loadDefaultRecommendedPosts();
-            }
-        } catch (err) {
-            console.error('암 관련 게시글 로드 오류:', err);
-            // 오류 시 기본 추천 게시글 로드로 폴백
-            loadDefaultRecommendedPosts();
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // 기본 추천 게시글 로드 (비로그인 사용자용)
-    const loadDefaultRecommendedPosts = async () => {
-        setLoading(true);
-        try {
-            // 백엔드에서 제공하는 추천 게시글 API 호출
-            const response = await axios.get('http://localhost/search/recommend/default');
-
-            console.log('기본 추천 게시글 응답:', response.data);
-
-            if (response.data && response.data.success) {
-                // 기본 추천 게시글 중 정보 게시판(board_idx: 5, 6)에 해당하는 게시글만 필터링
-                const filteredPosts = (response.data.data || [])
-                    .filter(post => INFO_BOARD_IDS.includes(post.board_idx))
-                    // 데이터 구조 정규화 - title 필드 확인 및 표준화
-                    .map(post => ({
-                        ...post,
-                        title: post.title || post.post_title || '제목 없음' // title이 없으면 post_title 사용, 둘 다 없으면 기본값
-                    }));
-
-                console.log('필터링된 정보 게시판 게시글:', filteredPosts);
-
-                if (filteredPosts.length === 0) {
-                    // 필터링 결과가 없으면 기본 정보 게시판 게시글 가져오기
-                    loadInfoBoardPosts();
-                } else {
-                    // 추천수(like_count) 기준으로 내림차순 정렬
-                    const sortedPosts = filteredPosts.sort((a, b) =>
-                        (b.like_count || 0) - (a.like_count || 0)
-                    );
-                    setCancerPosts(sortedPosts);
-                }
-            } else {
-                console.warn('기본 추천 게시글 로드 실패:', response.data.message);
-                // 추천 게시글 로드 실패 시 정보 게시판 게시글 직접 로드
+                console.warn('암 관련 게시글이 없거나 로드 실패:', response.data?.message || '알 수 없는 오류');
                 loadInfoBoardPosts();
             }
         } catch (err) {
-            console.error('기본 추천 게시글 로드 오류:', err);
-            // 오류 시 정보 게시판 게시글 직접 로드
+            console.error('암 관련 게시글 로드 중 오류 발생:', err);
             loadInfoBoardPosts();
         } finally {
             setLoading(false);
@@ -140,32 +132,36 @@ export default function InfoBoard() {
     const loadInfoBoardPosts = async () => {
         try {
             setLoading(true);
+            const allPosts = [];
 
-            // 정보 게시판 게시글 조회 (가장 최근 5개)
-            const response = await axios.post('http://localhost/search', {
-                board_idx: DEFAULT_INFO_BOARD_ID, // 기본 정보 게시판 ID
-                page: 1,
-                pageSize: 5,
-                offset: 0,
-                sch_type: '제목+내용',
-                sch_keyword: '' // 빈 검색어로 모든 게시글 조회
-            });
+            // board_idx 5번과 6번 게시판 모두에서 게시글 조회
+            for (const boardId of INFO_BOARD_IDS) {
+                const response = await axios.post('http://localhost/search', {
+                    board_idx: boardId,
+                    page: 1,
+                    pageSize: 5,
+                    offset: 0,
+                    sch_type: '제목+내용',
+                    sch_keyword: '' // 빈 검색어로 모든 게시글 조회
+                });
 
-            if (response.data && response.data.success) {
-                // 추천수(like_count) 기준으로 내림차순 정렬
-                const sortedPosts = (response.data.data || [])
-                    .sort((a, b) => (b.like_count || 0) - (a.like_count || 0))
-                    // 데이터 구조 정규화 - title 필드 확인 및 표준화
-                    .map(post => ({
+                if (response.data && response.data.success) {
+                    const posts = (response.data.data || []).map(post => ({
                         ...post,
-                        title: post.title || post.post_title || '제목 없음' // title이 없으면 post_title 사용, 둘 다 없으면 기본값
+                        title: post.title || post.post_title || '제목 없음', // title이 없으면 post_title 사용, 둘 다 없으면 기본값
+                        board_idx: boardId // board_idx 명시적으로 설정
                     }));
-
-                console.log('정규화된 정보 게시판 게시글:', sortedPosts);
-                setCancerPosts(sortedPosts);
-            } else {
-                setCancerPosts([]);
+                    allPosts.push(...posts);
+                }
             }
+
+            // 추천수(like_count) 기준으로 내림차순 정렬 후 상위 5개만 표시
+            const sortedPosts = allPosts
+                .sort((a, b) => (b.like_count || 0) - (a.like_count || 0))
+                .slice(0, 5);
+
+            console.log('정규화된 정보 게시판 게시글 (5번, 6번 통합):', sortedPosts);
+            setCancerPosts(sortedPosts);
         } catch (err) {
             console.error('정보 게시판 게시글 로드 오류:', err);
             setCancerPosts([]);
