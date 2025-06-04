@@ -58,6 +58,7 @@ export default function AdminMemberPage() {
 
     const handleGrant = async (id, yn) => {
         const lv_idx = yn === 'Y' ? 7 : 1;
+        console.log(`권한 변경 시도: ${id}, 값: ${yn}, lv_idx: ${lv_idx}`);
 
         try {
             const token = sessionStorage.getItem('token');
@@ -68,13 +69,17 @@ export default function AdminMemberPage() {
                     headers: { Authorization: token },
                 }
             );
+            console.log('응답 결과:', res.data);
+            
             if (res.data.success) {
                 alert('권한 변경 완료');
-                fetchMembers();
+                window.location.reload(); // 페이지 새로고침
             } else {
+                console.error('권한 변경 실패:', res.data);
                 alert('권한 변경 실패');
             }
         } catch (err) {
+            console.error(err);
             alert('요청 실패');
         }
     };

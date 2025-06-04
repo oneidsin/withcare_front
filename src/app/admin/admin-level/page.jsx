@@ -183,11 +183,15 @@ export default function LevelManagePage() {
                     <div className="form-group">
                         <label>레벨 번호</label>
                         <input
-                            type="number"
+                            type="text"
                             name="lv_no"
                             value={form.lv_no}
-                            onChange={handleFormChange}
-                            min="0"
+                            onChange={(e) => {
+                                const value = e.target.value.replace(/[^0-9]/g, ''); // 숫자 외 입력 자동 제거
+                                if (value.length <= 6) {
+                                    setForm(prev => ({ ...prev, lv_no: value }));
+                                }
+                            }}
                         />
                     </div>
                     <div className="form-group">
@@ -197,56 +201,77 @@ export default function LevelManagePage() {
                             name="lv_name"
                             value={form.lv_name}
                             onChange={handleFormChange}
+                            maxLength={20}
                         />
                     </div>
                     <div className="form-group">
                         <label>게시글 수</label>
                         <input
-                            type="number"
+                            type="text"
                             name="post_cnt"
                             value={form.post_cnt}
-                            onChange={handleFormChange}
-                            min="0"
+                            onChange={(e) => {
+                                const value = e.target.value.replace(/[^0-9]/g, '');
+                                if (value.length <= 10) {
+                                    setForm(prev => ({ ...prev, post_cnt: value }));
+                                }
+                            }}
                         />
                     </div>
                     <div className="form-group">
                         <label>댓글 수</label>
                         <input
-                            type="number"
+                            type="text"
                             name="com_cnt"
                             value={form.com_cnt}
-                            onChange={handleFormChange}
-                            min="0"
+                            onChange={(e) => {
+                                const value = e.target.value.replace(/[^0-9]/g, '');
+                                if (value.length <= 10) {
+                                    setForm(prev => ({ ...prev, com_cnt: value }));
+                                }
+                            }}
                         />
                     </div>
                     <div className="form-group">
                         <label>추천 받은 수</label>
                         <input
-                            type="number"
+                            type="text"
                             name="like_cnt"
                             value={form.like_cnt}
-                            onChange={handleFormChange}
-                            min="0"
+                            onChange={(e) => {
+                                const value = e.target.value.replace(/[^0-9]/g, '');
+                                if (value.length <= 10) {
+                                    setForm(prev => ({ ...prev, like_cnt: value }));
+                                }
+                            }}
                         />
                     </div>
                     <div className="form-group">
                         <label>타임라인 수</label>
                         <input
-                            type="number"
+                            type="text"
                             name="time_cnt"
                             value={form.time_cnt}
-                            onChange={handleFormChange}
-                            min="0"
+                            onChange={(e) => {
+                                const value = e.target.value.replace(/[^0-9]/g, '');
+                                if (value.length <= 10) {
+                                    setForm(prev => ({ ...prev, time_cnt: value }));
+                                }
+                            }}
                         />
                     </div>
                     <div className="form-group">
                         <label>방문 횟수</label>
                         <input
-                            type="number"
+                            type="text"
                             name="access_cnt"
                             value={form.access_cnt}
-                            onChange={handleFormChange}
-                            min="0"
+                            onChange={(e) => {
+                                const value = e.target.value.replace(/[^0-9]/g, '');
+                                if (value.length <= 10) {
+                                    setForm(prev => ({ ...prev, access_cnt: value }));
+                                }
+                            }}
                         />
                     </div>
                     <div className="form-group">

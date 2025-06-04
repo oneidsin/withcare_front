@@ -137,6 +137,10 @@ export default function MemberDetailPage() {
 
             if (!confirm(`${id} 회원의 관리자 권한을 ${member.admin_yn ? '해제' : '부여'}하시겠습니까?`)) return;
 
+            // admin_yn이 true면 관리자(7), false면 일반회원(1)
+            // 관리자 권한 해제 시 lv_idx=1로 설정, 부여 시 lv_idx=7로 설정
+            console.log(`권한 변경 시도: ${id}, 현재 admin_yn: ${member.admin_yn}, 변경할 lv_idx: ${member.admin_yn ? 1 : 7}`);
+            
             const res = await axios.put(
                 'http://localhost/admin/grant',
                 {
@@ -145,12 +149,15 @@ export default function MemberDetailPage() {
                 },
                 { headers: { Authorization: token } }
             );
+            
+            console.log('응답 결과:', res.data);
 
             if (res.data.success) {
                 alert(`관리자 권한이 ${member.admin_yn ? '해제' : '부여'}되었습니다.`);
                 // 페이지 새로고침
                 window.location.reload();
             } else {
+                console.error('관리자 권한 변경 실패:', res.data);
                 alert('처리에 실패했습니다.');
             }
         } catch (error) {
@@ -247,12 +254,6 @@ export default function MemberDetailPage() {
                         onClick={() => setActiveTab('activity')}
                     >
                         활동
-                    </button>
-                    <button
-                        className={activeTab === 'timeline' ? 'active' : ''}
-                        onClick={() => setActiveTab('timeline')}
-                    >
-                        타임라인
                     </button>
                 </div>
 
@@ -488,29 +489,6 @@ export default function MemberDetailPage() {
                                     <p className="no-data">작성한 댓글이 없습니다.</p>
                                 )}
                             </div>
-                        </div>
-                    )}
-
-                    {activeTab === 'timeline' && (
-                        <div className="timeline-section">
-                            <h3>타임라인</h3>
-                            {timelines.length > 0 ? (
-                                <div className="timeline-list">
-                                    {timelines.map(timeline => (
-                                        <div key={timeline.timeline_idx} className="timeline-item">
-                                            <div className="timeline-date">
-                                                {new Date(timeline.timeline_date).toLocaleDateString()}
-                                            </div>
-                                            <div className="timeline-content">
-                                                <h4>{timeline.timeline_title}</h4>
-                                                <p>{timeline.timeline_cont}</p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <p className="no-data">타임라인 기록이 없습니다.</p>
-                            )}
                         </div>
                     )}
                 </div>
