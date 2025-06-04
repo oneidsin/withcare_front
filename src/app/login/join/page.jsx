@@ -62,6 +62,25 @@ export default function joinPage(){
             return;
         }
 
+        // 출생 연도 체크
+        const year = Number(info.year);
+
+        if (isNaN(year)) {
+            alert("출생연도는 숫자만 입력해주세요.");
+            return;
+        }
+
+        if (year < 1900 || year > 2025) {
+            alert("출생연도는 1900년 이상 2025년 이하로 입력해주세요.");
+            return;
+        }
+
+        // 이메일에 @ 포함되어 있는지 확인
+        if (!info.email.includes('@')) {
+            alert('유효한 이메일 주소를 입력해주세요. (@ 포함 필수)');
+            return;
+        }
+
         // cancer와 stage가 선택되지 않은 경우 해당 필드 제외
         const submitData = {...info};
         if (!submitData.cancer) delete submitData.cancer;
@@ -106,7 +125,8 @@ export default function joinPage(){
                 <tr>
                     <th>ID<span style={{color: "red"}}> *</span></th>
                     <td>
-                        <input type="text" name="id" value={info.id} onChange={input}/>
+                        <input type="text" name="id" value={info.id} onChange={input}
+                               maxLength={16} placeholder={'16자 이내'}/>
                         <button type="button" id="overlay" onClick={overlay}>중복체크</button>
                         <p id="result"></p>
                     </td>
@@ -114,19 +134,21 @@ export default function joinPage(){
                 <tr>
                     <th>PW<span style={{color: "red"}}> *</span></th>
                     <td>
-                        <input type="password" name="pw" value={info.pw} onChange={input}/>
+                        <input type="password" name="pw" value={info.pw} onChange={input}
+                               maxLength={16} placeholder={'16자 이내'}/>
                     </td>
                 </tr>
                 <tr>
                     <th>NAME<span style={{color: "red"}}> *</span></th>
                     <td>
-                        <input type="text" name="name" value={info.name} onChange={input}/>
+                        <input type="text" name="name" value={info.name} onChange={input} maxLength={16}/>
                     </td>
                 </tr>
                 <tr>
                     <th>YEAR<span style={{color: "red"}}> *</span></th>
                     <td>
-                        <input type="text" name="year" value={info.year} onChange={input}/>
+                        <input type="number" name="year" value={info.year} onChange={input}
+                               min="1900" max="2025" placeholder="생년월일 4자리"/>
                     </td>
                 </tr>
                 <tr>
@@ -140,7 +162,8 @@ export default function joinPage(){
                 <tr>
                     <th>EMAIL<span style={{color: "red"}}> *</span></th>
                     <td>
-                        <input type="text" name="email" value={info.email} onChange={input}/>
+                        <input type="text" name="email" value={info.email} onChange={input}
+                            maxLength={50}/>
                     </td>
                 </tr>
                 <tr>
