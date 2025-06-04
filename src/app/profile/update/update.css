@@ -20,13 +20,13 @@
 .update-form {
     display: flex;
     flex-direction: column;
-    gap: 1.5em;
+    gap: 1em;
 }
 
 .form-group {
     display: flex;
     flex-direction: column;
-    gap: 0.5em;
+    gap: 0.4em;
 }
 
 .form-group label {
@@ -132,6 +132,30 @@
 .form-group input[disabled] {
     background-color: #f8f9fa;
     cursor: not-allowed;
+}
+
+/* 글자 수 카운터 스타일 */
+.char-count {
+    font-size: 0.8em;
+    color: #666;
+    text-align: right;
+    margin-top: 0.25em;
+}
+
+.char-count.limit-warning {
+    color: #f0ad4e;
+}
+
+.char-count.limit-exceeded {
+    color: #d9534f;
+    font-weight: 500;
+}
+
+/* 파일 업로드 안내 문구 스타일 */
+.file-info {
+    font-size: 0.8em;
+    color: #666;
+    margin-top: 0.25em;
 }
 
 @media (max-width: 768px) {

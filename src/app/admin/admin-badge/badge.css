@@ -109,23 +109,6 @@
     color: #c62828;
 }
 
-/* 새 배지 추가 버튼 */
-.add-new {
-    justify-content: center;
-    background-color: #f0f0f0;
-    border: 1px dashed #ccc;
-}
-
-.add-new:hover {
-    background-color: #e8e8e8;
-}
-
-.add-badge-icon {
-    font-size: 32px;
-    color: #999;
-    margin-bottom: 10px;
-}
-
 /* 배지 편집 폼 스타일 */
 .badge-edit-section {
     background-color: #fff;
@@ -208,7 +191,15 @@
 }
 
 .badge-file-label:hover {
-    background-color: #e0e0e0;
+    background-color: #3a7bd5;
+}
+
+/* 파일 업로드 안내 문구 스타일 */
+.file-info {
+    font-size: 0.8em;
+    color: #666;
+    margin-top: 0.25em;
+    text-align: center;
 }
 
 /* 버튼 스타일 */

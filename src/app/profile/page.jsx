@@ -110,7 +110,7 @@ export default function ProfilePage() {
             }
             
             // 프로필 정보 요청
-            const profileRes = await axios.get(`http://localhost:80/profile/${id}`, {
+            const profileRes = await axios.get(`http://localhost/profile/${id}`, {
                 headers: { Authorization: token }
             });
 
@@ -268,7 +268,7 @@ export default function ProfilePage() {
         const id = sessionStorage.getItem("id");
 
         try {
-            const response = await fetch(`http://localhost:80/delete/${id}`, {
+            const response = await fetch(`http://localhost/delete/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': token,
@@ -405,19 +405,20 @@ export default function ProfilePage() {
         
         // URL이 /로 시작하는지 확인 (절대 경로)
         if (url.startsWith('/')) {
-            console.log("루트 경로 URL 사용:", url);
-            return url;
+            const fullUrl = `http://localhost${url}`;
+            console.log("루트 경로 URL 변환:", fullUrl);
+            return fullUrl;
         }
         
         // profile/ 경로로 시작하는 경우 file/ 접두사 추가
         if (url.startsWith('profile/')) {
-            const fullUrl = `http://localhost:80/file/${url}`;
+            const fullUrl = `http://localhost/file/${url}`;
             console.log("프로필 이미지 변환된 URL:", fullUrl);
             return fullUrl;
         }
         
         // 그 외의 경우 백엔드 기본 URL에 경로 추가
-        const fullUrl = `http://localhost:80/${url}`;
+        const fullUrl = `http://localhost/${url}`;
         console.log("변환된 URL:", fullUrl);
         return fullUrl;
     };
@@ -428,11 +429,11 @@ export default function ProfilePage() {
             console.log("암 종류/병기 데이터 요청 시작");
             
             const [cancerRes, stageRes] = await Promise.all([
-                axios.get("http://localhost:80/cancer").catch(err => {
+                axios.get("http://localhost/cancer").catch(err => {
                     console.error("암 종류 API 호출 실패:", err);
                     return { data: [] };
                 }),
-                axios.get("http://localhost:80/stage").catch(err => {
+                axios.get("http://localhost/stage").catch(err => {
                     console.error("병기 API 호출 실패:", err);
                     return { data: [] };
                 })
@@ -458,7 +459,7 @@ export default function ProfilePage() {
     const fetchActivities = async (userId) => {
         try {
             const token = sessionStorage.getItem("token");
-            const res = await axios.get(`http://localhost:80/profile/view/${userId}`, {
+            const res = await axios.get(`http://localhost/profile/view/${userId}`, {
                 headers: { Authorization: token }
             });
 

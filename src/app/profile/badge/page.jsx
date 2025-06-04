@@ -341,9 +341,12 @@ export default function ProfileBadge() {
 
                     {/* 획득한 배지들 */}
                     <div className="badge-section">
-                        <h2 className="section-title">
-                            획득한 배지 ({acquiredBadges.length})
-                        </h2>
+                        <div className="section-header">
+                            <h2 className="section-title">
+                                획득한 배지 ({acquiredBadges.length})
+                            </h2>
+                            <span className="section-guide">메인 배지를 선택하려면 해당 배지를 클릭하세요</span>
+                        </div>
                         {acquiredBadges.length > 0 ? (
                             <div className="badge-grid">
                                 {acquiredBadges.map(badge => (
@@ -379,9 +382,12 @@ export default function ProfileBadge() {
 
                     {/* 미획득 배지들 */}
                     <div className="badge-section">
-                        <h2 className="section-title">
-                            미획득 배지 ({unacquiredBadges.length})
-                        </h2>
+                        <div className="section-header">
+                            <h2 className="section-title">
+                                미획득 배지 ({unacquiredBadges.length})
+                            </h2>
+                            <span className="section-guide">배지를 획득하려면 클릭하세요</span>
+                        </div>
                         {unacquiredBadges.length > 0 ? (
                             <div className="badge-grid">
                                 {unacquiredBadges.map(badge => (

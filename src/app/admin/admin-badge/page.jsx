@@ -168,23 +168,21 @@ export default function AdminBadge() {
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            // 지원되는 이미지 형식 체크
-            const supportedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
-            const supportedExtensions = ['.jpg', '.jpeg', '.png', '.gif'];
+            // 파일 형식 검증 - JPG, JPEG, PNG만 허용
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+            const fileType = file.type.toLowerCase();
             
-            const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
-            
-            if (!supportedTypes.includes(file.type) && !supportedExtensions.includes(fileExtension)) {
-                alert('지원하지 않는 이미지 형식입니다.\n지원 형식: JPG, JPEG, PNG, GIF');
-                e.target.value = ''; // 파일 선택 초기화
+            if (!allowedTypes.includes(fileType)) {
+                alert('JPG, JPEG, PNG 형식의 이미지 파일만 업로드 가능합니다.');
+                e.target.value = ''; // 파일 입력 초기화
                 return;
             }
             
-            // 파일 크기 체크 (예: 5MB 제한)
-            const maxSize = 5 * 1024 * 1024; // 5MB
+            // 파일 크기 검증 (10MB 제한)
+            const maxSize = 10 * 1024 * 1024; // 10MB
             if (file.size > maxSize) {
-                alert('파일 크기가 너무 큽니다. 5MB 이하의 파일을 선택해주세요.');
-                e.target.value = ''; // 파일 선택 초기화
+                alert('파일 크기는 10MB 이하만 업로드 가능합니다.');
+                e.target.value = ''; // 파일 입력 초기화
                 return;
             }
             
@@ -390,10 +388,6 @@ export default function AdminBadge() {
                             </div>
                         </div>
                     ))}
-                    <div className="badge-item add-new" onClick={handleAddNew}>
-                        <div className="add-badge-icon">+</div>
-                        <p>새 배지 추가</p>
-                    </div>
                 </div>
             </div>
             
@@ -432,7 +426,7 @@ export default function AdminBadge() {
                             )}
                             <input 
                                 type="file" 
-                                accept="image/jpeg,image/jpg,image/png,image/gif,.jpg,.jpeg,.png,.gif"
+                                accept=".jpg,.jpeg,.png"
                                 onChange={handleFileChange}
                                 className="badge-file-input"
                                 id="badge-file"
@@ -440,6 +434,7 @@ export default function AdminBadge() {
                             <label htmlFor="badge-file" className="badge-file-label">
                                 {isEditing && badgePreview ? '이미지 변경' : '이미지 선택'}
                             </label>
+                            <div className="file-info">JPG, JPEG, PNG 형식만 가능 (최대 10MB)</div>
                         </div>
                     </div>
                     

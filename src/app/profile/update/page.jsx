@@ -186,15 +186,52 @@ export default function UpdatePage() {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
+        
+        // 글자 수 제한 적용
+        let limitedValue = value;
+        switch (name) {
+            case 'name':
+                limitedValue = value.slice(0, 50);
+                break;
+            case 'year':
+                // 숫자만 허용하고 4글자 제한
+                limitedValue = value.replace(/[^0-9]/g, '').slice(0, 4);
+                break;
+            case 'email':
+                limitedValue = value.slice(0, 50);
+                break;
+            case 'intro':
+                limitedValue = value.slice(0, 5000);
+                break;
+        }
+        
         setInfo(prev => ({
             ...prev,
-            [name]: value
+            [name]: limitedValue
         }));
     };
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
+            // 파일 형식 검증
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+            const fileType = file.type.toLowerCase();
+            
+            if (!allowedTypes.includes(fileType)) {
+                alert('JPG, JPEG, PNG 형식의 이미지 파일만 업로드 가능합니다.');
+                e.target.value = ''; // 파일 입력 초기화
+                return;
+            }
+            
+            // 파일 크기 검증 (10MB 제한)
+            const maxSize = 10 * 1024 * 1024; // 10MB
+            if (file.size > maxSize) {
+                alert('파일 크기는 10MB 이하만 업로드 가능합니다.');
+                e.target.value = ''; // 파일 입력 초기화
+                return;
+            }
+            
             setProfileImage(file);
             const reader = new FileReader();
             reader.onloadend = () => {
@@ -361,7 +398,7 @@ export default function UpdatePage() {
         try {
             console.log("회원탈퇴 요청 시작:", id);
 
-            const response = await fetch(`http://localhost:80/delete/${id}`, {
+            const response = await fetch(`http://localhost/delete/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': token,
@@ -443,6 +480,14 @@ export default function UpdatePage() {
         return `http://localhost/${url}`;
     };
 
+    // 글자 수 카운터 클래스 생성 함수
+    const getCharCountClass = (current, limit) => {
+        const percentage = (current / limit) * 100;
+        if (percentage >= 100) return 'char-count limit-exceeded';
+        if (percentage >= 80) return 'char-count limit-warning';
+        return 'char-count';
+    };
+
     return (
         <div className="update-container">
             <h2>프로필 수정</h2>
@@ -451,9 +496,10 @@ export default function UpdatePage() {
                     <label>프로필 사진</label>
                     <input
                         type="file"
-                        accept="image/*"
+                        accept=".jpg,.jpeg,.png"
                         onChange={handleImageChange}
                     />
+                    <div className="file-info">JPG, JPEG, PNG 형식만 가능 (최대 10MB)</div>
                     {previewImage && (
                         <img
                             src={previewImage}
@@ -485,8 +531,10 @@ export default function UpdatePage() {
                         name="name"
                         value={info.name}
                         onChange={handleChange}
+                        maxLength={50}
                         required
                     />
+                    <div className={getCharCountClass(info.name.length, 50)}>{info.name.length}/50</div>
                 </div>
 
                 <div className="form-group">
@@ -496,8 +544,11 @@ export default function UpdatePage() {
                         name="year"
                         value={info.year}
                         onChange={handleChange}
+                        maxLength={4}
+                        placeholder="예: 1990"
                         required
                     />
+                    <div className={getCharCountClass(info.year.length, 4)}>{info.year.length}/4</div>
                 </div>
 
                 <div className="form-group">
@@ -516,7 +567,9 @@ export default function UpdatePage() {
                         name="email"
                         value={info.email}
                         onChange={handleChange}
+                        maxLength={50}
                     />
+                    <div className={getCharCountClass(info.email.length, 50)}>{info.email.length}/50</div>
                 </div>
 
                 <div className="form-group">
@@ -557,8 +610,10 @@ export default function UpdatePage() {
                         name="intro"
                         value={info.intro}
                         onChange={handleChange}
+                        maxLength={5000}
                         rows="4"
                     />
+                    <div className={getCharCountClass(info.intro.length, 5000)}>{info.intro.length}/5000</div>
                 </div>
 
                 <div className="form-group">
