@@ -116,6 +116,8 @@ export default function Outbox() {
           </div>
         </div>
 
+        <p>현재 페이지: {page.current} / 전체 페이지: {Math.max(pages, 1)}</p>
+
         {/* 쪽지 목록 테이블 */}
         <table className='message-table'>
           <thead>
@@ -155,6 +157,7 @@ export default function Outbox() {
         <p>현재 페이지: {page.current} / 전체 페이지: {Math.max(pages, 1)}</p>
 
         {/* 쪽지 목록 테이블 */}
+
         <table className='message-table'>
           <thead>
           <tr>
