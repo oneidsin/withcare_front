@@ -3,9 +3,8 @@
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { Pagination, Stack } from '@mui/material'; // Material UI 페이지네이션 컴포넌트
+import { Pagination, Stack } from '@mui/material';
 import './admin-block.css';
-
 
 export default function AdminBlock() {
   const router = useRouter();
@@ -90,7 +89,7 @@ export default function AdminBlock() {
   };
 
   // Enter 키 검색 처리
-  const handleKeyPress = (event) => {
+  const handleEnterKey = (event) => {
     if (event.key === 'Enter') {
       handleSearch();
     }
@@ -193,7 +192,7 @@ export default function AdminBlock() {
             placeholder="차단된 아이디 검색..."
             value={searchKeyword}
             onChange={(e) => setSearchKeyword(e.target.value)}
-            onKeyPress={handleKeyPress}
+            onKeyUp={handleEnterKey}
           />
           <button className="search-button" onClick={handleSearch}>
             검색
