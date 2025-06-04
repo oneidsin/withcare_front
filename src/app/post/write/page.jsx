@@ -25,6 +25,9 @@ export default function PostWritePage() {
 
     const [newFiles, setNewFiles] = useState([]);
     const [previewUrls, setPreviewUrls] = useState([]);
+    
+    // 에러 메시지 상태 추가
+    const [imageError, setImageError] = useState('');
 
     const [boards, setBoards] = useState([]);
 
@@ -65,6 +68,28 @@ export default function PostWritePage() {
 
     const handleFileChange = (e) => {
         const files = Array.from(e.target.files);
+        
+        // 파일 개수 검증
+        if (newFiles.length + files.length > 10) {
+            setImageError('이미지는 최대 10장까지만 업로드할 수 있습니다.');
+            return;
+        }
+        
+        // 현재 선택된 파일들의 총 크기 계산
+        const currentTotalSize = newFiles.reduce((total, file) => total + file.size, 0);
+        const newFilesSize = files.reduce((total, file) => total + file.size, 0);
+        const totalSize = currentTotalSize + newFilesSize;
+        
+        // 총 파일 크기 검증 (10MB = 10 * 1024 * 1024 바이트)
+        if (totalSize > 10 * 1024 * 1024) {
+            const totalSizeMB = (totalSize / (1024 * 1024)).toFixed(2);
+            setImageError(`이미지 총 용량이 제한을 초과합니다: ${totalSizeMB}MB (최대 10MB)`);
+            return;
+        }
+        
+        // 에러 메시지 초기화
+        setImageError('');
+        
         const readers = files.map(file => {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -81,10 +106,38 @@ export default function PostWritePage() {
     const handleRemoveNewFile = (index) => {
         setNewFiles(prev => prev.filter((_, i) => i !== index));
         setPreviewUrls(prev => prev.filter((_, i) => i !== index));
+        
+        // 파일 삭제 시 에러 메시지 초기화
+        setImageError('');
+    };
+
+    const validateForm = () => {
+        if (!title.trim()) {
+            alert('제목을 입력해주세요.');
+            return false;
+        }
+        
+        if (!content.trim()) {
+            alert('내용을 입력해주세요.');
+            return false;
+        }
+        
+        if (!board) {
+            alert('게시판을 선택해주세요.');
+            return false;
+        }
+        
+        if (imageError) {
+            alert(imageError);
+            return false;
+        }
+        
+        return true;
     };
 
     const handleSubmit = async () => {
-        if (!title || !content || !board) return alert('모든 항목을 입력하세요');
+        // 폼 유효성 검사
+        if (!validateForm()) return;
 
         const token = sessionStorage.getItem('token');
         if (!token) {
@@ -92,35 +145,72 @@ export default function PostWritePage() {
             return router.push('/login');
         }
 
-        const postRes = await axios.post('http://localhost/post/write', {
-            post_title: title,
-            post_content: content,
-            board_idx: parseInt(board),
-            com_yn: allowComment,
-            anony_yn: isAnonymousBoard,
-            post_blind_yn: false,
-            id: writer,
-        }, {
-            headers: { Authorization: token },
-        });
+        try {
+            // 이미지가 있을 경우, 총 용량 확인
+            if (newFiles.length > 0) {
+                const totalSize = newFiles.reduce((total, file) => total + file.size, 0);
+                if (totalSize > 10 * 1024 * 1024) {
+                    const totalSizeMB = (totalSize / (1024 * 1024)).toFixed(2);
+                    alert(`이미지 총 용량이 제한을 초과합니다: ${totalSizeMB}MB (최대 10MB)`);
+                    return;
+                }
+            }
 
-        if (!postRes.data.success) return alert('게시글 등록 실패');
-        const postIdx = postRes.data.idx;
-
-        if (newFiles.length > 0) {
-            const form = new FormData();
-            form.append('post_idx', postIdx);
-            newFiles.forEach(file => form.append('files', file));
-
-            const fileRes = await axios.post('http://localhost/post/file/upload', form, {
+            const postRes = await axios.post('http://localhost/post/write', {
+                post_title: title,
+                post_content: content,
+                board_idx: parseInt(board),
+                com_yn: allowComment,
+                anony_yn: isAnonymousBoard,
+                post_blind_yn: false,
+                id: writer,
+            }, {
                 headers: { Authorization: token },
             });
-
-            if (!fileRes.data.success) return alert('파일 업로드 실패');
+    
+            if (!postRes.data.success) {
+                alert('게시글 등록 실패');
+                return;
+            }
+            
+            const postIdx = postRes.data.idx;
+    
+            if (newFiles.length > 0) {
+                const form = new FormData();
+                form.append('post_idx', postIdx);
+                newFiles.forEach(file => form.append('files', file));
+    
+                const fileRes = await axios.post('http://localhost/post/file/upload', form, {
+                    headers: { Authorization: token },
+                });
+    
+                if (!fileRes.data.success) {
+                    // 파일 업로드 실패 시 서버에서 전달된 메시지 표시
+                    const errorMessage = fileRes.data.message || '파일 업로드 실패';
+                    alert(errorMessage);
+                    
+                    // 게시글은 작성되었지만 파일 업로드가 실패한 경우 게시글 삭제 요청
+                    try {
+                        await axios.put('http://localhost/post/delete', {
+                            post_idx: postIdx
+                        }, {
+                            headers: { Authorization: token }
+                        });
+                        alert('파일 업로드 실패로 게시글이 삭제되었습니다.');
+                    } catch (deleteError) {
+                        console.error('게시글 삭제 중 오류 발생:', deleteError);
+                    }
+                    
+                    return;
+                }
+            }
+    
+            alert('게시글이 등록되었습니다.');
+            router.push(`/post/detail?post_idx=${postIdx}&board_idx=${board}`);
+        } catch (error) {
+            console.error('게시글 등록 중 오류 발생:', error);
+            alert('게시글 등록 중 오류가 발생했습니다.');
         }
-
-        alert('게시글이 등록되었습니다.');
-        router.push(`/post/detail?post_idx=${postIdx}&board_idx=${board}`);
     };
 
     return (
@@ -168,7 +258,11 @@ export default function PostWritePage() {
 
             <div className="form-row">
                 <label>첨부파일</label>
-                <input type="file" multiple onChange={handleFileChange} />
+                <input type="file" multiple onChange={handleFileChange} accept="image/jpeg,image/jpg,image/png" />
+                {imageError && <p className="error-message" style={{ color: 'red', marginTop: '5px' }}>{imageError}</p>}
+                <p className="file-info" style={{ fontSize: '0.8rem', color: '#666', marginTop: '5px' }}>
+                    * 이미지는 최대 10장까지, 각 파일은 10MB 이하만 업로드 가능합니다.
+                </p>
                 <div className="file-preview">
                     {previewUrls.map((url, idx) => (
                         <div key={idx} className="preview-item">
@@ -180,7 +274,7 @@ export default function PostWritePage() {
             </div>
 
             <div className="button-group">
-                <button onClick={() => router.push('/post/list')} className="cancel-button">목록</button>
+                <button onClick={() => router.push(`/post?board_idx=${board}`)} className="cancel-button">목록</button>
                 <button onClick={handleSubmit} className="submit-button">등록</button>
             </div>
         </div>
