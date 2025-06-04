@@ -1,0 +1,251 @@
+.view-user-timeline {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.timeline-header {
+    margin-bottom: 30px;
+    text-align: center;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 8px;
+    color: white;
+}
+
+.back-button {
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    color: #333;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-bottom: 20px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.back-button:hover {
+    background: #e9e9e9;
+}
+
+.timeline-header h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.timeline-container {
+    position: relative;
+}
+
+.timeline {
+    position: relative;
+    padding: 20px 0;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 30px;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(to bottom, #667eea, #764ba2);
+    border-radius: 2px;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 30px;
+    display: flex;
+    align-items: flex-start;
+    gap: 25px;
+}
+
+.timeline-marker {
+    position: relative;
+    z-index: 2;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    border: 4px solid white;
+    flex-shrink: 0;
+}
+
+.timeline-icon {
+    font-size: 20px;
+}
+
+.timeline-content {
+    flex: 1;
+    margin-top: 8px;
+}
+
+.timeline-date {
+    color: #666;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.timeline-card {
+    background: #f9f9f9;
+    border-radius: 6px;
+    padding: 15px;
+    border-left: 4px solid #667eea;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.timeline-card:hover {
+    background: #f0f0f0;
+    transform: translateX(5px);
+}
+
+.timeline-title {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.timeline-description {
+    margin: 0;
+    font-size: 14px;
+    color: #666;
+    line-height: 1.5;
+}
+
+.timeline-photo {
+    margin-top: 15px;
+}
+
+.timeline-photo img {
+    width: 100%;
+    max-width: 300px;
+    height: auto;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.empty-timeline {
+    text-align: center;
+    color: #999;
+    font-style: italic;
+    padding: 40px 20px;
+    background: #f9f9f9;
+    border-radius: 6px;
+}
+
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+    opacity: 0.7;
+}
+
+.empty-timeline h3 {
+    color: #666;
+    font-size: 18px;
+    margin-bottom: 8px;
+    font-style: normal;
+    font-weight: 600;
+}
+
+.empty-timeline p {
+    color: #999;
+    font-size: 14px;
+    margin: 0;
+}
+
+.loading, .error-message {
+    text-align: center;
+    padding: 40px 20px;
+    font-size: 16px;
+}
+
+.loading {
+    color: #667eea;
+}
+
+.error-message {
+    color: #e74c3c;
+    background: #ffeaea;
+    border-radius: 6px;
+    border: 1px solid #ffcccb;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .view-user-timeline {
+        padding: 15px;
+        margin: 10px;
+    }
+    
+    .timeline-header {
+        padding: 15px;
+    }
+    
+    .timeline-header h2 {
+        font-size: 20px;
+    }
+    
+    .timeline::before {
+        left: 20px;
+    }
+    
+    .timeline-item {
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+    
+    .timeline-marker {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .timeline-icon {
+        font-size: 16px;
+    }
+    
+    .timeline-card {
+        padding: 12px;
+    }
+    
+    .timeline-title {
+        font-size: 14px;
+    }
+    
+    .timeline-description {
+        font-size: 13px;
+    }
+    
+    .timeline-date {
+        font-size: 12px;
+    }
+    
+    .empty-timeline {
+        padding: 30px 15px;
+    }
+    
+    .empty-icon {
+        font-size: 36px;
+    }
+    
+    .empty-timeline h3 {
+        font-size: 16px;
+    }
+    
+    .empty-timeline p {
+        font-size: 13px;
+    }
+} 
