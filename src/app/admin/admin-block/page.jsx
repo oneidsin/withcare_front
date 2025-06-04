@@ -12,6 +12,8 @@ export default function AdminBlock() {
   const [blockList, setBlockList] = useState([]); // 차단 목록 데이터를 저장하는 상태
   const [currentPage, setCurrentPage] = useState(1); // 현재 페이지 번호를 저장하는 상태
   const [totalPages, setTotalPages] = useState(1); // 전체 페이지 수를 저장하는 상태
+  const [searchKeyword, setSearchKeyword] = useState(''); // 검색 키워드 상태
+  const [sortOrder, setSortOrder] = useState('desc'); // 정렬 순서 상태 (desc: 최신순, asc: 오래된순)
   const pageSize = 10; // 한 페이지에 표시할 항목 수 설정
 
   // 페이지 진입시 실행
@@ -25,24 +27,32 @@ export default function AdminBlock() {
       alert('관리자 로그인이 필요합니다.');
       window.location.href = '/login';
     }
-  }, [currentPage]);
+  }, [currentPage, sortOrder]);
 
 
   // 차단 목록 불러오기
   const getBlockList = async (page, id, token) => {
     try {
-      const res = await axios.get(`http://localhost/admin/block/list`,
-        {
-          params: {
-            id: id,
-            page: page,
-            pageSize: pageSize
-          },
-          headers: {
-            Authorization: token
-          }
+      const params = {
+        id: id,
+        page: page,
+        pageSize: pageSize
+      };
+
+      // 검색 키워드가 있을 때만 추가
+      if (searchKeyword && searchKeyword.trim() !== '') {
+        params.searchKeyword = searchKeyword.trim();
+      }
+
+      // 정렬 파라미터 추가
+      params.sort = sortOrder;
+
+      const res = await axios.get(`http://localhost/admin/block/list`, {
+        params: params,
+        headers: {
+          Authorization: token
         }
-      );
+      });
       console.log('API 응답 데이터:', res.data.result.list);
       setBlockList(res.data.result.list);
       setTotalPages(res.data.result.totalPage);
@@ -50,6 +60,39 @@ export default function AdminBlock() {
     } catch (error) {
       console.error('차단 목록 가져오기 실패:', error);
       alert('차단 목록을 불러오는데 실패했습니다.');
+    }
+  };
+
+  // 검색 실행 함수
+  const handleSearch = () => {
+    const id = sessionStorage.getItem("id");
+    const token = sessionStorage.getItem("token");
+    setCurrentPage(1); // 검색 시 첫 페이지로 이동
+    getBlockList(1, id, token);
+  };
+
+  // 검색 초기화 함수
+  const handleClearSearch = () => {
+    setSearchKeyword('');
+    setCurrentPage(1);
+    const id = sessionStorage.getItem("id");
+    const token = sessionStorage.getItem("token");
+    // 검색어를 빈 문자열로 설정한 후 API 호출
+    setTimeout(() => {
+      getBlockList(1, id, token);
+    }, 0);
+  };
+
+  // 정렬 변경 함수
+  const handleSortChange = (event) => {
+    setSortOrder(event.target.value);
+    setCurrentPage(1); // 정렬 변경 시 첫 페이지로 이동
+  };
+
+  // Enter 키 검색 처리
+  const handleKeyPress = (event) => {
+    if (event.key === 'Enter') {
+      handleSearch();
     }
   };
 
@@ -85,7 +128,7 @@ export default function AdminBlock() {
       return (
         <tr>
           <td colSpan={5} style={{ textAlign: 'center', padding: '20px' }}>
-            차단 내역이 없습니다.
+            {searchKeyword ? '검색 결과가 없습니다.' : '차단 내역이 없습니다.'}
           </td>
         </tr>
       );
@@ -139,6 +182,41 @@ export default function AdminBlock() {
     <div className="inbox-container">
       <div className="inbox-header">
         <h1>차단 관리</h1>
+      </div>
+
+      {/* 검색 및 정렬 섹션 */}
+      <div className="search-sort-section">
+        <div className="search-container">
+          <input
+            type="text"
+            className="search-input"
+            placeholder="차단된 아이디 검색..."
+            value={searchKeyword}
+            onChange={(e) => setSearchKeyword(e.target.value)}
+            onKeyPress={handleKeyPress}
+          />
+          <button className="search-button" onClick={handleSearch}>
+            검색
+          </button>
+          {searchKeyword && (
+            <button className="clear-search-button" onClick={handleClearSearch}>
+              검색 초기화
+            </button>
+          )}
+        </div>
+
+        <div className="sort-container">
+          <label htmlFor="sort-select">정렬:</label>
+          <select
+            id="sort-select"
+            className="sort-select"
+            value={sortOrder}
+            onChange={handleSortChange}
+          >
+            <option value="desc">차단 종료일 최신순</option>
+            <option value="asc">차단 종료일 오래된순</option>
+          </select>
+        </div>
       </div>
 
       <table className="report-table">
