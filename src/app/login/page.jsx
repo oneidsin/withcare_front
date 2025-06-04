@@ -125,7 +125,8 @@ export default function LoginPage() {
             dispatch(setUser({ id: finalUserId, token: data.token }));
             router.push('/');
         } else {
-            alert("로그인 실패: 아이디 또는 비밀번호 확인해주세요.");
+            // 로그인 실패 시 msg 필드에 실패 사유가 들어오므로 그대로 alert
+            alert(data.msg || data.message || "로그인 실패: 아이디 또는 비밀번호 확인해주세요.");
         }
     };
 
