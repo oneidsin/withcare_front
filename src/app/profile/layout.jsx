@@ -15,6 +15,9 @@ export default function ProfileLayout({ children }) {
     const [userName, setUserName] = useState('');
     const [profileImage, setProfileImage] = useState('/defaultProfileImg.png');
 
+    // 타인 프로필 페이지인지 확인
+    const isViewProfilePage = pathname.startsWith('/profile/view');
+
     useEffect(() => {
         const token = sessionStorage.getItem("token");
         if (token) {
@@ -32,6 +35,20 @@ export default function ProfileLayout({ children }) {
             setProfileImage(storedProfileImage);
         }
     }, []);
+
+    // 타인 프로필 페이지라면 사이드바 없이 렌더링
+    if (isViewProfilePage) {
+        return (
+            <div style={{ 
+                width: '100%', 
+                minHeight: '100vh',
+                padding: 0,
+                margin: 0
+            }}>
+                {children}
+            </div>
+        );
+    }
 
     const sidebarContent = (
         <ul>

@@ -226,7 +226,7 @@
 
 .tab-menu button.active {
     background-color: #007bff;
-    color: white;
+    color: #333;
     border-color: #0056b3;
     font-weight: 500;
 }

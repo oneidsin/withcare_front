@@ -1,312 +1,224 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import axios from 'axios';
-import '../../../badge/badge.css';
+import React, { useEffect, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
+import axios from "axios";
+import "./badge.css";
 
-const API_BASE_URL = 'http://localhost:80';
-
-export default function ViewUserBadge() {
-    const params = useParams();
+export default function ViewUserBadgePage() {
     const router = useRouter();
+    const params = useParams();
     const targetUserId = params.id;
     
-    const [badges, setBadges] = useState([]);
+    const [user, setUser] = useState(null);
     const [userBadges, setUserBadges] = useState([]);
+    const [allBadges, setAllBadges] = useState([]);
     const [mainBadge, setMainBadge] = useState(null);
-    const [userInfo, setUserInfo] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // 배지 이미지 URL 처리 함수
-    const getBadgeImageUrl = (iconPath) => {
-        if (!iconPath) return '/defaultProfileImg.png';
-        
-        if (iconPath.startsWith('http://') || iconPath.startsWith('https://')) {
-            return iconPath;
-        }
-        
-        if (iconPath.startsWith('badge/')) {
-            return `http://localhost:80/file/${iconPath}`;
-        }
-        
-        return `http://localhost:80/file/badge/${iconPath}`;
-    };
-
-    // 컴포넌트 마운트 시 데이터 로딩
     useEffect(() => {
-        const currentUserId = sessionStorage.getItem('id');
-        
-        // 자신의 프로필에 접근하려는 경우 내 프로필로 리다이렉트
-        if (currentUserId && currentUserId === targetUserId) {
-            router.push('/profile/badge');
+        const token = sessionStorage.getItem("token");
+        if (!token) {
+            alert("로그인이 필요합니다.");
+            router.push("/login");
             return;
         }
-        
-        loadUserBadges();
-    }, [targetUserId, router]);
 
-    // 사용자 배지 정보 로딩
-    const loadUserBadges = async () => {
+        fetchBadgeData();
+    }, [targetUserId]);
+
+    const fetchBadgeData = async () => {
         try {
             setLoading(true);
-            const token = sessionStorage.getItem('token');
-            
-            if (!token) {
-                setError('로그인이 필요합니다.');
-                return;
+            const token = sessionStorage.getItem("token");
+
+            // 사용자 기본 정보 가져오기
+            let profileRes;
+            try {
+                profileRes = await axios.get(`http://localhost/profile/view/${targetUserId}`, {
+                    headers: { Authorization: token }
+                });
+            } catch (error) {
+                profileRes = await axios.get(`http://localhost/profile/${targetUserId}`, {
+                    headers: { Authorization: token }
+                });
             }
 
-            // 1. 타겟 사용자 정보 조회
-            const userInfoResponse = await axios.get(`${API_BASE_URL}/profile/activity/${targetUserId}`, {
-                headers: { Authorization: token }
+            // 사용자 정보 처리
+            let userData = null;
+            if (profileRes.data?.profile) {
+                userData = profileRes.data.profile;
+            } else if (profileRes.data?.data) {
+                userData = profileRes.data.data;
+            } else {
+                userData = profileRes.data;
+            }
+
+            setUser({
+                id: targetUserId,
+                name: userData?.name || userData?.id || targetUserId,
+                main_badge_idx: userData?.main_badge_idx || null
             });
 
-            if (!userInfoResponse.data.success) {
-                throw new Error('사용자 정보 조회 실패');
-            }
-
-            setUserInfo(userInfoResponse.data.user);
-
-            // 2. 전체 배지 목록 조회 (사용자별 배지 API 사용)
-            let allBadges = [];
-
-            // 1. 전체 배지 목록 조회 (사용자별 배지 API 사용)
+            // 전체 배지 목록 가져오기
             try {
-                console.log('배지 목록 조회 시작...');
-                
-                const badgesResponse = await axios.get(`${API_BASE_URL}/${targetUserId}/badge/list`, {
+                const allBadgesRes = await axios.get("http://localhost/badge", {
                     headers: { Authorization: token }
                 });
 
-                if (badgesResponse.data.result) {
-                    allBadges = badgesResponse.data.result || [];
-                    console.log('배지 목록 조회 성공:', allBadges.length, '개');
+                if (allBadgesRes.data) {
+                    const badges = Array.isArray(allBadgesRes.data) ? allBadgesRes.data : allBadgesRes.data.data || [];
+                    setAllBadges(badges);
+                    console.log("전체 배지 데이터 로드 완료:", badges.length);
                 } else {
-                    console.log('배지 목록 조회 실패:', badgesResponse.data);
-                    allBadges = [];
+                    setAllBadges([]);
+                    console.log("전체 배지 데이터 없음");
                 }
-            } catch (badgeError) {
-                console.log('배지 목록 조회 실패:', badgeError.response?.data || badgeError.message);
-                // 오류 시에도 빈 배열로 설정하여 계속 진행
-                allBadges = [];
+            } catch (error) {
+                console.log("전체 배지 API 호출 실패:", error);
+                setAllBadges([]);
             }
 
-            setBadges(allBadges);
+            // 사용자 배지 정보 가져오기
+            try {
+                const userBadgesRes = await axios.get(`http://localhost/badge/user/${targetUserId}`, {
+                    headers: { Authorization: token }
+                });
 
-            // 2. 백엔드에서 이미 획득 정보를 포함해서 보내주므로 별도 처리
-            if (allBadges.length > 0) {
-                // 획득한 배지들 필터링
-                const acquiredBadges = allBadges
-                    .filter(badge => badge.is_acquired)
-                    .map(badge => ({
-                        bdg_idx: badge.bdg_idx,
-                        acquired_date: new Date().toISOString() // 백엔드에서 날짜를 제공하지 않으므로 현재 날짜 사용
-                    }));
+                if (userBadgesRes.data) {
+                    const userBadgeData = Array.isArray(userBadgesRes.data) ? userBadgesRes.data : userBadgesRes.data.data || [];
+                    setUserBadges(userBadgeData);
 
-                setUserBadges(acquiredBadges);
-
-                // 대표 배지 설정 (bdg_sym_yn이 true인 배지)
-                const mainBadgeInfo = allBadges.find(badge => badge.bdg_sym_yn);
-                if (mainBadgeInfo) {
-                    setMainBadge(mainBadgeInfo.bdg_idx);
-                    console.log('대표 배지 설정:', mainBadgeInfo.bdg_idx, mainBadgeInfo.bdg_name);
+                    // 메인 배지 설정
+                    if (userData?.main_badge_idx) {
+                        const mainBadgeData = userBadgeData.find(badge => badge.badge_idx === userData.main_badge_idx);
+                        setMainBadge(mainBadgeData);
+                    }
+                    console.log("사용자 배지 데이터 로드 완료:", userBadgeData.length);
                 } else {
-                    setMainBadge(null);
-                    console.log('설정된 대표 배지 없음');
+                    setUserBadges([]);
+                    console.log("사용자 배지 데이터 없음");
                 }
-
-                console.log('배지 데이터 처리 완료:');
-                console.log('- 전체 배지:', allBadges.length, '개');
-                console.log('- 획득한 배지:', acquiredBadges.length, '개');
-                console.log('- 대표 배지:', mainBadgeInfo ? mainBadgeInfo.bdg_name : '없음');
-            } else {
+            } catch (error) {
+                console.log("사용자 배지 API 호출 실패:", error);
                 setUserBadges([]);
-                setMainBadge(null);
-                console.log('배지 데이터 없음');
             }
 
         } catch (error) {
-            console.error('배지 정보 로딩 실패:', error);
-            if (error.response?.status === 404) {
-                setError('사용자를 찾을 수 없습니다.');
-            } else {
-                setError('배지 정보를 불러오는데 실패했습니다.');
-            }
+            console.error("배지 데이터 로딩 실패:", error);
+            setError("배지 정보를 불러오는데 실패했습니다.");
         } finally {
             setLoading(false);
         }
     };
 
-    // 배지 획득 여부 확인
-    const isBadgeAcquired = (badgeIdx) => {
-        return badges.some(badge => badge.bdg_idx === badgeIdx && badge.is_acquired);
+    // 배지 아이콘 URL 생성
+    const getBadgeIconUrl = (icon) => {
+        if (!icon || icon === 'null' || icon === 'undefined') {
+            return "/defaultBadge.png";
+        }
+        
+        if (icon.startsWith('http://') || icon.startsWith('https://')) {
+            return icon;
+        }
+        
+        return `http://localhost/${icon}`;
     };
 
-    // 메인 배지 여부 확인
-    const isMainBadge = (badgeIdx) => {
-        const badge = badges.find(b => b.bdg_idx === badgeIdx);
-        return badge && badge.bdg_sym_yn;
-    };
-
-    // 뒤로가기
-    const handleGoBack = () => {
-        router.push(`/profile/view/${targetUserId}`);
-    };
-
-    // 로딩 중
-    if (loading) {
-        return (
-            <div className="profile-badge-container">
-                <div className="view-profile-header">
-                    <button onClick={handleGoBack} className="back-button">
-                        ← 뒤로가기
-                    </button>
-                    <h1 className="badge-title">배지</h1>
-                </div>
-                <div className="loading">배지 정보를 불러오는 중...</div>
-            </div>
-        );
-    }
-
-    // 에러 발생
-    if (error) {
-        return (
-            <div className="profile-badge-container">
-                <div className="view-profile-header">
-                    <button onClick={handleGoBack} className="back-button">
-                        ← 뒤로가기
-                    </button>
-                    <h1 className="badge-title">배지</h1>
-                </div>
-                <div className="error-message">{error}</div>
-            </div>
-        );
-    }
-
-    // 획득한 배지들
-    const acquiredBadges = badges.filter(badge => badge.is_acquired);
-    
-    // 미획득 배지들
-    const unacquiredBadges = badges.filter(badge => !badge.is_acquired);
+    if (loading) return <div className="loading">로딩 중...</div>;
+    if (error) return <div className="error-message">{error}</div>;
 
     return (
-        <div className="profile-badge-container">
-            <div className="view-profile-header">
-                <button onClick={handleGoBack} className="back-button">
-                    ← 뒤로가기
+        <div className="view-user-badge">
+            <div className="badge-header">
+                <button className="back-button" onClick={() => router.push(`/profile/view/${targetUserId}`)}>
+                    ← 프로필로 돌아가기
                 </button>
-                <h1 className="badge-title">
-                    {userInfo ? `${userInfo.name}님의 배지` : '배지'}
-                </h1>
+                <h2>{user?.name}님의 배지 정보</h2>
             </div>
-            
+
             {/* 메인 배지 섹션 */}
             {mainBadge && (
                 <div className="main-badge-section">
-                    <div className="main-badge-display">
-                        {(() => {
-                            const mainBadgeInfo = badges.find(badge => badge.bdg_idx === mainBadge);
-                            return mainBadgeInfo ? (
-                                <div className="main-badge-item">
-                                    <img 
-                                        src={getBadgeImageUrl(mainBadgeInfo.bdg_icon)} 
-                                        alt={mainBadgeInfo.bdg_name} 
-                                        className="main-badge-icon"
-                                        onError={(e) => { e.target.src = '/defaultProfileImg.png'; }}
-                                    />
-                                    <div className="main-badge-details">
-                                        <div className="main-badge-text">
-                                            <h3>메인 배지: {mainBadgeInfo.bdg_name}</h3>
-                                            <h4>{mainBadgeInfo.bdg_condition}</h4>
-                                        </div>
-                                        <div className="badge-stats-inline">
-                                            <div className="stat-item">
-                                                <span>획득한 배지 {acquiredBadges.length}</span>
-                                            </div>
-                                            <div className="stat-item">
-                                                <span>전체 배지 {badges.filter(b => b.bdg_active_yn).length}</span>
-                                            </div>
-                                            <div className="stat-item">
-                                                <span>달성률 {badges.filter(b => b.bdg_active_yn).length > 0 
-                                                    ? Math.round((acquiredBadges.length / badges.filter(b => b.bdg_active_yn).length) * 100) 
-                                                    : 0}%</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            ) : null;
-                        })()}
+                    <h3>메인 배지</h3>
+                    <div className="badge-card main">
+                        <div className="badge-icon">
+                            <img 
+                                src={getBadgeIconUrl(mainBadge.badge_icon)} 
+                                alt={mainBadge.badge_name}
+                                onError={(e) => { 
+                                    e.target.onerror = null; 
+                                    e.target.src = "/defaultBadge.png";
+                                }}
+                            />
+                        </div>
+                        <div className="badge-info">
+                            <div className="badge-name">{mainBadge.badge_name}</div>
+                            <div className="badge-description">{mainBadge.badge_description}</div>
+                            <div className="earned-date">
+                                획득일: {new Date(mainBadge.earned_date).toLocaleDateString()}
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
 
-            {/* 획득한 배지들 */}
-            <div className="badge-section">
-                <h2 className="section-title">
-                    획득한 배지 ({acquiredBadges.length})
-                </h2>
-                {acquiredBadges.length > 0 ? (
-                    <div className="badge-grid">
-                        {acquiredBadges.map(badge => (
-                            <div 
-                                key={badge.bdg_idx} 
-                                className={`badge-item acquired readonly ${isMainBadge(badge.bdg_idx) ? 'main-badge' : ''}`}
-                            >
-                                <img 
-                                    src={getBadgeImageUrl(badge.bdg_icon)} 
-                                    alt={badge.bdg_name} 
-                                    className="badge-icon"
-                                    onError={(e) => { e.target.src = '/defaultProfileImg.png'; }}
-                                />
-                                <div className="badge-info">
-                                    <p className="badge-name">{badge.bdg_name}</p>
-                                    <p className="badge-condition">{badge.bdg_condition}</p>
-                                    {isMainBadge(badge.bdg_idx) && (
-                                        <div className="main-badge-indicator">메인 배지</div>
-                                    )}
+            {/* 획득한 배지 섹션 */}
+            <div className="earned-badges-section">
+                <h3>획득한 배지 ({userBadges.length}개)</h3>
+                <div className="badges-grid">
+                    {userBadges.length > 0 ? (
+                        userBadges.map(badge => (
+                            <div key={badge.badge_idx} className="badge-item earned">
+                                <div className="badge-icon">
+                                    <img 
+                                        src={getBadgeIconUrl(badge.badge_icon)} 
+                                        alt={badge.badge_name}
+                                        onError={(e) => { 
+                                            e.target.onerror = null; 
+                                            e.target.src = "/defaultBadge.png";
+                                        }}
+                                    />
                                 </div>
+                                <div className="badge-name">{badge.badge_name}</div>
+                                <div className="badge-description">{badge.badge_description}</div>
+                                <div className="earned-date">
+                                    {new Date(badge.earned_date).toLocaleDateString()}
+                                </div>
+                                {badge.badge_idx === mainBadge?.badge_idx && (
+                                    <div className="main-badge-indicator">메인 배지</div>
+                                )}
                             </div>
-                        ))}
-                    </div>
-                ) : (
-                    <div className="empty-message">
-                        <p>아직 획득한 배지가 없습니다.</p>
-                    </div>
-                )}
+                        ))
+                    ) : (
+                        <div className="empty-message">획득한 배지가 없습니다.</div>
+                    )}
+                </div>
             </div>
 
-            {/* 미획득 배지들 */}
-            <div className="badge-section">
-                <h2 className="section-title">
-                    미획득 배지 ({unacquiredBadges.length})
-                </h2>
-                {unacquiredBadges.length > 0 ? (
-                    <div className="badge-grid">
-                        {unacquiredBadges.map(badge => (
-                            <div 
-                                key={badge.bdg_idx} 
-                                className="badge-item unacquired readonly"
-                            >
+            {/* 미획득 배지 섹션 */}
+            <div className="not-earned-badges-section">
+                <h3>미획득 배지</h3>
+                <div className="badges-grid">
+                    {allBadges.filter(badge => !userBadges.some(userBadge => userBadge.badge_idx === badge.badge_idx)).map(badge => (
+                        <div key={badge.badge_idx} className="badge-item not-earned">
+                            <div className="badge-icon">
                                 <img 
-                                    src={getBadgeImageUrl(badge.bdg_icon)} 
-                                    alt={badge.bdg_name} 
-                                    className="badge-icon"
-                                    onError={(e) => { e.target.src = '/defaultProfileImg.png'; }}
+                                    src={getBadgeIconUrl(badge.badge_icon)} 
+                                    alt={badge.badge_name}
+                                    onError={(e) => { 
+                                        e.target.onerror = null; 
+                                        e.target.src = "/defaultBadge.png";
+                                    }}
                                 />
-                                <div className="badge-info">
-                                    <p className="badge-name">{badge.bdg_name}</p>
-                                    <p className="badge-condition">{badge.bdg_condition}</p>
-                                </div>
                             </div>
-                        ))}
-                    </div>
-                ) : (
-                    <div className="empty-message">
-                        <p>모든 배지를 획득했습니다! 🎉</p>
-                    </div>
-                )}
+                            <div className="badge-name">{badge.badge_name}</div>
+                            <div className="badge-description">{badge.badge_description}</div>
+                            <div className="not-earned-indicator">미획득</div>
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     );
