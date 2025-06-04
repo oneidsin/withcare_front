@@ -1,60 +1,70 @@
+/* 전체 컨테이너 */
 .stat-container {
   width: 95%;
   max-width: 1400px;
   margin: auto;
-  padding: 10px;
-}
-
-.stat-title {
-  margin-bottom: 20px;
-  font-weight: 600;
-  color: #222;
-  font-size: 22px;
-}
-
-.stat-paper {
-  padding: 6px;
-  border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-}
-
-.tab-content { 
   padding: 20px;
 }
 
+/* 페이지 제목 */
+.stat-title {
+  font-weight: 700;
+  color: #222;
+  font-size: 24px;
+}
+
+/* 페이퍼 박스 */
+.stat-paper {
+  padding: 10px;
+  margin-top: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  height: 700px;
+}
+
+/* 탭 컨텐츠 */
+.tab-content {
+  padding: 24px;
+}
+
+/* 통계 요약 */
 .tab-summary {
-  margin-bottom: 12px;
-  padding: 8px 12px;
+  margin-bottom: 16px;
+  padding: 12px 16px;
   background-color: #f5f7fa;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 15px;
   color: #555;
 }
 
 .tab-summary strong {
   color: #1976d2;
-  font-weight: 600;
+  font-weight: 700;
 }
 
+/* 차트 박스 */
 .chart-paper {
-  padding: 12px;
+  padding: 16px;
   border-radius: 8px;
-  height: 250px;
   background: #fafafa;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  margin:15px 10px;
+  margin: 15px 10px;
+  height: 100%;
+  min-height: 320px;
 }
 
+/* 차트 제목 */
 .chart-title {
-  margin-bottom: 6px;
-  font-weight: 500;
-  font-size: 14px;
+  margin-bottom: 10px;
+  font-weight: 600;
+  font-size: 16px;
   color: #333;
 }
 
+/* 차트 영역 */
 .chart-container {
   flex: 1;
   display: flex;
@@ -62,8 +72,9 @@
   align-items: center;
 }
 
+/* 테이블 */
 .table-container {
-  max-height: 220px;
+  max-height: 300px;
   overflow-y: auto;
   border: 1px solid #ddd;
   border-radius: 6px;
@@ -72,42 +83,45 @@
 .stat-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12.5px;
+  font-size: 13px;
 }
 
 .stat-table th {
   background: #f3f3f3;
   font-weight: 600;
-  padding: 6px;
+  padding: 8px;
   border-bottom: 1px solid #ddd;
+  text-align: center;
 }
 
 .stat-table td {
-  text-align: center;
-  padding: 6px;
+  padding: 8px;
   border-bottom: 1px solid #eee;
+  text-align: center;
 }
 
 .stat-table td.title-cell {
   text-align: left;
-  max-width: 180px;
+  max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+/* 로딩 */
 .loading-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 280px;
+  height: 300px;
 }
 
-.loading-text { 
-  margin-top: 14px; 
-  color: #666; 
+.loading-text {
+  margin-top: 16px;
+  color: #666;
 }
 
+/* 데이터 없음 */
 .no-data-box {
   display: flex;
   align-items: center;
@@ -119,23 +133,27 @@
   color: #888;
 }
 
-.no-chart-data { 
-  color: #888; 
-  text-align: center; 
-  font-size: 12px;
+.no-chart-data {
+  color: #888;
+  text-align: center;
+  font-size: 13px;
 }
 
-.MuiTab-root.Mui-selected { 
-  font-weight: 600; 
+/* 탭 강조 */
+.MuiTab-root.Mui-selected {
+  font-weight: 700;
 }
 
+/* 반응형 */
 @media (max-width: 960px) {
-  .chart-paper {
-    height: 200px;
-  }
-  
   .stat-container {
     width: 98%;
-    padding: 8px;
+    padding: 10px;
+  }
+  .chart-paper {
+    min-height: 250px;
+  }
+  .chart-container {
+    height: 250px;
   }
 }
