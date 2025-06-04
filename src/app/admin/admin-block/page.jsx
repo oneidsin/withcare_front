@@ -58,11 +58,18 @@ export default function AdminBlock() {
     if (!dateString) return '-'; // 날짜 문자열이 없으면 '-' 반환
 
     const date = new Date(dateString); // 날짜 객체 생성
-    // 날짜 부분만 한국어 형식으로 변환하고 공백 제거
+    // 날짜 부분을 한국어 형식으로 변환하고 공백 제거
     const datePart = date.toLocaleDateString('ko-KR').replace(/ /g, '');
+    // 시간 부분을 24시간 형식으로 변환
+    const timePart = date.toLocaleTimeString('ko-KR', {
+      hour: '2-digit', // 시간: 두 자리 숫자
+      minute: '2-digit', // 분: 두 자리 숫자
+      hour12: false // 24시간 형식 사용
+    });
 
-    return datePart; // 날짜만 반환
+    return `${datePart} ${timePart}`; // 날짜와 시간 조합하여 반환
   };
+
 
   // 페이지 변경 시 호출되는 이벤트 핸들러
   const handlePageChange = (event, page) => {
@@ -89,7 +96,7 @@ export default function AdminBlock() {
         <td>{block.block_idx}</td>
         <td>
           <span className="detail-link"
-            onClick={() => { handleDetailView(block.blocked_id) }}
+            onClick={() => { handleDetailView(block.block_idx, block.blocked_id) }}
             title="상세보기">
             {block.blocked_id}
           </span>
@@ -102,10 +109,10 @@ export default function AdminBlock() {
   };
 
   // 차단 상세보기 페이지로 이동 (새 탭에서 열기)
-  const handleDetailView = (blocked_id) => {
-    // 신고 상세보기 페이지로 이동 (새 탭에서 열기)
+  const handleDetailView = (block_idx, blocked_id) => {
+    console.log('block_idx:', block_idx);
     console.log('blocked_id:', blocked_id);
-    router.push(`/admin/admin-block/detail?blocked_id=${blocked_id}`);
+    router.push(`/admin/admin-block/detail?block_idx=${block_idx}&blocked_id=${blocked_id}`);
   };
 
   // 페이지네이션 렌더링 함수
