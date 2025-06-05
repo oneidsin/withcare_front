@@ -55,3 +55,16 @@
   align-self: flex-start;
 }
 
+/* 클릭 가능한 멤버 이름 스타일 */
+.clickable-member {
+  cursor: pointer;
+  color: #5fa8d3;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.clickable-member:hover {
+  color: #4a90b8;
+  text-decoration: underline;
+}
+

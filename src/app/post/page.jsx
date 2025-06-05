@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { UserWithIcons } from '@/components/UserIcons';
 import './post.css';
 
 export default function PostPage() {
@@ -24,6 +25,7 @@ export default function PostPage() {
     // 사용자 레벨과 게시판 레벨
     const [userLevel, setUserLevel] = useState(0);
     const [boardLevel, setBoardLevel] = useState(0);
+    const [isAnonymousBoard, setIsAnonymousBoard] = useState(false);
 
     useEffect(() => {
         fetchPosts(boardIdx, page, sort, searchType, keyword);
@@ -59,6 +61,7 @@ export default function PostPage() {
             const res = await axios.get(`http://localhost/board/${boardIdx}`);
             if (res.data) {
                 setBoardLevel(res.data.lv_idx || 0);
+                setIsAnonymousBoard(res.data.anony_yn === true);
             }
         } catch (err) {
             console.error('게시판 레벨 확인 실패:', err);
@@ -115,7 +118,13 @@ export default function PostPage() {
                             {item.post.post_title}
                             {item.photos && item.photos.length > 0 && <span> 📷</span>}
                         </td>
-                        <td>{item.post.id || '익명'}</td>
+                        <td>
+                            <UserWithIcons 
+                                userId={item.post.id} 
+                                isAnonymousBoard={isAnonymousBoard}
+                                onClick={(userId) => router.push(`/profile/view/${userId}`)}
+                            />
+                        </td>
                         <td>{item.post.post_view_cnt}</td>
                         <td>{item.likes || 0}</td>
                         <td>{item.post.post_create_date?.slice(0, 10)}</td>

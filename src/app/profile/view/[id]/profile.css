@@ -103,14 +103,14 @@
 }
 
 .tab-menu button:hover {
-    color: #333;
-    background: #f5f5f5;
+    background-color: #eee;
 }
 
 .tab-menu button.active {
-    color: #667eea;
-    border-bottom-color: #f5f5f5;
-    font-weight: 600;
+    background-color: #007bff;
+    color: white;
+    border-color: #0056b3;
+    font-weight: 500;
 }
 
 .tab-menu button.nav-button {
@@ -162,19 +162,63 @@
     border-radius: 6px;
     transition: all 0.2s ease;
     border-left: 4px solid #667eea;
+    cursor: pointer;
+}
+
+.activity-item:hover {
+    background: #f0f0f0;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.activity-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
 }
 
 .activity-item h4 {
-    margin: 0 0 8px 0;
+    margin: 0;
     font-size: 16px;
     color: #333;
     font-weight: 600;
+    flex: 1;
 }
 
-.activity-item p {
+.activity-author {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: #666;
+    flex-shrink: 0;
+}
+
+.activity-date {
     margin: 0;
     font-size: 14px;
     color: #666;
+}
+
+/* UserIcons 컴포넌트와 일치하는 스타일 */
+.activity-author .level-icon-small,
+.activity-author .badge-icon-small {
+    width: 14px;
+    height: 14px;
+    border-radius: 2px;
+    margin-left: 2px;
+}
+
+.activity-author .username {
+    color: #5fa8d3;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.activity-author .username:hover {
+    color: #4a90e2;
 }
 
 .empty-message {

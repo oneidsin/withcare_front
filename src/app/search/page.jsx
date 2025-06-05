@@ -4,6 +4,7 @@ import React, {useEffect, useState} from "react";
 import './search.css'
 import SidebarLayout from '@/components/layout/SidebarLayout';
 import RecentSearches from './components/RecentSearches';
+import { UserWithIcons } from '@/components/UserIcons';
 import axios from "axios";
 import { useRouter } from 'next/navigation';
 
@@ -47,6 +48,7 @@ export default function SearchPage() {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [searchTimer, setSearchTimer] = useState(null);
+    const [isAnonymousBoard, setIsAnonymousBoard] = useState(false);
 
     // 게시판 목록 불러오기
     useEffect(() => {
@@ -328,7 +330,14 @@ export default function SearchPage() {
         if (!selectedBoardIdx) {
             setPosts([]);
             setBoardIdx(null);
+            setIsAnonymousBoard(false);
             return;
+        }
+
+        // 선택된 게시판 정보 찾기
+        const selectedBoard = boards.find(board => board.board_idx == selectedBoardIdx);
+        if (selectedBoard) {
+            setIsAnonymousBoard(selectedBoard.anony_yn === true);
         }
 
         // 문자열을 숫자로 변환
@@ -363,7 +372,13 @@ export default function SearchPage() {
                 <td>
                     {post.title}
                 </td>
-                <td>{post.writer || "익명"}</td>
+                <td>
+                    <UserWithIcons 
+                        userId={post.writer} 
+                        isAnonymousBoard={isAnonymousBoard}
+                        onClick={(userId) => router.push(`/profile/view/${userId}`)}
+                    />
+                </td>
                 <td>{post.post_view_cnt || 0}</td>
                 <td>{post.like_count || 0}</td>
                 <td>{post.created_date?.slice(0, 10)}</td>

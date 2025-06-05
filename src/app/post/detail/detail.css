@@ -336,8 +336,72 @@
 }
 
 .warn-button:active{
-    box-shadow: 0 0 12px 8px rgba(135, 209, 255, 0.5);
-    /* 밝은 효과 */
+    box-shadow: 0 0 12px 8px rgba(255, 99, 71, 0.3);
     transform: scale(0.98);
-    /* 눌리는 효과 */
+}
+
+/* 클릭 가능한 작성자 스타일 */
+.clickable-author {
+    cursor: pointer;
+    color: #5fa8d3;
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+
+.clickable-author:hover {
+    color: #4a90b8;
+    text-decoration: underline;
+}
+
+.mention-link {
+    cursor: pointer;
+    color: #007bff;
+    font-weight: 600;
+    background-color: rgba(0, 123, 255, 0.1);
+    padding: 2px 4px;
+    border-radius: 3px;
+    transition: all 0.2s ease;
+    display: inline-block;
+}
+
+.mention-link:hover {
+    color: #0056b3;
+    background-color: rgba(0, 123, 255, 0.2);
+    text-decoration: underline;
+    transform: scale(1.05);
+}
+
+/* 사용자 아이콘 스타일 */
+.author-with-icons,
+.comment-author-with-icons {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.user-icons {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.level-icon-small,
+.badge-icon-small {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    object-fit: cover;
+}
+
+.level-icon-small {
+    border: 1px solid rgba(0, 123, 255, 0.3);
+}
+
+.badge-icon-small {
+    border: 1px solid rgba(255, 193, 7, 0.5);
+}
+
+.icon-loading {
+    font-size: 12px;
+    opacity: 0.6;
 }

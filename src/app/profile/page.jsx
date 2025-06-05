@@ -343,7 +343,7 @@ export default function ProfilePage() {
                             activities.comments.map(comment => (
                                 <div key={comment.com_idx} className="activity-item"
                                      onClick={() => router.push(`/post/detail?post_idx=${comment.post_idx}`)}>
-                                    <p>{comment.com_content}</p>
+                                    <h4>{comment.com_content}</h4>
                                     <p>{new Date(comment.com_create_date).toLocaleDateString()}</p>
                                 </div>
                             ))
@@ -359,7 +359,7 @@ export default function ProfilePage() {
                             activities.likes.map((like, index) => (
                                 <div key={`like-${like.post_idx}-${index}-${new Date(like.like_date).getTime()}`} className="activity-item"
                                      onClick={() => router.push(`/post/detail?post_idx=${like.post_idx}`)}>
-                                    <p>추천한 게시글</p>
+                                    <h4>{like.post_title || "추천한 게시글"}</h4>
                                     <p>{new Date(like.like_date).toLocaleDateString()}</p>
                                 </div>
                             ))
@@ -374,7 +374,7 @@ export default function ProfilePage() {
                         {activities.searches.length > 0 ? (
                             activities.searches.map((search, index) => (
                                 <div key={index} className="activity-item">
-                                    <p>{search.sch_keyword}</p>
+                                    <h4>{search.sch_keyword}</h4>
                                     <p>{new Date(search.sch_date).toLocaleDateString()}</p>
                                 </div>
                             ))
@@ -455,6 +455,24 @@ export default function ProfilePage() {
         }
     };
 
+    // 게시글 제목 가져오기
+    const fetchPostTitle = async (postIdx) => {
+        try {
+            const token = sessionStorage.getItem("token");
+            const res = await axios.get(`http://localhost/post/detail/${postIdx}`, {
+                headers: { Authorization: token }
+            });
+            
+            if (res.data && res.data.post) {
+                return res.data.post.post_title || "제목 없음";
+            }
+            return "제목 없음";
+        } catch (error) {
+            console.error(`게시글 ${postIdx} 제목 로딩 실패:`, error);
+            return "제목 없음";
+        }
+    };
+
     // 활동 내역 가져오기
     const fetchActivities = async (userId) => {
         try {
@@ -464,10 +482,23 @@ export default function ProfilePage() {
             });
 
             if (res.data.status === "success") {
+                const likesData = res.data.likes || [];
+                
+                // 추천한 글에 제목이 없는 경우 별도로 가져오기
+                const likesWithTitles = await Promise.all(
+                    likesData.map(async (like) => {
+                        if (!like.post_title) {
+                            const title = await fetchPostTitle(like.post_idx);
+                            return { ...like, post_title: title };
+                        }
+                        return like;
+                    })
+                );
+
                 setActivities({
                     posts: res.data.posts || [],
                     comments: res.data.comments || [],
-                    likes: res.data.likes || [],
+                    likes: likesWithTitles,
                     searches: res.data.searches || []
                 });
             }

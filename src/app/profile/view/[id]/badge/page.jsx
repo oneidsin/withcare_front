@@ -24,6 +24,14 @@ export default function ViewUserBadgePage() {
             return;
         }
 
+        // 시스템 경로 차단 (Next.js 시스템 경로만)
+        const blockedIds = ['_next', 'public', 'static', 'assets', 'favicon.ico'];
+        if (targetUserId && blockedIds.includes(targetUserId.toLowerCase())) {
+            alert("잘못된 접근입니다.");
+            router.push("/");
+            return;
+        }
+
         fetchBadgeData();
     }, [targetUserId]);
 
@@ -40,8 +48,23 @@ export default function ViewUserBadgePage() {
                 profileRes = await axios.get(`http://localhost:80/profile/public/${targetUserId}`);
                 console.log("공개 프로필 API 응답:", profileRes.data);
             } catch (error) {
-                console.error("공개 프로필 API 호출 실패:", error);
-                setError("프로필 정보를 불러오는데 실패했습니다.");
+                console.error("공개 프로필 API 호출 실패:", error.response?.status, error.response?.data);
+                
+                // 404 또는 403 에러는 차단/탈퇴 사용자일 가능성
+                if (error.response?.status === 404) {
+                    alert("존재하지 않는 사용자입니다.");
+                    router.push("/main");
+                    return;
+                }
+                
+                if (error.response?.status === 403) {
+                    alert("접근 권한이 없습니다.");
+                    router.push("/main");
+                    return;
+                }
+                
+                alert("접근할 수 없는 사용자입니다.");
+                router.push("/main");
                 return;
             }
 
@@ -88,6 +111,26 @@ export default function ViewUserBadgePage() {
             if (!profileRes.data.badges && !profileRes.data.badgeCount) {
                 console.warn("⚠️ 공개 프로필 API가 배지 관련 필드를 전혀 반환하지 않습니다.");
                 console.warn("   백엔드에서 배지 서비스 호출 코드가 누락되었을 가능성이 높습니다.");
+            }
+
+            // 차단/탈퇴 사용자 체크
+            if (userData?.block_yn === true || userData?.block_yn === 1) {
+                alert("차단된 사용자의 프로필은 조회할 수 없습니다.");
+                router.push("/main");
+                return;
+            }
+            
+            if (userData?.user_del_yn === true || userData?.user_del_yn === 1) {
+                alert("탈퇴한 사용자의 프로필은 조회할 수 없습니다.");
+                router.push("/main");
+                return;
+            }
+
+            // 프로필 API에서 차단/탈퇴 필드가 없는 경우
+            if (!('block_yn' in userData) || !('user_del_yn' in userData)) {
+                console.warn("⚠️ 프로필 API에서 차단/탈퇴 상태를 제공하지 않음");
+                console.log("📝 차단/탈퇴 상태 필드가 없어도 프로필 조회는 허용합니다.");
+                // 프로필 API가 성공적으로 응답했다면 접근 가능한 사용자로 간주
             }
 
             // profile_yn 체크 - 비공개 프로필인 경우 타인 접근 차단

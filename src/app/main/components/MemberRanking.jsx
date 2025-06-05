@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import axios from 'axios';
 
 export default function MemberRanking() {
+    const router = useRouter();
     const [rankingList, setRankingList] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -38,6 +40,13 @@ export default function MemberRanking() {
         return `${month}/${day} ${hours}:${minutes}`;
     };
 
+    // 사용자 프로필로 이동하는 함수
+    const handleUserClick = (userId) => {
+        if (userId) {
+            router.push(`/profile/view/${userId}`);
+        }
+    };
+
     return (
         <div className="card small-card">
             <h2>승급자</h2>
@@ -50,7 +59,12 @@ export default function MemberRanking() {
                     return (
                         <div key={idx} className="ranking-item-small">
                             {/* 사용자 이름 */}
-                            <span className="member-name">{member.id}</span>
+                            <span 
+                                className="member-name clickable-member" 
+                                onClick={() => handleUserClick(member.id)}
+                            >
+                                {member.id}
+                            </span>
                             
                             {/* 레벨 정보 (이름 + 아이콘) */}
                             <div className="level-group">
