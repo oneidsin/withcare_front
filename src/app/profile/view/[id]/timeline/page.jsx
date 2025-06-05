@@ -58,22 +58,35 @@ export default function ViewUserTimelinePage() {
                 name: userData?.name || userData?.id || targetUserId
             });
 
-            // 타임라인 정보 가져오기
+            // 타임라인 정보 가져오기 - 공개 타임라인 API 사용
+            const timelineEndpoint = `http://localhost:80/timeline/public/${targetUserId}`;
+            
+            let timelineRes = null;
+            
             try {
-                const timelineRes = await axios.get(`http://localhost/timeline/user/${targetUserId}`, {
+                console.log("타임라인 API 호출:", timelineEndpoint);
+                timelineRes = await axios.get(timelineEndpoint, {
                     headers: { Authorization: token }
                 });
-
-                if (timelineRes.data) {
-                    const timelineData = Array.isArray(timelineRes.data) ? timelineRes.data : timelineRes.data.data || [];
-                    setTimelineItems(timelineData);
-                    console.log("타임라인 데이터 로드 완료:", timelineData.length);
-                } else {
-                    setTimelineItems([]);
-                    console.log("타임라인 데이터 없음");
-                }
+                console.log("타임라인 API 성공");
             } catch (error) {
-                console.log("타임라인 API 호출 실패:", error);
+                console.log("타임라인 API 실패:", error.response?.status || error.message);
+            }
+
+            if (timelineRes && timelineRes.data && timelineRes.data.loginYN === 'success') {
+                const timelineData = timelineRes.data.data || [];
+                
+                // 날짜순 정렬 (최신순)
+                timelineData.sort((a, b) => {
+                    const dateA = new Date(a.day || 0);
+                    const dateB = new Date(b.day || 0);
+                    return dateB - dateA;
+                });
+                
+                setTimelineItems(timelineData);
+                console.log("타임라인 데이터 로드 완료:", timelineData.length, "개");
+            } else {
+                console.log("타임라인 데이터가 없거나 로그인 실패");
                 setTimelineItems([]);
             }
 
@@ -149,30 +162,30 @@ export default function ViewUserTimelinePage() {
                 {timelineItems.length > 0 ? (
                     <div className="timeline">
                         {timelineItems.map((item, index) => (
-                            <div key={item.timeline_idx || index} className="timeline-item">
+                            <div key={item.time_idx || index} className="timeline-item">
                                 <div 
                                     className="timeline-marker"
-                                    style={{ backgroundColor: getTimelineColor(item.timeline_type) }}
+                                    style={{ backgroundColor: getTimelineColor('default') }}
                                 >
                                     <span className="timeline-icon">
-                                        {getTimelineIcon(item.timeline_type)}
+                                        {getTimelineIcon('default')}
                                     </span>
                                 </div>
                                 <div className="timeline-content">
                                     <div className="timeline-date">
-                                        {new Date(item.timeline_date).toLocaleDateString('ko-KR', {
+                                        {new Date(item.day).toLocaleDateString('ko-KR', {
                                             year: 'numeric',
                                             month: 'long',
                                             day: 'numeric'
                                         })}
                                     </div>
                                     <div className="timeline-card">
-                                        <h3 className="timeline-title">{item.timeline_title}</h3>
-                                        <p className="timeline-description">{item.timeline_content}</p>
-                                        {item.timeline_photo && (
+                                        <h3 className="timeline-title">{item.time_title}</h3>
+                                        <p className="timeline-description">{item.time_content}</p>
+                                        {item.time_photo && (
                                             <div className="timeline-photo">
                                                 <img 
-                                                    src={`http://localhost/${item.timeline_photo}`} 
+                                                    src={`http://localhost:80/${item.time_photo}`} 
                                                     alt="타임라인 사진"
                                                     onError={(e) => { 
                                                         e.target.style.display = 'none';

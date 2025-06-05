@@ -31,10 +31,6 @@
     border-radius: 8px;
 }
 
-.profile-image {
-    margin-bottom: 20px;
-}
-
 .profile-pic {
     width: 100px;
     height: 100px;
@@ -164,14 +160,8 @@
     background: #f9f9f9;
     padding: 15px;
     border-radius: 6px;
-    cursor: pointer;
     transition: all 0.2s ease;
     border-left: 4px solid #667eea;
-}
-
-.activity-item:hover {
-    background: #f0f0f0;
-    transform: translateX(5px);
 }
 
 .activity-item h4 {

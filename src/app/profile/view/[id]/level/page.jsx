@@ -12,14 +12,13 @@ export default function ViewUserLevelPage() {
     
     const [user, setUser] = useState(null);
     const [currentLevel, setCurrentLevel] = useState(null);
-    const [nextLevel, setNextLevel] = useState(null);
-    const [allLevels, setAllLevels] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
         const token = sessionStorage.getItem("token");
         if (!token) {
+            // 토큰이 없으면 로그인 페이지로 리다이렉트
             alert("로그인이 필요합니다.");
             router.push("/login");
             return;
@@ -33,69 +32,131 @@ export default function ViewUserLevelPage() {
             setLoading(true);
             const token = sessionStorage.getItem("token");
 
-            // 사용자 기본 정보 가져오기
-            let profileRes;
+            // 사용자 기본 정보
+            let userName = targetUserId;
+            let userLvIdx = 1;
+            let profileData = null;
+
+            // 공개 API 사용 (토큰 검증 없음)
             try {
-                profileRes = await axios.get(`http://localhost/profile/view/${targetUserId}`, {
-                    headers: { Authorization: token }
-                });
+                console.log("공개 API 호출:", `http://localhost:80/profile/public/${targetUserId}`);
+                const response = await axios.get(`http://localhost:80/profile/public/${targetUserId}`);
+                
+                console.log("API 응답:", response.data);
+                
+                if (response.data.status === "success") {
+                    const profile = response.data.profile;
+                    const levelInfo = response.data.levelInfo;
+                    
+                    console.log("프로필 데이터:", profile);
+                    console.log("레벨 정보:", levelInfo);
+                    
+                    profileData = profile; // 프로필 데이터 저장
+                    if (profile.name) userName = profile.name;
+                    if (levelInfo && typeof levelInfo.lv_idx === 'number') {
+                        userLvIdx = levelInfo.lv_idx;
+                        console.log("✅ 레벨 정보 찾음:", userLvIdx);
+                    }
+                }
             } catch (error) {
-                profileRes = await axios.get(`http://localhost/profile/${targetUserId}`, {
-                    headers: { Authorization: token }
-                });
+                console.error("공개 API 호출 실패:", error);
+                setError("프로필 정보를 불러오는데 실패했습니다.");
+                return;
             }
 
-            // 사용자 정보 처리
-            let userData = null;
-            if (profileRes.data?.profile) {
-                userData = profileRes.data.profile;
-            } else if (profileRes.data?.data) {
-                userData = profileRes.data.data;
-            } else {
-                userData = profileRes.data;
-            }
+            console.log("최종 사용자 정보:", { name: userName, lv_idx: userLvIdx });
 
             setUser({
                 id: targetUserId,
-                name: userData?.name || userData?.id || targetUserId,
-                level: userData?.level || 1,
-                exp: userData?.exp || 0
+                name: userName,
+                lv_idx: userLvIdx,
+                profile: profileData // 프로필 데이터 추가
             });
 
-            // 레벨 정보 가져오기
+            // 레벨 목록에서 해당 레벨 정보 찾기
             try {
-                const levelRes = await axios.get("http://localhost/level", {
+                const levelRes = await axios.get("http://localhost:80/admin/level", {
                     headers: { Authorization: token }
                 });
 
-                if (levelRes.data) {
-                    const levels = Array.isArray(levelRes.data) ? levelRes.data : levelRes.data.data || [];
-                    setAllLevels(levels);
-
-                    const userLevel = userData?.level || 1;
-                    const current = levels.find(level => level.level_idx === userLevel);
-                    const next = levels.find(level => level.level_idx === userLevel + 1);
-
-                    setCurrentLevel(current);
-                    setNextLevel(next);
-                    console.log("레벨 데이터 로드 완료:", levels.length);
+                const levels = Array.isArray(levelRes.data) ? levelRes.data : levelRes.data.result || [];
+                console.log("🔍 전체 레벨 목록:", levels);
+                console.log("🔍 찾고 있는 lv_idx:", userLvIdx, typeof userLvIdx);
+                console.log("🔍 각 레벨의 lv_idx 타입:", levels.map(l => `${l.lv_idx}(${typeof l.lv_idx})`));
+                
+                // 🎯 타입 안전한 비교를 위해 숫자로 변환
+                const userLevel = levels.find(level => Number(level.lv_idx) === Number(userLvIdx));
+                console.log("🔍 찾은 레벨:", userLevel);
+                
+                if (userLevel) {
+                    console.log("🎯 레벨 설정 시작 - userLevel:", userLevel);
+                    console.log("🎯 설정할 lv_no:", userLevel.lv_no);
+                    
+                    setCurrentLevel(userLevel);
+                    setUser(prev => {
+                        const newUser = { 
+                            ...prev, 
+                            level: userLevel.lv_no  // lv_no를 사용 (관리자는 0)
+                        };
+                        console.log("🎯 새로운 user 상태:", newUser);
+                        return newUser;
+                    });
+                    console.log("✅ 레벨 정보 설정 완료:", userLevel.lv_name, `(lv_no: ${userLevel.lv_no})`);
                 } else {
-                    setAllLevels([]);
-                    console.log("레벨 데이터 없음");
+                    console.log("❌ 해당 lv_idx에 맞는 레벨을 찾을 수 없음:", userLvIdx);
+                    console.log("❌ 사용 가능한 lv_idx들:", levels.map(l => l.lv_idx));
+                    
+                    // 기본 레벨 1
+                    const defaultLevel = levels.find(level => level.lv_idx === 1);
+                    if (defaultLevel) {
+                        setCurrentLevel(defaultLevel);
+                        setUser(prev => ({ 
+                            ...prev, 
+                            level: defaultLevel.lv_no 
+                        }));
+                        console.log("⚠️ 기본 레벨 1 설정:", defaultLevel.lv_name);
+                    }
                 }
             } catch (error) {
-                console.log("레벨 API 호출 실패:", error);
-                setAllLevels([]);
-                setCurrentLevel(null);
-                setNextLevel(null);
+                console.error("레벨 목록 로딩 실패:", error);
+                // 토큰 오류 시 기본 레벨 정보 설정
+                const defaultLevel = {
+                    lv_idx: userLvIdx,
+                    lv_no: userLvIdx === 7 ? 0 : userLvIdx === 1 ? 1 : userLvIdx === 2 ? 2 : userLvIdx, // 관리자(lv_idx:7)는 lv_no:0
+                    lv_name: userLvIdx === 7 ? "관리자" : userLvIdx === 1 ? "진단의 시작" : userLvIdx === 2 ? "초보 환자" : `레벨 ${userLvIdx}`,
+                    lv_icon: "/default-level-icon.png"
+                };
+                setCurrentLevel(defaultLevel);
+                console.log("⚠️ 토큰 오류로 기본 레벨 정보 설정:", defaultLevel.lv_name, `(lv_no: ${defaultLevel.lv_no})`);
             }
 
         } catch (error) {
-            console.error("레벨 데이터 로딩 실패:", error);
+            console.error("전체 로딩 실패:", error);
             setError("레벨 정보를 불러오는데 실패했습니다.");
         } finally {
             setLoading(false);
         }
+    };
+
+    // 이미지 URL 생성 함수
+    const getValidImageUrl = (url) => {
+        if (!url || url === 'null' || url === 'undefined') {
+            return "/defaultProfileImg.png";
+        }
+        
+        if (url.startsWith('http://') || url.startsWith('https://')) {
+            return url;
+        }
+        
+        if (url.startsWith('/')) {
+            return `http://localhost${url}`;
+        }
+        
+        if (url.startsWith('profile/')) {
+            return `http://localhost/file/${url}`;
+        }
+        
+        return `http://localhost/${url}`;
     };
 
     if (loading) return <div className="loading">로딩 중...</div>;
@@ -103,11 +164,14 @@ export default function ViewUserLevelPage() {
 
     return (
         <div className="view-user-level">
-            <div className="level-header">
+            <div className="level-header-simple">
                 <button className="back-button" onClick={() => router.push(`/profile/view/${targetUserId}`)}>
                     ← 프로필로 돌아가기
                 </button>
-                <h2>{user?.name}님의 레벨 정보</h2>
+                
+                <div className="header-title">
+                    <h2>{user?.name}님의 레벨 정보</h2>
+                </div>
             </div>
 
             {/* 현재 레벨 섹션 */}
@@ -115,71 +179,18 @@ export default function ViewUserLevelPage() {
                 <h3>현재 레벨</h3>
                 <div className="level-card current">
                     <div className="level-info">
-                        <div className="level-number">Lv.{currentLevel?.level_idx || 1}</div>
-                        <div className="level-name">{currentLevel?.level_name || "새싹"}</div>
-                        <div className="level-exp">경험치: {user?.exp || 0}</div>
+                        <div className="level-number">Lv.{currentLevel?.lv_no !== undefined ? currentLevel.lv_no : 1}</div>
+                        <div className="level-name">{currentLevel?.lv_name || "새싹"}</div>
                     </div>
-                    {currentLevel?.level_icon && (
+                    {currentLevel?.lv_icon && (
                         <div className="level-icon">
-                            <img src={currentLevel.level_icon} alt="레벨 아이콘" />
+                            <img src={currentLevel.lv_icon} alt="레벨 아이콘" />
                         </div>
                     )}
                 </div>
             </div>
 
-            {/* 다음 레벨 섹션 */}
-            {nextLevel && (
-                <div className="next-level-section">
-                    <h3>다음 레벨</h3>
-                    <div className="level-card next">
-                        <div className="level-info">
-                            <div className="level-number">Lv.{nextLevel.level_idx}</div>
-                            <div className="level-name">{nextLevel.level_name}</div>
-                            <div className="required-exp">
-                                필요 경험치: {nextLevel.required_exp - (user?.exp || 0)} 
-                                (총 {nextLevel.required_exp})
-                            </div>
-                        </div>
-                        {nextLevel.level_icon && (
-                            <div className="level-icon">
-                                <img src={nextLevel.level_icon} alt="레벨 아이콘" />
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
 
-            {/* 전체 레벨 목록 */}
-            <div className="all-levels-section">
-                <h3>전체 레벨</h3>
-                <div className="levels-grid">
-                    {allLevels.map(level => {
-                        const isAchieved = (user?.exp || 0) >= level.required_exp;
-                        const isCurrent = level.level_idx === currentLevel?.level_idx;
-                        
-                        return (
-                            <div 
-                                key={level.level_idx} 
-                                className={`level-item ${isAchieved ? 'achieved' : 'not-achieved'} ${isCurrent ? 'current' : ''}`}
-                            >
-                                <div className="level-number">Lv.{level.level_idx}</div>
-                                <div className="level-name">{level.level_name}</div>
-                                <div className="required-exp">
-                                    필요: {level.required_exp} exp
-                                </div>
-                                {level.level_icon && (
-                                    <div className="level-icon">
-                                        <img src={level.level_icon} alt="레벨 아이콘" />
-                                    </div>
-                                )}
-                                <div className="status">
-                                    {isCurrent ? "현재 레벨" : isAchieved ? "달성" : "미달성"}
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
         </div>
     );
 } 

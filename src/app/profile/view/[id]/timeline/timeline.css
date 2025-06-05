@@ -10,9 +10,8 @@
 
 .timeline-header {
     margin-bottom: 30px;
-    text-align: center;
     padding: 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #fffffff2;
     border-radius: 8px;
     color: white;
 }
@@ -38,6 +37,7 @@
     font-size: 24px;
     font-weight: 600;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+    color: #000000a1;
 }
 
 .timeline-container {
@@ -104,12 +104,6 @@
     padding: 15px;
     border-left: 4px solid #667eea;
     transition: all 0.2s ease;
-    cursor: pointer;
-}
-
-.timeline-card:hover {
-    background: #f0f0f0;
-    transform: translateX(5px);
 }
 
 .timeline-title {

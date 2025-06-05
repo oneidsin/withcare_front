@@ -149,23 +149,56 @@ export default function ViewProfilePage() {
                 
                 // 활동 내역은 API 응답에서 직접 가져오기
                 if (profileRes.data.posts !== undefined) {
-                    setActivities({
-                        posts: profileRes.data.posts || [],
-                        comments: profileRes.data.comments || [],
-                        likes: profileRes.data.likes || [],
-                        searches: profileRes.data.searches || []
-                    });
+                    console.log("프로필 API에서 받은 searches 데이터:", profileRes.data.searches);
+                    
+                    // searches 데이터 구조 확인
+                    if (profileRes.data.searches && profileRes.data.searches.length > 0) {
+                        console.log("첫 번째 search 아이템:", profileRes.data.searches[0]);
+                        
+                        // searches 데이터가 올바른 형식인지 확인
+                        const firstSearch = profileRes.data.searches[0];
+                        const hasValidFormat = firstSearch && (
+                            firstSearch.search_keyword || 
+                            firstSearch.sch_keyword || 
+                            firstSearch.keyword
+                        );
+                        
+                        if (!hasValidFormat) {
+                            console.log("searches 데이터 형식이 올바르지 않음, 별도 API 호출 필요");
+                            // 데이터 형식이 맞지 않으면 별도로 가져오기
+                            setActivities({
+                                posts: profileRes.data.posts || [],
+                                comments: profileRes.data.comments || [],
+                                likes: profileRes.data.likes || [],
+                                searches: [] // 일단 빈 배열로 설정
+                            });
+                            await fetchSearchHistory(targetUserId);
+                        } else {
+                            // 올바른 형식이면 그대로 사용
+                            setActivities({
+                                posts: profileRes.data.posts || [],
+                                comments: profileRes.data.comments || [],
+                                likes: profileRes.data.likes || [],
+                                searches: profileRes.data.searches || []
+                            });
+                        }
+                    } else {
+                        // searches가 없으면 별도로 가져오기
+                        setActivities({
+                            posts: profileRes.data.posts || [],
+                            comments: profileRes.data.comments || [],
+                            likes: profileRes.data.likes || [],
+                            searches: []
+                        });
+                        await fetchSearchHistory(targetUserId);
+                    }
+                    
                     console.log("활동 내역 설정 완료:", {
                         posts: profileRes.data.posts?.length || 0,
                         comments: profileRes.data.comments?.length || 0,
                         likes: profileRes.data.likes?.length || 0,
                         searches: profileRes.data.searches?.length || 0
                     });
-                    
-                    // 검색 내역이 없으면 별도로 가져오기
-                    if (!profileRes.data.searches || profileRes.data.searches.length === 0) {
-                        await fetchSearchHistory(targetUserId);
-                    }
                 } else {
                     // 별도 API 호출
                     await fetchActivities(targetUserId);
@@ -242,24 +275,39 @@ export default function ViewProfilePage() {
     const fetchSearchHistory = async (userId) => {
         try {
             const token = sessionStorage.getItem("token");
-            console.log("검색 내역 API 호출:", `/search/history/${userId}`);
+            console.log("검색 내역 API 호출:", `/search/recent/${userId}`);
             
             try {
-                const res = await axios.get(`http://localhost/search/history/${userId}`, {
+                const res = await axios.get(`http://localhost/search/recent/${userId}`, {
                     headers: { Authorization: token }
                 });
                 
                 console.log("검색 내역 API 응답:", res.data);
                 
                 if (res.data.success && res.data.data) {
+                    console.log("원본 검색 데이터:", res.data.data);
+                    
+                    // 날짜 필드명 확인 및 매핑
+                    const processedSearches = res.data.data.map((search, index) => {
+                        console.log(`검색 ${index}:`, search);
+                        return {
+                            search_keyword: search.sch_keyword || search.search_keyword || '키워드 없음',
+                            search_date: search.sch_create_date || search.search_date || search.sch_date || new Date().toISOString()
+                        };
+                    });
+                    
+                    console.log("처리된 검색 데이터:", processedSearches);
+                    
                     setActivities(prev => ({
                         ...prev,
-                        searches: res.data.data || []
+                        searches: processedSearches
                     }));
-                    console.log("검색 내역 설정 완료:", res.data.data?.length || 0);
+                    console.log("검색 내역 설정 완료:", processedSearches.length);
+                } else {
+                    console.log("검색 데이터 없음 또는 실패:", res.data);
                 }
             } catch (error) {
-                console.log("검색 내역 API 실패, 더미 데이터 사용");
+                console.log("검색 내역 API 실패, 더미 데이터 사용:", error);
                 // API가 없으면 더미 데이터 사용
                 const dummySearches = [
                     {
@@ -368,15 +416,45 @@ export default function ViewProfilePage() {
                     </div>
                 );
             case "searches":
+                console.log("검색어 탭 렌더링 - 현재 activities.searches:", activities.searches);
                 return (
                     <div className="activity-list">
                         {activities.searches.length > 0 ? (
-                            activities.searches.map((search, index) => (
-                                <div key={`search-${search.search_keyword}-${index}`} className="activity-item">
-                                    <h4>검색어: {search.search_keyword}</h4>
-                                    <p>{new Date(search.search_date).toLocaleDateString()}</p>
-                                </div>
-                            ))
+                            activities.searches.map((search, index) => {
+                                console.log(`검색어 ${index} 렌더링:`, search);
+                                
+                                // 검색어 추출 (다양한 필드명 지원)
+                                const keyword = search.search_keyword || 
+                                              search.sch_keyword || 
+                                              search.keyword || 
+                                              '키워드 없음';
+                                
+                                // 날짜 추출 (다양한 필드명 지원)
+                                const dateField = search.search_date || 
+                                                search.sch_create_date || 
+                                                search.sch_date || 
+                                                search.date;
+                                
+                                // 날짜 안전하게 처리
+                                let displayDate = "날짜 정보 없음";
+                                if (dateField) {
+                                    const date = new Date(dateField);
+                                    if (!isNaN(date.getTime())) {
+                                        displayDate = date.toLocaleDateString('ko-KR', {
+                                            year: 'numeric',
+                                            month: '2-digit',
+                                            day: '2-digit'
+                                        });
+                                    }
+                                }
+                                
+                                return (
+                                    <div key={`search-${keyword}-${index}`} className="activity-item">
+                                        <h4>검색어: {keyword}</h4>
+                                        <p>{displayDate}</p>
+                                    </div>
+                                );
+                            })
                         ) : (
                             <div className="empty-message">최근 검색어가 없습니다.</div>
                         )}

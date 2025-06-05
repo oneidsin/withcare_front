@@ -61,6 +61,7 @@ export default function ProfileBadge() {
                 if (badgesResponse.data.result) {
                     allBadges = badgesResponse.data.result || [];
                     console.log('배지 목록 조회 성공:', allBadges.length, '개');
+                    console.log('받은 배지 데이터 샘플:', allBadges[0]);
                 } else {
                     console.log('배지 목록 조회 실패:', badgesResponse.data);
                     allBadges = [];
@@ -71,22 +72,30 @@ export default function ProfileBadge() {
                 allBadges = [];
             }
 
-            setBadges(allBadges);
-
-            // 2. 백엔드에서 이미 획득 정보를 포함해서 보내주므로 별도 처리
+            // 2. 백엔드에서 받은 데이터 구조에 맞게 처리
             if (allBadges.length > 0) {
+                // 배지 데이터 정규화 처리
+                const processedBadges = allBadges.map(badge => ({
+                    ...badge,
+                    is_acquired: badge.is_acquired === 1 || badge.is_acquired === true,
+                    bdg_sym_yn: badge.bdg_sym_yn === 1 || badge.bdg_sym_yn === true,
+                    bdg_active_yn: badge.bdg_active_yn === 1 || badge.bdg_active_yn === true
+                }));
+
+                setBadges(processedBadges);
+
                 // 획득한 배지들 필터링
-                const acquiredBadges = allBadges
+                const acquiredBadges = processedBadges
                     .filter(badge => badge.is_acquired)
                     .map(badge => ({
                         bdg_idx: badge.bdg_idx,
-                        acquired_date: new Date().toISOString() // 백엔드에서 날짜를 제공하지 않으므로 현재 날짜 사용
+                        acquired_date: badge.acquired_date || new Date().toISOString()
                     }));
 
                 setUserBadges(acquiredBadges);
 
                 // 대표 배지 설정 (bdg_sym_yn이 true인 배지)
-                const mainBadgeInfo = allBadges.find(badge => badge.bdg_sym_yn);
+                const mainBadgeInfo = processedBadges.find(badge => badge.bdg_sym_yn && badge.is_acquired);
                 if (mainBadgeInfo) {
                     setMainBadge(mainBadgeInfo.bdg_idx);
                     console.log('대표 배지 설정:', mainBadgeInfo.bdg_idx, mainBadgeInfo.bdg_name);
@@ -96,10 +105,11 @@ export default function ProfileBadge() {
                 }
 
                 console.log('배지 데이터 처리 완료:');
-                console.log('- 전체 배지:', allBadges.length, '개');
+                console.log('- 전체 배지:', processedBadges.length, '개');
                 console.log('- 획득한 배지:', acquiredBadges.length, '개');
                 console.log('- 대표 배지:', mainBadgeInfo ? mainBadgeInfo.bdg_name : '없음');
             } else {
+                setBadges([]);
                 setUserBadges([]);
                 setMainBadge(null);
                 console.log('배지 데이터 없음');
