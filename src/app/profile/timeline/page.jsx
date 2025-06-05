@@ -162,6 +162,11 @@ export default function TimelinePage() {
 
     // 수정 저장
     const handleEditSave = async (timeIdx) => {
+        if (editForm.time_title.trim() === "" || editForm.time_content.trim() === "") {
+            alert("타임라인 제목과 내용을 모두 입력해주세요.");
+            return;
+        }
+
         const token = sessionStorage.getItem('token');
         const userId = sessionStorage.getItem('id');
         
