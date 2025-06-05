@@ -460,7 +460,26 @@ export default function PostDetailPage() {
     return (
         <div className="detail-container">
             <div className="detail-header">
-                <span className="detail-category">{boardName || '게시판'}</span>
+            <span
+                className="detail-category"
+                style={{
+                    cursor: 'pointer',
+                    padding: '4px 8px',
+                    borderRadius: '12px',
+                    backgroundColor: '#f0f8ff',
+                    color: '#007bff',
+                    fontWeight: 'bold',
+                    transition: 'all 0.3s',
+                    display: 'inline-block'
+                }}
+                onClick={() => {
+                    if (effectiveBoardIdx) {
+                        router.push(`/post/?board_idx=${effectiveBoardIdx}`);
+                    }
+                }}
+            >
+                {boardName || '게시판'}
+            </span>
             </div>
 
             <h2 className="detail-title">{post.post_title}</h2>

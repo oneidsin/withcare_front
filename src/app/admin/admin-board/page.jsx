@@ -51,11 +51,19 @@ export default function BoardWrite() {
         try {
             const res = await axios.get(`http://localhost/board/${idx}`);
             setSelectedIdx(idx);
-            setForm(res.data);
+
+            const normalizedData = {
+                ...res.data,
+                parent_board_idx: res.data.parent_board_idx ?? '',
+                lv_idx: res.data.lv_idx ?? '',
+            };
+
+            setForm(normalizedData);
         } catch (err) {
             alert("게시판 정보를 불러오는 데 실패했습니다.");
         }
     };
+
 
     const handleSubmit = async () => {
         const token = sessionStorage.getItem("token");

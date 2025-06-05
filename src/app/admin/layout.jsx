@@ -14,6 +14,12 @@ import Link from "next/link";
 export default function AdminCrawl({ children }) {
     const pathname = usePathname();
     const [userName, setUserName] = useState('');
+    const [isMounted, setIsMounted] = useState(false);  // ✅ 추가
+
+    useEffect(() => {
+        setIsMounted(true);  // ✅ 추가
+    }, []);
+
 
     useEffect(() => {
         const token = sessionStorage.getItem("token");
@@ -25,7 +31,9 @@ export default function AdminCrawl({ children }) {
                 console.error("토큰 파싱 실패", e);
             }
         }
-    }, []);
+    }, [isMounted]);
+
+    if (!isMounted) return null;  // ✅ SSR mismatch 완벽 차단
 
     const sidebarContent = (
         <ul>

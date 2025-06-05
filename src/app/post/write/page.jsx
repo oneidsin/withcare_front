@@ -156,11 +156,14 @@ export default function PostWritePage() {
                 }
             }
 
+            // 디버그 로그 추가: 서버로 전송하기 전 allowComment 값 확인
+            console.log('게시글 작성 - 댓글 허용 여부(프론트엔드):', allowComment);
+
             const postRes = await axios.post('http://localhost/post/write', {
                 post_title: title,
                 post_content: content,
                 board_idx: parseInt(board),
-                com_yn: allowComment,
+                com_yn: allowComment ? 1 : 0,
                 anony_yn: isAnonymousBoard,
                 post_blind_yn: false,
                 id: writer,

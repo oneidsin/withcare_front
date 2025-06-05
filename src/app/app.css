@@ -703,6 +703,38 @@ footer {
 }
 
 /* 추천 게시글 아이템 */
+.recommended-posts-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 350px;
+}
+
+.recommended-posts-fixed {
+  flex-shrink: 0;
+}
+
+.recommended-posts-scroll {
+  flex: 1;
+  max-height: 280px; /* 원하는 높이 고정 */
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+/* 스크롤바 꾸미기 */
+.recommended-posts-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.recommended-posts-scroll::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 10px;
+}
+
+.recommended-posts-scroll::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+
+
 .recommended-post-item {
   padding: 8px;
   border-radius: 6px;
@@ -710,7 +742,6 @@ footer {
   cursor: pointer;
   transition: background-color 0.2s;
   min-height: 70px;
-  height: auto;
   display: flex;
   flex-direction: column;
   justify-content: space-between;

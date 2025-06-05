@@ -11,39 +11,29 @@ export default function RecommendedPosts() {
         loadRecommendedPosts();
     }, []);
 
-    // 추천 게시글 로드
     const loadRecommendedPosts = async () => {
         setLoading(true);
         try {
             const token = sessionStorage.getItem('token');
             const headers = token ? { Authorization: token } : {};
-            
-            // 로그인 상태에 따라 다른 API 호출
-            const endpoint = token 
-                ? '/search/recommend/default' // 원래는 로그인 사용자별 추천이지만 예시로 default 사용
-                : '/search/recommend/default';
-                
+            const endpoint = '/search/recommend/default';
             const response = await axios.get(`http://localhost${endpoint}`, { headers });
-            
+
             if (response.data && response.data.success) {
-                // 추천수(like_count) 기준으로 내림차순 정렬
-                const sortedPosts = (response.data.data || []).sort((a, b) => 
+                const sortedPosts = (response.data.data || []).sort((a, b) =>
                     (b.like_count || 0) - (a.like_count || 0)
                 );
                 setRecommendedPosts(sortedPosts);
             } else {
-                console.warn('추천 게시글 API 응답 실패:', response.data);
                 setRecommendedPosts([]);
             }
         } catch (err) {
-            console.error('추천 게시글 로딩 실패:', err);
             setRecommendedPosts([]);
         } finally {
             setLoading(false);
         }
     };
 
-    // 게시글 클릭 핸들러
     const handlePostClick = (post) => {
         router.push(`/post/detail?post_idx=${post.post_idx}&board_idx=${post.board_idx}`);
     };
@@ -55,10 +45,10 @@ export default function RecommendedPosts() {
             {loading ? (
                 <p>로딩 중...</p>
             ) : recommendedPosts.length > 0 ? (
-                <div className="recommended-posts">
-                    {recommendedPosts.slice(0, 5).map((post, idx) => (
-                        <div 
-                            key={idx} 
+                <div className="recommended-posts-scroll">
+                    {recommendedPosts.map((post, idx) => (
+                        <div
+                            key={idx}
                             className="recommended-post-item"
                             onClick={() => handlePostClick(post)}
                         >
@@ -75,4 +65,4 @@ export default function RecommendedPosts() {
             )}
         </div>
     );
-} 
+}
