@@ -131,3 +131,9 @@ div.post-page{
 .post-table th:nth-child(4), .post-table td:nth-child(4) { width: 10%; }
 .post-table th:nth-child(5), .post-table td:nth-child(5) { width: 10%; }
 .post-table th:nth-child(6), .post-table td:nth-child(6) { width: 20%; }
+
+/* 추가: 댓글 수 스타일 */
+.comment-count {
+    color: #0066cc;
+    font-weight: bold;
+}

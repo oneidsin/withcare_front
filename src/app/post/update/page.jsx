@@ -38,16 +38,27 @@ export default function PostUpdatePage() {
             const res = await axios.get(`http://localhost/post/detail/${postIdx}`, {
                 headers: { Authorization: token },
             });
-            if (res.data?.post) {
-                setTitle(res.data.post.post_title);
-                setContent(res.data.post.post_content);
-                setBoard(String(res.data.post.board_idx || ''));
-                setAllowComment(res.data.post.com_yn);
-                setPhotos(res.data.photos || []);
-                setKeepFileIdx(res.data.photos?.map(p => p.file_idx) || []);
+            
+            if (res.data.success) {
+                const post = res.data.post;
+                setTitle(post.post_title);
+                setContent(post.post_content);
+                setBoard(post.board_idx.toString());
+                setAllowComment(post.com_yn === true);
+                
+                // 기존 파일 정보 설정
+                if (res.data.photos) {
+                    setPhotos(res.data.photos);
+                    setKeepFileIdx(res.data.photos.map(p => p.file_idx));
+                }
+            } else {
+                alert('게시글을 불러올 수 없습니다.');
+                router.push('/post');
             }
-        } catch (err) {
-            alert('게시글 정보 로딩 실패');
+        } catch (error) {
+            console.error('게시글 조회 중 오류 발생:', error);
+            alert('게시글을 불러올 수 없습니다.');
+            router.push('/post');
         }
     };
 
@@ -156,7 +167,7 @@ export default function PostUpdatePage() {
                 }
             }
             
-            const updateRes = await axios.put('http://localhost/post/update', {
+            const postRes = await axios.put('http://localhost/post/update', {
                 post_idx: postIdx,
                 post_title: title,
                 post_content: content,
@@ -166,7 +177,7 @@ export default function PostUpdatePage() {
                 headers: { Authorization: token },
             });
     
-            if (!updateRes.data.success) {
+            if (!postRes.data.success) {
                 alert('게시글 수정 실패');
                 return;
             }

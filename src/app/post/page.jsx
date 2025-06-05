@@ -117,6 +117,7 @@ export default function PostPage() {
                             {item.post.post_blind_yn && '🔒 '}
                             {item.post.post_title}
                             {item.photos && item.photos.length > 0 && <span> 📷</span>}
+                            {item.commentCount > 0 && <span className="comment-count"> [{item.commentCount}]</span>}
                         </td>
                         <td>
                             <UserWithIcons 

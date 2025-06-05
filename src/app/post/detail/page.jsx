@@ -769,22 +769,24 @@ export default function PostDetailPage() {
                                                 <UserIcons userId={comment.id} />
                                             </div>
                                         )}
-                                        {updateComIdx === comment.com_idx ? (
-                                            <>
-                                                <button className="comlist-btn" onClick={handleEditSubmit}>완료</button>
-                                                <button className="comlist-btn" onClick={handleEditCancel}>취소</button>
-                                            </>
-                                        ) : (
-                                            <>
-                                                {(loginId === comment.id) && (
-                                                    <button className="comlist-btn" onClick={() => handleEditClick(comment)}>수정</button>
-                                                )}
-                                                {(loginId === comment.id || isAdmin) && (
-                                                    <button className="comlist-btn" onClick={() => comDelete(comment.com_idx)}>삭제</button>
-                                                )}
-                                                <button className="comlist-btn" onClick={() => moveToReportCom(comment.com_idx, comment.com_content)}>신고</button>
-                                            </>
-                                        )}
+                                        <div className="comment-buttons">
+                                            {updateComIdx === comment.com_idx ? (
+                                                <>
+                                                    <button className="comlist-btn" onClick={handleEditSubmit}>완료</button>
+                                                    <button className="comlist-btn" onClick={handleEditCancel}>취소</button>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    {(loginId === comment.id) && (
+                                                        <button className="comlist-btn" onClick={() => handleEditClick(comment)}>수정</button>
+                                                    )}
+                                                    {(loginId === comment.id || isAdmin) && (
+                                                        <button className="comlist-btn" onClick={() => comDelete(comment.com_idx)}>삭제</button>
+                                                    )}
+                                                    <button className="comlist-btn" onClick={() => moveToReportCom(comment.com_idx, comment.com_content)}>신고</button>
+                                                </>
+                                            )}
+                                        </div>
                                     </div>
 
                                     {updateComIdx === comment.com_idx ? (

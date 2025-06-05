@@ -163,7 +163,7 @@ export default function PostWritePage() {
                 post_title: title,
                 post_content: content,
                 board_idx: parseInt(board),
-                com_yn: allowComment ? 1 : 0,
+                com_yn: allowComment,
                 anony_yn: isAnonymousBoard,
                 post_blind_yn: false,
                 id: writer,
