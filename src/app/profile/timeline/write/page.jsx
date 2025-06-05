@@ -83,7 +83,7 @@ export default function TimelineWritePage() {
         <div className="write-page">
             <div className="write-container">
                 <div className="write-header">
-                    <h1>타임라인 작성</h1>
+                    <h1>👩🏻‍💻 타임라인 작성</h1>
                 </div>
                 <form className="write-form" onSubmit={handleSubmit}>
                     {/* 날짜 입력 */}

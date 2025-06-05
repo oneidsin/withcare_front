@@ -676,21 +676,24 @@
     background-color: var(--background-light);
     padding: 32px;
     display: flex;
-    justify-content: center;
-    align-items: center;
+    flex-direction: column;
     width: 100%;
 }
 
 .write-container {
-    width: 70%;
+    width: 100%;
+    max-width: 800px;
     background: white;
     border-radius: var(--border-radius);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     padding: 48px;
     margin: 0 auto;
+    display: flex;
+    flex-direction: column;
 }
 
 .write-header {
+    width: 100%;
     margin-bottom: 32px;
     padding-bottom: 16px;
     border-bottom: 2px solid var(--background-medium);
