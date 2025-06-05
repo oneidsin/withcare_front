@@ -80,6 +80,7 @@ export default function BoardWrite() {
 
             if (res.data.success) {
                 alert(selectedIdx ? "게시판이 수정되었습니다." : "게시판이 등록되었습니다.");
+                location.reload();
                 fetchBoards();
                 setForm({
                     board_name: '',
@@ -147,9 +148,9 @@ export default function BoardWrite() {
                     </div>
                     <div className="form-group">
                         <label>부모 게시판 선택</label>
-                        <select 
-                            name="parent_board_idx" 
-                            value={form.parent_board_idx} 
+                        <select
+                            name="parent_board_idx"
+                            value={form.parent_board_idx}
                             onChange={handleChange}
                         >
                             <option value="">없음 (최상위 게시판)</option>
@@ -165,9 +166,9 @@ export default function BoardWrite() {
 
                     <div className="form-group">
                         <label>열람 제한 레벨</label>
-                        <select 
-                            name="lv_idx" 
-                            value={form.lv_idx} 
+                        <select
+                            name="lv_idx"
+                            value={form.lv_idx}
                             onChange={handleChange}
                         >
                             <option value="">선택</option>
