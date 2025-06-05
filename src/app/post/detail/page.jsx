@@ -385,6 +385,11 @@ export default function PostDetailPage() {
     // 실제로 서버에 수정 내용을 보내는 작업 넣어야 함
     // 지금은 콘솔에 수정된 댓글 내용 찍고 수정 모드 종료
     const handleEditSubmit = async () => {
+        if (updateComs.trim() === "") {
+            alert("댓글 내용을 입력해주세요.");
+            return;
+        }
+
         const token = sessionStorage.getItem('token');
         const response = await axios.put(`http://localhost/post/detail/${postIdx}/update`, {
             com_idx: updateComIdx,
