@@ -42,7 +42,7 @@ export default function PostUpdatePage() {
                 setTitle(res.data.post.post_title);
                 setContent(res.data.post.post_content);
                 setBoard(String(res.data.post.board_idx || ''));
-                setAllowComment(res.data.post.allow_comment);
+                setAllowComment(res.data.post.com_yn);
                 setPhotos(res.data.photos || []);
                 setKeepFileIdx(res.data.photos?.map(p => p.file_idx) || []);
             }
@@ -161,7 +161,7 @@ export default function PostUpdatePage() {
                 post_title: title,
                 post_content: content,
                 board_idx: parseInt(board),
-                allow_comment: allowComment,
+                com_yn: allowComment,
             }, {
                 headers: { Authorization: token },
             });

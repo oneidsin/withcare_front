@@ -128,6 +128,8 @@ export default function PostDetailPage() {
             }
 
             if (res.data.post) {
+                console.log('게시글 데이터:', res.data.post);  // 디버깅용 로그 추가
+                console.log('댓글 허용 여부:', res.data.post.com_yn);  // 디버깅용 로그 추가
                 setPost(res.data.post);
                 setLikes(res.data.likes);
                 setDislikes(res.data.dislikes);
@@ -283,6 +285,12 @@ export default function PostDetailPage() {
 
     // WRITE COMMENTS
     const handleCom = async () => {
+        // 댓글 허용 여부 체크
+        if (!post.com_yn) {
+            alert('댓글이 허용되지 않은 게시글입니다.');
+            return;
+        }
+
         if (!coms) return alert('댓글 내용을 입력하세요.');
 
         // 멘션 처리: @로 시작하는 단어들을 찾아서 멘션으로 처리
@@ -295,24 +303,31 @@ export default function PostDetailPage() {
             return;
         }
 
-        const comRes = await axios.post(`http://localhost/post/detail/${postIdx}/write`, {
-            post_idx: postIdx,
-            com_idx: comIdx,
-            com_content: coms,
-            com_blind_yn: false,
-            mentions: mentionIds, // 멘션된 사용자 ID 목록 추가
-            id: isAnonymousBoard ? '익명' : loginId // 익명 게시판일 경우 '익명'으로 설정
-        }, {
-            headers: { Authorization: token },
-        });
+        try {
+            const comRes = await axios.post(`http://localhost/post/detail/${postIdx}/write`, {
+                post_idx: postIdx,
+                com_idx: comIdx,
+                com_content: coms,
+                com_blind_yn: false,
+                mentions: mentionIds, // 멘션된 사용자 ID 목록 추가
+                id: isAnonymousBoard ? '익명' : loginId // 익명 게시판일 경우 '익명'으로 설정
+            }, {
+                headers: { Authorization: token },
+            });
 
-        if (!comRes.data.success) return alert('댓글 등록 실패');
+            if (!comRes.data.success) {
+                alert(comRes.data.message || '댓글 등록 실패');
+                return;
+            }
 
-        alert('댓글이 등록 되었습니다.');
-        //window.location.href = `/post/detail?post_idx=${postIdx}`;
-        setComs(''); // 입력창 초기화
-        fetchCom(); // 댓글 리스트 다시 불러오기
-    }
+            alert('댓글이 등록 되었습니다.');
+            setComs(''); // 입력창 초기화
+            fetchCom(); // 댓글 리스트 다시 불러오기
+        } catch (error) {
+            console.error('댓글 등록 중 오류:', error);
+            alert('댓글 등록 중 오류가 발생했습니다.');
+        }
+    };
 
     // 사용자 검색 함수
     const searchUsers = (query) => {
@@ -517,80 +532,97 @@ export default function PostDetailPage() {
                 </button>
             </div>
 
-            <div className="comment-list">
-                {comList.length === 0 ? (
-                    <p>댓글이 없습니다.</p>
-                ) : (
-                    comList.map((comment, idx) => (
-                        <div key={idx} className="comment-item">
-                            <div className="comment-header">
-                                <span className="comlist-writer">{isAnonymousBoard ? '익명' : comment.id}</span>
-                                {updateComIdx === comment.com_idx ? (
-                                    <>
-                                        <button className="comlist-btn" onClick={handleEditSubmit}>완료</button>
-                                        <button className="comlist-btn" onClick={handleEditCancel}>취소</button>
-                                    </>
-                                ) : (
-                                    <>
-                                        {(loginId === comment.id) && (
-                                            <button className="comlist-btn" onClick={() => handleEditClick(comment)}>수정</button>
+            {/* 댓글 섹션 */}
+            {post.com_yn ? (
+                <>
+                    <div className="comment-list">
+                        {comList.length === 0 ? (
+                            <p>댓글이 없습니다.</p>
+                        ) : (
+                            comList.map((comment, idx) => (
+                                <div key={idx} className="comment-item">
+                                    <div className="comment-header">
+                                        <span className="comlist-writer">{isAnonymousBoard ? '익명' : comment.id}</span>
+                                        {updateComIdx === comment.com_idx ? (
+                                            <>
+                                                <button className="comlist-btn" onClick={handleEditSubmit}>완료</button>
+                                                <button className="comlist-btn" onClick={handleEditCancel}>취소</button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                {(loginId === comment.id) && (
+                                                    <button className="comlist-btn" onClick={() => handleEditClick(comment)}>수정</button>
+                                                )}
+                                                {(loginId === comment.id || isAdmin) && (
+                                                    <button className="comlist-btn" onClick={() => comDelete(comment.com_idx)}>삭제</button>
+                                                )}
+                                                <button className="comlist-btn" onClick={() => moveToReportCom(comment.com_idx, comment.com_content)}>신고</button>
+                                            </>
                                         )}
-                                        {(loginId === comment.id || isAdmin) && (
-                                            <button className="comlist-btn" onClick={() => comDelete(comment.com_idx)}>삭제</button>
-                                        )}
-                                        <button className="comlist-btn" onClick={() => moveToReportCom(comment.com_idx, comment.com_content)}>신고</button>
-                                    </>
-                                )}
-                            </div>
-
-                            {updateComIdx === comment.com_idx ? (
-                                <input
-                                    className="comment-edit-input"
-                                    value={updateComs}
-                                    onChange={(e) => setUpdateComs(e.target.value)}
-                                />
-                            ) : (
-                                <div className="comment-content">{comment.com_content}</div>
-                            )}
-                            <span className="comment-date">{comment.com_create_date?.slice(0, 10)}</span>
-                        </div>
-                    ))
-                )}
-            </div>
-
-            <div className="comment-box">
-                <div className="comment-writer">{isAnonymousBoard ? '익명' : (loginId || 'guest')}</div>
-                <div className="comment-input-container">
-                    <input
-                        placeholder="댓글을 남겨보세요. (@를 입력하여 멘션)"
-                        className="comment-input"
-                        value={coms}
-                        onChange={handleCommentInput}
-                    />
-                    {showMentionSuggestions && (
-                        <div className="mention-suggestions">
-                            {mentionSuggestions.length > 0 ? (
-                                mentionSuggestions.map((user, index) => (
-                                    <div
-                                        key={index}
-                                        className="mention-item"
-                                        onClick={() => handleMentionSelect(user.id)}
-                                    >
-                                        @{user.id}
                                     </div>
-                                ))
-                            ) : (
-                                <div className="mention-hint">
-                                    {mentionQuery ? "일치하는 사용자가 없습니다" : "@를 입력하여 사용자를 멘션할 수 있습니다"}
+
+                                    {updateComIdx === comment.com_idx ? (
+                                        <input
+                                            className="comment-edit-input"
+                                            value={updateComs}
+                                            onChange={(e) => setUpdateComs(e.target.value)}
+                                        />
+                                    ) : (
+                                        <div className="comment-content">{comment.com_content}</div>
+                                    )}
+                                    <span className="comment-date">{comment.com_create_date?.slice(0, 10)}</span>
+                                </div>
+                            ))
+                        )}
+                    </div>
+
+                    <div className="comment-box">
+                        <div className="comment-writer">{isAnonymousBoard ? '익명' : (loginId || 'guest')}</div>
+                        <div className="comment-input-container">
+                            <input
+                                placeholder="댓글을 남겨보세요. (@를 입력하여 멘션)"
+                                className="comment-input"
+                                value={coms}
+                                onChange={handleCommentInput}
+                            />
+                            {showMentionSuggestions && (
+                                <div className="mention-suggestions">
+                                    {mentionSuggestions.length > 0 ? (
+                                        mentionSuggestions.map((user, index) => (
+                                            <div
+                                                key={index}
+                                                className="mention-item"
+                                                onClick={() => handleMentionSelect(user.id)}
+                                            >
+                                                @{user.id}
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="mention-hint">
+                                            {mentionQuery ? "일치하는 사용자가 없습니다" : "@를 입력하여 사용자를 멘션할 수 있습니다"}
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
-                    )}
+                    </div>
+                    <div className="submit">
+                        <button className="submit-button" onClick={handleCom}>등록</button>
+                    </div>
+                </>
+            ) : (
+                <div className="comment-disabled-message" style={{ 
+                    textAlign: 'center', 
+                    padding: '20px', 
+                    margin: '20px 0',
+                    color: '#666',
+                    backgroundColor: '#f8f8f8',
+                    border: '1px solid #eee',
+                    borderRadius: '4px'
+                }}>
+                    댓글이 허용되지 않은 게시글입니다.
                 </div>
-            </div>
-            <div className="submit">
-                <button className="submit-button" onClick={handleCom}>등록</button>
-            </div>
+            )}
 
             <div className="detail-footer">
                 <button
