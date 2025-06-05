@@ -1,17 +1,26 @@
 "use client"
 
 import '../msg.css';
-import React, {useState} from "react";
+import React, {useState, useEffect} from "react";
 import axios from "axios";
 import Link from 'next/link';
-
+import { useSearchParams } from 'next/navigation';
 
 export default function SendPage(){
+    const searchParams = useSearchParams();
+    const replyTo = searchParams.get('reply_to');
 
     const [info, setInfo] = useState({id:'',receiver_id:'',msg_content:''});
     const [charCount, setCharCount] = useState(0);
     const id = sessionStorage.getItem("id");
     const token = sessionStorage.getItem("token");
+
+    // 답장하기로 들어온 경우 받는 사람을 자동으로 설정
+    useEffect(() => {
+        if (replyTo) {
+            setInfo(prev => ({...prev, receiver_id: replyTo}));
+        }
+    }, [replyTo]);
 
     const input=(e)=>{
         if (e.target.name === 'msg_content') {
@@ -23,26 +32,40 @@ export default function SendPage(){
     const save = async (e) => {
         e.preventDefault();
 
+        if (!info.receiver_id.trim()) {
+            alert('받는 사람을 입력해주세요.');
+            return;
+        }
+
+        if (!info.msg_content.trim()) {
+            alert('내용을 입력해주세요.');
+            return;
+        }
+
         const payload = {
             sender_id: id,
             receiver_id: info.receiver_id,
             msg_content: info.msg_content,
         };
 
-        const { data } = await axios.post('http://localhost/msg/send', payload, {
-            headers: {
-                Authorization: token,
-                'Content-Type': 'application/json',
-            }
-        });
+        try {
+            const { data } = await axios.post('http://localhost/msg/send', payload, {
+                headers: {
+                    Authorization: token,
+                    'Content-Type': 'application/json',
+                }
+            });
 
-        console.log(data);
-        if(data.message){
-            alert('쪽지 전송을 성공 했습니다.');
-            location.href='/msg/outbox';
+            console.log(data);
+            if(data.message){
+                alert('쪽지 전송을 성공 했습니다.');
+                location.href='/msg/outbox';
+            }
+        } catch (error) {
+            console.error('쪽지 전송 실패:', error);
+            alert('쪽지 전송에 실패했습니다.');
         }
     }
-
 
     return (
         <>
@@ -76,6 +99,7 @@ export default function SendPage(){
                             value={info.receiver_id} 
                             onChange={input}
                             className="form-input"
+                            readOnly={!!replyTo}
                         />
                     </td>
                 </tr>
@@ -89,6 +113,7 @@ export default function SendPage(){
                                 value={info.msg_content}
                                 className="form-textarea"
                                 maxLength={200}
+                                placeholder="내용을 입력해주세요."
                             ></textarea>
                             <div className="char-count">
                                 {charCount}/200자
