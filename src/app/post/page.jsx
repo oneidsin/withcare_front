@@ -80,6 +80,11 @@ export default function PostPage() {
         }
     };
 
+    // 관리자가 아닌 경우 블라인드 처리된 게시글 필터링
+    const filteredPosts = userLevel === 7 
+        ? posts 
+        : posts.filter(item => !item.post.post_blind_yn);
+
     return (
         <div className="post-page">
             <div className="post-header">
@@ -102,7 +107,7 @@ export default function PostPage() {
                 </tr>
                 </thead>
                 <tbody>
-                {posts.map((item) => (
+                {filteredPosts.map((item) => (
                     <tr key={`${item.post.board_idx}-${item.post.post_idx}`} onClick={() => router.push(`/post/detail?post_idx=${item.post.post_idx}`)} style={{ cursor: 'pointer' }}>
                         <td>{item.post.post_idx}</td>
                         <td>
