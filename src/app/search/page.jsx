@@ -1,6 +1,6 @@
 "use client";
 
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useState, useCallback} from "react";
 import './search.css'
 import SidebarLayout from '@/components/layout/SidebarLayout';
 import RecentSearches from './components/RecentSearches';
@@ -49,6 +49,8 @@ export default function SearchPage() {
     const [totalPages, setTotalPages] = useState(1);
     const [searchTimer, setSearchTimer] = useState(null);
     const [isAnonymousBoard, setIsAnonymousBoard] = useState(false);
+    const [refreshRecentSearches, setRefreshRecentSearches] = useState(null);
+    const [addSearchTermImmediately, setAddSearchTermImmediately] = useState(null);
 
     // 게시판 목록 불러오기
     useEffect(() => {
@@ -161,7 +163,9 @@ export default function SearchPage() {
         console.log('검색어 클릭:', searchKeyword);
         setKeyword(searchKeyword);
         setPage(1);
-        handleSearch(null, searchKeyword, 1);
+        
+        // 검색 수행 (최근 검색어 새로고침 포함)
+        handleSearchInternal(searchKeyword, 1, true);
     };
 
     // 검색어 유효성 검사
@@ -184,12 +188,28 @@ export default function SearchPage() {
         return true;
     };
 
-    // 검색 처리 함수
-    const handleSearch = async (e, searchKeyword = null, pageNum = 1) => {
-        if (e) {
-            e.preventDefault();
+    // 최근 검색어 즉시 업데이트 함수
+    const updateSearchTermsImmediately = (keyword) => {
+        if (keyword && keyword.trim().length > 0) {
+            console.log('검색어 즉시 업데이트 시도:', keyword);
+            
+            // 1. 먼저 로컬 상태에 즉시 추가
+            if (addSearchTermImmediately) {
+                addSearchTermImmediately(keyword);
+            }
+            
+            // 2. API로 새로고침 (백엔드와 동기화)
+            if (refreshRecentSearches) {
+                setTimeout(() => {
+                    console.log('검색어 API 새로고침 실행:', keyword);
+                    refreshRecentSearches();
+                }, 200);
+            }
         }
-        
+    };
+
+    // 내부 검색 처리 함수 (검색어 저장 후 새로고침 여부 제어 가능)
+    const handleSearchInternal = async (searchKeyword, pageNum = 1, shouldRefreshSearchTerms = true) => {
         const keywordToSearch = searchKeyword || keyword;
         
         if (!validateSearchKeyword(keywordToSearch)) {
@@ -248,6 +268,11 @@ export default function SearchPage() {
                 setTotalPages(res.data.totalPages || 1);
                 setPage(pageNum); // 검색 시 현재 페이지 업데이트
                 
+                // 검색 성공 후 검색어가 있고 첫 페이지이며 새로고침해야 하는 경우 최근 검색어 즉시 업데이트
+                if (shouldRefreshSearchTerms && pageNum === 1) {
+                    updateSearchTermsImmediately(keywordToSearch);
+                }
+                
             } catch (err) {
                 console.error("검색 요청 실패", err);
                 // 에러 발생해도 기존 게시글 유지
@@ -257,66 +282,28 @@ export default function SearchPage() {
         }
     };
 
+    // 검색 처리 함수 (폼 제출용)
+    const handleSearch = async (e, searchKeyword = null, pageNum = 1) => {
+        if (e) {
+            e.preventDefault();
+        }
+        
+        await handleSearchInternal(searchKeyword, pageNum, true);
+    };
+
     // 페이지 변경 핸들러
     const handlePageChange = async (newPage) => {
         if (newPage === page) return; // 같은 페이지면 무시
         
-        try {
-            const token = sessionStorage.getItem('token');
-            
-            console.log('페이지 변경:', {
-                currentPage: page,
-                newPage: newPage,
-                keyword: keyword,
-                boardIdx: boardIdx,
-                offset: calculateOffset(newPage, SEARCH_CONSTANTS.PAGE_SIZE)
-            });
+        console.log('페이지 변경:', {
+            currentPage: page,
+            newPage: newPage,
+            keyword: keyword,
+            boardIdx: boardIdx
+        });
 
-            // API 요청 데이터 준비
-            const requestData = {
-                board_idx: boardIdx,
-                page: newPage,
-                pageSize: SEARCH_CONSTANTS.PAGE_SIZE,
-                offset: calculateOffset(newPage, SEARCH_CONSTANTS.PAGE_SIZE),
-                sch_type: SEARCH_CONSTANTS.TYPE_MAP[searchType],
-                sch_keyword: keyword.trim() // 검색어가 있는 경우 포함
-            };
-
-            console.log('API 요청 데이터:', requestData);
-
-            // API 요청 헤더 설정 (토큰이 있는 경우에만 포함)
-            const headers = {};
-            if (token) {
-                headers['Authorization'] = token;
-            }
-
-            try {
-                const res = await api.post('/search', requestData, {
-                    headers: headers,
-                    timeout: 5000 // 5초 타임아웃 설정
-                });
-
-                console.log('페이지 변경 응답:', res.data);
-
-                if (!res.data.success) {
-                    if (res.data.redirect) {
-                        console.warn('리다이렉트 요청이 있지만 무시합니다:', res.data.redirect);
-                    }
-                    console.warn('페이지 변경 실패:', res.data.message);
-                    return;
-                }
-
-                // 데이터 업데이트
-                setPosts(res.data.data || []);
-                setTotalPages(res.data.totalPages || 1);
-                setPage(newPage); // 페이지 상태 업데이트
-
-            } catch (err) {
-                console.error("페이지 변경 요청 실패:", err);
-            }
-        } catch (outerErr) {
-            console.error("치명적인 페이지 변경 오류:", outerErr);
-        }
+        // 페이지 변경 시에는 검색어 저장하지 않음
+        await handleSearchInternal(keyword, newPage, false);
     };
 
     // 게시판 변경 처리
@@ -345,8 +332,8 @@ export default function SearchPage() {
         setBoardIdx(boardIdxNum);
         setPage(1);
 
-        // 게시판 변경 시 해당 게시판의 게시글 목록 불러오기
-        loadInitialPosts(boardIdxNum);
+        // 게시판 변경 시 해당 게시판의 게시글 목록 불러오기 (검색어 저장하지 않음)
+        handleSearchInternal("", 1, false);
     };
 
     // 게시글 정렬 처리
@@ -438,7 +425,13 @@ export default function SearchPage() {
             </div>
 
             {/* 최신 검색어 컴포넌트 */}
-            <RecentSearches onSearchClick={handleSearchTermClick} />
+            <RecentSearches 
+                onSearchClick={handleSearchTermClick} 
+                onRefresh={useCallback((refreshFn, addFn) => {
+                    setRefreshRecentSearches(() => refreshFn);
+                    setAddSearchTermImmediately(() => addFn);
+                }, [])}
+            />
 
             {/* 게시글 리스트 */}
             <table className="sch-post-table">
