@@ -53,9 +53,18 @@ export default function ViewUserTimelinePage() {
                 userData = profileRes.data;
             }
 
+            // profile_yn 체크 - 비공개 프로필인 경우 타인 접근 차단
+            const currentUserId = sessionStorage.getItem("id");
+            if (userData?.profile_yn === false && currentUserId !== targetUserId) {
+                alert("이 사용자는 프로필을 비공개로 설정했습니다.");
+                router.back(); // 이전 페이지로 돌아가기
+                return;
+            }
+
             setUser({
                 id: targetUserId,
-                name: userData?.name || userData?.id || targetUserId
+                name: userData?.name || userData?.id || targetUserId,
+                profile_yn: userData?.profile_yn || false
             });
 
             // 타임라인 정보 가져오기 - 공개 타임라인 API 사용

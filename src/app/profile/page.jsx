@@ -518,7 +518,18 @@ export default function ProfilePage() {
                 {user.gender && <p><strong>성별:</strong> {user.gender === 'M' ? '남성' : user.gender === 'F' ? '여성' : user.gender}</p>}
                 <p><strong>진단명:</strong> {user.cancer || "정보 없음"}</p>
                 <p><strong>병기:</strong> {user.stage || "정보 없음"}</p>
-                <p><strong>프로필 공개 여부:</strong> {user.isPublic ? "공개" : "비공개"}</p>
+                <p><strong>프로필 공개 여부:</strong> {user.profile_yn ? "공개" : "비공개"}</p>
+                
+                {!user.profile_yn && (
+                    <div className="privacy-notice">
+                        <p style={{color: '#ff6b6b', fontSize: '14px', marginTop: '10px'}}>
+                            ⚠️ 현재 프로필이 비공개로 설정되어 있습니다. 다른 사용자들이 회원님의 프로필을 볼 수 없습니다.
+                        </p>
+                        <p style={{color: '#666', fontSize: '12px'}}>
+                            공개로 변경하려면 '회원정보 수정하기'에서 '프로필 공개 여부'를 변경해주세요.
+                        </p>
+                    </div>
+                )}
             </div>
 
             <div className="tab-section">

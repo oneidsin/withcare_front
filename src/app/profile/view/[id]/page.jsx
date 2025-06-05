@@ -145,6 +145,15 @@ export default function ViewProfilePage() {
                 };
 
                 console.log("최종 사용자 정보:", userInfo);
+                
+                // profile_yn 체크 - 비공개 프로필인 경우 타인 접근 차단
+                const currentUserId = sessionStorage.getItem("id");
+                if (!userInfo.profile_yn && currentUserId !== targetUserId) {
+                    alert("이 사용자는 프로필을 비공개로 설정했습니다.");
+                    router.back(); // 이전 페이지로 돌아가기
+                    return;
+                }
+                
                 setUser(userInfo);
                 
                 // 활동 내역은 API 응답에서 직접 가져오기

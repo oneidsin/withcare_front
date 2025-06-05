@@ -24,6 +24,16 @@ export default function ViewUserLevelPage() {
             return;
         }
 
+        // 시스템 경로 차단 (admin, api, system 등)
+        const blockedPrefixes = ['admin', 'api', 'system', 'root', '_next'];
+        if (targetUserId && blockedPrefixes.some(prefix => 
+            targetUserId.toLowerCase().startsWith(prefix.toLowerCase())
+        )) {
+            alert("이 사용자는 프로필을 비공개로 설정했습니다.");
+            router.push("/");
+            return;
+        }
+
         fetchLevelData();
     }, [targetUserId]);
 
@@ -66,11 +76,20 @@ export default function ViewUserLevelPage() {
 
             console.log("최종 사용자 정보:", { name: userName, lv_idx: userLvIdx });
 
+            // profile_yn 체크 - 비공개 프로필인 경우 타인 접근 차단
+            const currentUserId = sessionStorage.getItem("id");
+            if (profileData?.profile_yn === false && currentUserId !== targetUserId) {
+                alert("이 사용자는 프로필을 비공개로 설정했습니다.");
+                router.back(); // 이전 페이지로 돌아가기
+                return;
+            }
+
             setUser({
                 id: targetUserId,
                 name: userName,
                 lv_idx: userLvIdx,
-                profile: profileData // 프로필 데이터 추가
+                profile: profileData, // 프로필 데이터 추가
+                profile_yn: profileData?.profile_yn || false
             });
 
             // 레벨 목록에서 해당 레벨 정보 찾기
