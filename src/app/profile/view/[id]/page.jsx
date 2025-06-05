@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import axios from "axios";
+import { UserWithIcons } from '@/components/UserIcons';
 import "./profile.css";
 
 export default function ViewProfilePage() {
@@ -30,6 +31,14 @@ export default function ViewProfilePage() {
         if (!token || !currentUserId) {
             alert("로그인이 필요합니다.");
             router.push("/login");
+            return;
+        }
+
+        // 시스템 경로 차단 (Next.js 시스템 경로만)
+        const blockedIds = ['_next', 'public', 'static', 'assets', 'favicon.ico'];
+        if (targetUserId && blockedIds.includes(targetUserId.toLowerCase())) {
+            alert("잘못된 접근입니다.");
+            router.push("/");
             return;
         }
 
@@ -63,34 +72,40 @@ export default function ViewProfilePage() {
                 });
                 console.log("view API 응답:", profileRes.data);
             } catch (error) {
-                console.log("view API 실패, 기본 프로필 API 사용");
-                console.log("기본 API 시도:", `/profile/${targetUserId}`);
+                console.log("view API 실패:", error.response?.status, error.response?.data);
+                
+                // 404 또는 403 에러는 차단/탈퇴 사용자일 가능성
+                if (error.response?.status === 404) {
+                    alert("존재하지 않는 사용자입니다.");
+                    router.push("/main");
+                    return;
+                }
+                
+                if (error.response?.status === 403) {
+                    alert("접근 권한이 없습니다.");
+                    router.push("/main");
+                    return;
+                }
+                
+                console.log("기본 프로필 API 시도:", `/profile/${targetUserId}`);
                 try {
                     profileRes = await axios.get(`http://localhost/profile/${targetUserId}`, {
                         headers: { Authorization: token }
                     });
                     console.log("기본 API 응답:", profileRes.data);
                 } catch (error2) {
-                    console.log("기본 API도 실패, 더미 데이터 사용");
-                    // 임시 더미 데이터 (테스트용)
-                    profileRes = {
-                        data: {
-                            status: "success",
-                            data: {
-                                id: targetUserId,
-                                name: `${targetUserId}님`,
-                                email: `${targetUserId}@example.com`,
-                                year: 1990,
-                                gender: "M",
-                                cancer_idx: 1,
-                                stage_idx: 1,
-                                intro: `안녕하세요, ${targetUserId}입니다.`,
-                                profile_photo: null,
-                                profile_yn: true
-                            }
-                        }
-                    };
-                    console.log("더미 데이터 사용:", profileRes.data);
+                    console.log("기본 API도 실패:", error2.response?.status);
+                    
+                    // 기본 API도 실패하면 차단된 사용자로 간주
+                    if (error2.response?.status === 404) {
+                        alert("존재하지 않는 사용자입니다.");
+                    } else if (error2.response?.status === 403) {
+                        alert("접근 권한이 없습니다.");
+                    } else {
+                        alert("접근할 수 없는 사용자입니다.");
+                    }
+                    router.push("/main");
+                    return;
                 }
             }
 
@@ -117,6 +132,25 @@ export default function ViewProfilePage() {
             console.log("처리된 사용자 데이터:", userData);
 
             if (userData) {
+                // 백엔드에서 차단/탈퇴 필드 확인
+                console.log("사용자 데이터에서 block_yn 존재 여부:", 'block_yn' in userData);
+                console.log("사용자 데이터에서 user_del_yn 존재 여부:", 'user_del_yn' in userData);
+                
+                // block_yn, user_del_yn 필드가 없는 경우 별도 API로 확인
+                if (!('block_yn' in userData) || !('user_del_yn' in userData)) {
+                    console.warn("⚠️ 프로필 API에서 차단/탈퇴 상태를 제공하지 않음");
+                    console.log("📝 차단/탈퇴 상태 필드가 없어도 프로필 조회는 허용합니다.");
+                    // 프로필 API가 성공적으로 응답했다면 접근 가능한 사용자로 간주
+                }
+                
+                // 백엔드에서 멤버 테이블 정보가 없는 경우 (차단/탈퇴 가능성)
+                // 멤버 정보가 필요한 필드들이 모두 없거나 비정상적인 경우 차단
+                if (!userData.id && !userData.name) {
+                    console.warn("사용자 기본 정보 부족, 접근 차단");
+                    alert("접근할 수 없는 사용자입니다.");
+                    router.push("/main");
+                    return;
+                }
                 // 암 종류와 병기 이름 변환 (안전하게 처리)
                 let cancerName = "정보 없음";
                 let stageName = "정보 없음";
@@ -145,6 +179,28 @@ export default function ViewProfilePage() {
                 };
 
                 console.log("최종 사용자 정보:", userInfo);
+                
+                // 차단/탈퇴 사용자 체크
+                if (userData.block_yn === true || userData.block_yn === 1) {
+                    alert("차단된 사용자의 프로필은 조회할 수 없습니다.");
+                    router.push("/main");
+                    return;
+                }
+                
+                if (userData.user_del_yn === true || userData.user_del_yn === 1) {
+                    alert("탈퇴한 사용자의 프로필은 조회할 수 없습니다.");
+                    router.push("/main");
+                    return;
+                }
+
+                // profile_yn 체크 - 비공개 프로필인 경우 타인 접근 차단
+                const currentUserId = sessionStorage.getItem("id");
+                if (!userInfo.profile_yn && currentUserId !== targetUserId) {
+                    alert("이 사용자는 프로필을 비공개로 설정했습니다.");
+                    router.back(); // 이전 페이지로 돌아가기
+                    return;
+                }
+                
                 setUser(userInfo);
                 
                 // 활동 내역은 API 응답에서 직접 가져오기
@@ -228,6 +284,24 @@ export default function ViewProfilePage() {
         }
     };
 
+    // 개별 게시글 제목 가져오기
+    const fetchPostTitle = async (postIdx) => {
+        try {
+            const token = sessionStorage.getItem("token");
+            const response = await axios.get(`http://localhost/post/detail/${postIdx}`, {
+                headers: { Authorization: token }
+            });
+            
+            if (response.data.success && response.data.post) {
+                return response.data.post.post_title || "제목 없음";
+            }
+            return "제목 없음";
+        } catch (error) {
+            console.error(`게시글 ${postIdx} 제목 로딩 실패:`, error);
+            return "제목을 불러올 수 없음";
+        }
+    };
+
     // 활동 내역 가져오기
     const fetchActivities = async (userId) => {
         try {
@@ -254,10 +328,22 @@ export default function ViewProfilePage() {
             }
 
             if (res.data.success) {
+                let likesData = res.data.likes || [];
+                
+                // 추천한 글에 제목이 없는 경우 별도로 제목 가져오기
+                if (likesData.length > 0) {
+                    for (let like of likesData) {
+                        if (!like.post_title && like.post_idx) {
+                            console.log(`추천한 글 ${like.post_idx} 제목 조회 중...`);
+                            like.post_title = await fetchPostTitle(like.post_idx);
+                        }
+                    }
+                }
+
                 setActivities({
                     posts: res.data.posts || [],
                     comments: res.data.comments || [],
-                    likes: res.data.likes || [],
+                    likes: likesData,
                     searches: res.data.searches || []
                 });
                 
@@ -374,8 +460,18 @@ export default function ViewProfilePage() {
                             activities.posts.map(post => (
                                 <div key={post.post_idx} className="activity-item" 
                                      onClick={() => router.push(`/post/detail?post_idx=${post.post_idx}`)}>
-                                    <h4>{post.post_title}</h4>
-                                    <p>{new Date(post.post_create_date).toLocaleDateString()}</p>
+                                    <div className="activity-header">
+                                        <h4>{post.post_title}</h4>
+                                        <UserWithIcons 
+                                            userId={post.id || targetUserId} 
+                                            onClick={(e, userId) => {
+                                                e.stopPropagation();
+                                                router.push(`/profile/view/${userId}`);
+                                            }}
+                                            className="activity-author"
+                                        />
+                                    </div>
+                                    <p className="activity-date">{new Date(post.post_create_date).toLocaleDateString()}</p>
                                 </div>
                             ))
                         ) : (
@@ -390,8 +486,18 @@ export default function ViewProfilePage() {
                             activities.comments.map(comment => (
                                 <div key={comment.com_idx} className="activity-item"
                                      onClick={() => router.push(`/post/detail?post_idx=${comment.post_idx}`)}>
-                                    <p>{comment.com_content}</p>
-                                    <p>{new Date(comment.com_create_date).toLocaleDateString()}</p>
+                                    <div className="activity-header">
+                                        <h4>{comment.com_content}</h4>
+                                        <UserWithIcons 
+                                            userId={comment.id || targetUserId} 
+                                            onClick={(e, userId) => {
+                                                e.stopPropagation();
+                                                router.push(`/profile/view/${userId}`);
+                                            }}
+                                            className="activity-author"
+                                        />
+                                    </div>
+                                    <p className="activity-date">{new Date(comment.com_create_date).toLocaleDateString()}</p>
                                 </div>
                             ))
                         ) : (
@@ -406,8 +512,18 @@ export default function ViewProfilePage() {
                             activities.likes.map((like, index) => (
                                 <div key={`like-${like.post_idx}-${index}`} className="activity-item"
                                      onClick={() => router.push(`/post/detail?post_idx=${like.post_idx}`)}>
-                                    <p>추천한 게시글</p>
-                                    <p>{new Date(like.like_date).toLocaleDateString()}</p>
+                                    <div className="activity-header">
+                                        <h4>{like.post_title || "추천한 게시글"}</h4>
+                                        <UserWithIcons 
+                                            userId={like.author_id || targetUserId} 
+                                            onClick={(e, userId) => {
+                                                e.stopPropagation();
+                                                router.push(`/profile/view/${userId}`);
+                                            }}
+                                            className="activity-author"
+                                        />
+                                    </div>
+                                    <p className="activity-date">{new Date(like.like_date).toLocaleDateString()}</p>
                                 </div>
                             ))
                         ) : (
@@ -450,8 +566,18 @@ export default function ViewProfilePage() {
                                 
                                 return (
                                     <div key={`search-${keyword}-${index}`} className="activity-item">
-                                        <h4>검색어: {keyword}</h4>
-                                        <p>{displayDate}</p>
+                                        <div className="activity-header">
+                                            <h4>검색어: {keyword}</h4>
+                                            <UserWithIcons 
+                                                userId={targetUserId} 
+                                                onClick={(e, userId) => {
+                                                    e.stopPropagation();
+                                                    router.push(`/profile/view/${userId}`);
+                                                }}
+                                                className="activity-author"
+                                            />
+                                        </div>
+                                        <p className="activity-date">{displayDate}</p>
                                     </div>
                                 );
                             })

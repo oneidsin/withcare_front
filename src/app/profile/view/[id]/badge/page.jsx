@@ -24,6 +24,14 @@ export default function ViewUserBadgePage() {
             return;
         }
 
+        // 시스템 경로 차단 (Next.js 시스템 경로만)
+        const blockedIds = ['_next', 'public', 'static', 'assets', 'favicon.ico'];
+        if (targetUserId && blockedIds.includes(targetUserId.toLowerCase())) {
+            alert("잘못된 접근입니다.");
+            router.push("/");
+            return;
+        }
+
         fetchBadgeData();
     }, [targetUserId]);
 
@@ -40,13 +48,30 @@ export default function ViewUserBadgePage() {
                 profileRes = await axios.get(`http://localhost:80/profile/public/${targetUserId}`);
                 console.log("공개 프로필 API 응답:", profileRes.data);
             } catch (error) {
-                console.error("공개 프로필 API 호출 실패:", error);
-                setError("프로필 정보를 불러오는데 실패했습니다.");
+                console.error("공개 프로필 API 호출 실패:", error.response?.status, error.response?.data);
+                
+                // 404 또는 403 에러는 차단/탈퇴 사용자일 가능성
+                if (error.response?.status === 404) {
+                    alert("존재하지 않는 사용자입니다.");
+                    router.push("/main");
+                    return;
+                }
+                
+                if (error.response?.status === 403) {
+                    alert("접근 권한이 없습니다.");
+                    router.push("/main");
+                    return;
+                }
+                
+                alert("접근할 수 없는 사용자입니다.");
+                router.push("/main");
                 return;
             }
 
             // 응답 데이터 확인
             if (profileRes.data?.status !== "success") {
+                console.error("API 응답 상태가 success가 아님:", profileRes.data?.status);
+                console.error("전체 응답 데이터:", profileRes.data);
                 setError("프로필 정보를 찾을 수 없습니다.");
                 return;
             }
@@ -57,10 +82,63 @@ export default function ViewUserBadgePage() {
             const mainBadgeData = profileRes.data.mainBadge;
             const badgeCount = profileRes.data.badgeCount || 0;
 
+            console.log("=== API 응답 구조 분석 ===");
+            console.log("전체 응답 키들:", Object.keys(profileRes.data));
             console.log("사용자 정보:", userData);
             console.log("배지 데이터:", badgeData);
+            console.log("배지 데이터 타입:", typeof badgeData, "길이:", badgeData?.length);
             console.log("메인 배지:", mainBadgeData);
             console.log("배지 개수:", badgeCount);
+            
+            // 혹시 다른 필드명으로 배지 데이터가 있는지 확인
+            console.log("=== 모든 응답 필드 확인 ===");
+            for (const [key, value] of Object.entries(profileRes.data)) {
+                console.log(`${key}:`, value);
+                if (Array.isArray(value)) {
+                    console.log(`  -> ${key}는 배열입니다. 길이: ${value.length}`);
+                }
+            }
+
+            // 백엔드 구현 상태 진단
+            console.log("=== 백엔드 구현 상태 진단 ===");
+            console.log("🔍 확인사항:");
+            console.log("1. ProfileController에 배지 서비스 주입 여부");
+            console.log("2. ProfileService에 getPublicUserBadges 메서드 구현 여부");
+            console.log("3. ProfileMapper.xml에 getPublicUserBadges 쿼리 추가 여부");
+            console.log("4. 데이터베이스 user_badge 테이블에 실제 데이터 존재 여부");
+            console.log("5. 공개 프로필 API에서 배지 서비스 호출 코드 누락 가능성");
+            
+            if (!profileRes.data.badges && !profileRes.data.badgeCount) {
+                console.warn("⚠️ 공개 프로필 API가 배지 관련 필드를 전혀 반환하지 않습니다.");
+                console.warn("   백엔드에서 배지 서비스 호출 코드가 누락되었을 가능성이 높습니다.");
+            }
+
+            // 차단/탈퇴 사용자 체크
+            if (userData?.block_yn === true || userData?.block_yn === 1) {
+                alert("차단된 사용자의 프로필은 조회할 수 없습니다.");
+                router.push("/main");
+                return;
+            }
+            
+            if (userData?.user_del_yn === true || userData?.user_del_yn === 1) {
+                alert("탈퇴한 사용자의 프로필은 조회할 수 없습니다.");
+                router.push("/main");
+                return;
+            }
+
+            // 프로필 API에서 차단/탈퇴 필드가 없는 경우
+            if (!('block_yn' in userData) || !('user_del_yn' in userData)) {
+                console.warn("⚠️ 프로필 API에서 차단/탈퇴 상태를 제공하지 않음");
+                console.log("📝 차단/탈퇴 상태 필드가 없어도 프로필 조회는 허용합니다.");
+                // 프로필 API가 성공적으로 응답했다면 접근 가능한 사용자로 간주
+            }
+
+            // profile_yn 체크 - 비공개 프로필인 경우 타인 접근 차단
+            if (userData?.profile_yn === false && currentUserId !== targetUserId) {
+                alert("이 사용자는 프로필을 비공개로 설정했습니다.");
+                router.back(); // 이전 페이지로 돌아가기
+                return;
+            }
 
             setUser({
                 id: targetUserId,
@@ -70,17 +148,19 @@ export default function ViewUserBadgePage() {
                     '/defaultProfileImg.png',
                 introduction: userData?.intro || '소개글이 없습니다.',
                 level: userData?.level || 1,
-                main_badge_idx: userData?.main_badge_idx || null
+                main_badge_idx: userData?.main_badge_idx || null,
+                profile_yn: userData?.profile_yn || false
             });
 
             // 배지 정보 처리
             if (Array.isArray(badgeData) && badgeData.length > 0) {
+                console.log("✅ 공개 프로필 API에서 배지 데이터를 받았습니다");
                 console.log("첫 번째 배지 샘플:", badgeData[0]);
                 console.log("배지 데이터 필드들:", Object.keys(badgeData[0]));
                 
                 // 백엔드에서 받은 데이터 구조에 맞게 처리
                 const processedBadges = badgeData.map(badge => ({
-                    bdg_idx: badge.bdg_idx,
+                    bdg_idx: Number(badge.bdg_idx) || badge.bdg_idx,
                     bdg_name: badge.bdg_name,
                     bdg_condition: badge.bdg_condition,
                     bdg_icon: badge.bdg_icon,
@@ -95,7 +175,7 @@ export default function ViewUserBadgePage() {
                 // 메인 배지 설정
                 if (mainBadgeData) {
                     const processedMainBadge = {
-                        bdg_idx: mainBadgeData.bdg_idx,
+                        bdg_idx: Number(mainBadgeData.bdg_idx) || mainBadgeData.bdg_idx,
                         bdg_name: mainBadgeData.bdg_name,
                         bdg_condition: mainBadgeData.bdg_condition,
                         bdg_icon: mainBadgeData.bdg_icon,
@@ -116,26 +196,66 @@ export default function ViewUserBadgePage() {
                 
                 console.log(`배지 데이터 로드 완료. 획득한 배지 수: ${processedBadges.length}`);
             } else {
-                console.log("획득한 배지가 없습니다.");
-                setUserBadges([]);
-                setMainBadge(null);
-            }
-
-            // 본인 프로필인 경우에만 추가 배지 API 호출 (미획득 배지 정보 등)
-            if (currentUserId === targetUserId && token) {
-                console.log("본인 프로필 - 전체 배지 정보 추가 조회 (선택사항)");
-                try {
-                    const userBadgesRes = await axios.get(`http://localhost:80/${targetUserId}/badge/list`, {
-                        headers: { Authorization: token }
-                    });
-                    
-                    if (userBadgesRes.data?.result) {
-                        console.log("본인 프로필 전체 배지 정보:", userBadgesRes.data.result);
-                        // 필요시 전체 배지 정보로 업데이트 가능 (미획득 배지 포함)
-                        // 여기서는 공개 배지만 표시하므로 별도 처리하지 않음
+                console.log("⚠️ 공개 프로필 API에서 배지 데이터를 받지 못했습니다.");
+                
+                // 배지 데이터가 없는 경우에 대한 상세 분석
+                console.log("=== 배지 데이터 부재 분석 ===");
+                console.log("1. 백엔드 ProfileController에서 배지 서비스 호출 확인 필요");
+                console.log("2. ProfileMapper.xml에 getPublicUserBadges 쿼리 추가 확인 필요");
+                console.log("3. 데이터베이스 user_badge 테이블에서 해당 사용자 데이터 존재 확인 필요");
+                console.log("4. 배지가 실제로 없는 경우일 수도 있음");
+                
+                // 본인인 경우에만 토큰 기반 API로 한 번 더 확인
+                if (currentUserId === targetUserId && token) {
+                    console.log("본인 프로필이므로 토큰 기반 API로 배지 확인 시도");
+                    try {
+                        const userBadgesRes = await axios.get(`http://localhost:80/${targetUserId}/badge/list`, {
+                            headers: { Authorization: token }
+                        });
+                        
+                        if (userBadgesRes.data?.result && Array.isArray(userBadgesRes.data.result)) {
+                            const tokenBadges = userBadgesRes.data.result.filter(badge => 
+                                badge.is_acquired === 1 || badge.is_acquired === true
+                            );
+                            
+                            if (tokenBadges.length > 0) {
+                                console.log("🎯 토큰 기반 API에서 배지를 찾았습니다!", tokenBadges);
+                                console.log("💡 이는 공개 프로필 API에 배지 데이터가 포함되지 않았음을 의미합니다.");
+                                
+                                const processedBadges = tokenBadges.map(badge => ({
+                                    bdg_idx: Number(badge.bdg_idx) || badge.bdg_idx,
+                                    bdg_name: badge.bdg_name,
+                                    bdg_condition: badge.bdg_condition,
+                                    bdg_icon: badge.bdg_icon,
+                                    is_acquired: true,
+                                    bdg_sym_yn: badge.bdg_sym_yn === 1 || badge.bdg_sym_yn === true,
+                                    acquired_date: badge.acquired_date
+                                }));
+                                
+                                setUserBadges(processedBadges);
+                                
+                                const mainBadge = processedBadges.find(badge => badge.bdg_sym_yn === true);
+                                if (mainBadge) {
+                                    setMainBadge(mainBadge);
+                                }
+                                
+                                console.log(`토큰 API로 배지 로드 완료. 획득한 배지 수: ${processedBadges.length}`);
+                            } else {
+                                console.log("토큰 API에서도 획득한 배지가 없습니다.");
+                                setUserBadges([]);
+                                setMainBadge(null);
+                            }
+                        }
+                    } catch (apiError) {
+                        console.log("토큰 기반 배지 API 호출 실패:", apiError.message);
+                        setUserBadges([]);
+                        setMainBadge(null);
                     }
-                } catch (apiError) {
-                    console.log("본인 배지 상세 정보 조회 실패:", apiError.message);
+                } else {
+                    // 타인의 프로필인 경우 배지 데이터가 없으면 빈 상태로 설정
+                    console.log("타인의 프로필이고 공개 배지 데이터가 없습니다.");
+                    setUserBadges([]);
+                    setMainBadge(null);
                 }
             }
 
@@ -198,14 +318,14 @@ export default function ViewUserBadgePage() {
                     <h3>메인 배지</h3>
                     <div className="badge-card main">
                         <div className="badge-icon">
-                                                            <img 
-                                    src={getBadgeIconUrl(mainBadge)} 
-                                    alt={mainBadge.bdg_name}
-                                    onError={(e) => { 
-                                        e.target.onerror = null; 
-                                        e.target.src = "/defaultBadge.png";
-                                    }}
-                                />
+                            <img 
+                                src={getBadgeIconUrl(mainBadge)} 
+                                alt={mainBadge.bdg_name}
+                                onError={(e) => { 
+                                    e.target.onerror = null; 
+                                    e.target.src = "/defaultBadge.png";
+                                }}
+                            />
                         </div>
                         <div className="badge-info">
                             <div className="badge-name">{mainBadge.bdg_name}</div>

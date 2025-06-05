@@ -343,7 +343,7 @@ export default function ProfilePage() {
                             activities.comments.map(comment => (
                                 <div key={comment.com_idx} className="activity-item"
                                      onClick={() => router.push(`/post/detail?post_idx=${comment.post_idx}`)}>
-                                    <p>{comment.com_content}</p>
+                                    <h4>{comment.com_content}</h4>
                                     <p>{new Date(comment.com_create_date).toLocaleDateString()}</p>
                                 </div>
                             ))
@@ -359,7 +359,7 @@ export default function ProfilePage() {
                             activities.likes.map((like, index) => (
                                 <div key={`like-${like.post_idx}-${index}-${new Date(like.like_date).getTime()}`} className="activity-item"
                                      onClick={() => router.push(`/post/detail?post_idx=${like.post_idx}`)}>
-                                    <p>추천한 게시글</p>
+                                    <h4>{like.post_title || "추천한 게시글"}</h4>
                                     <p>{new Date(like.like_date).toLocaleDateString()}</p>
                                 </div>
                             ))
@@ -374,7 +374,7 @@ export default function ProfilePage() {
                         {activities.searches.length > 0 ? (
                             activities.searches.map((search, index) => (
                                 <div key={index} className="activity-item">
-                                    <p>{search.sch_keyword}</p>
+                                    <h4>{search.sch_keyword}</h4>
                                     <p>{new Date(search.sch_date).toLocaleDateString()}</p>
                                 </div>
                             ))
@@ -455,6 +455,24 @@ export default function ProfilePage() {
         }
     };
 
+    // 게시글 제목 가져오기
+    const fetchPostTitle = async (postIdx) => {
+        try {
+            const token = sessionStorage.getItem("token");
+            const res = await axios.get(`http://localhost/post/detail/${postIdx}`, {
+                headers: { Authorization: token }
+            });
+            
+            if (res.data && res.data.post) {
+                return res.data.post.post_title || "제목 없음";
+            }
+            return "제목 없음";
+        } catch (error) {
+            console.error(`게시글 ${postIdx} 제목 로딩 실패:`, error);
+            return "제목 없음";
+        }
+    };
+
     // 활동 내역 가져오기
     const fetchActivities = async (userId) => {
         try {
@@ -464,10 +482,23 @@ export default function ProfilePage() {
             });
 
             if (res.data.status === "success") {
+                const likesData = res.data.likes || [];
+                
+                // 추천한 글에 제목이 없는 경우 별도로 가져오기
+                const likesWithTitles = await Promise.all(
+                    likesData.map(async (like) => {
+                        if (!like.post_title) {
+                            const title = await fetchPostTitle(like.post_idx);
+                            return { ...like, post_title: title };
+                        }
+                        return like;
+                    })
+                );
+
                 setActivities({
                     posts: res.data.posts || [],
                     comments: res.data.comments || [],
-                    likes: res.data.likes || [],
+                    likes: likesWithTitles,
                     searches: res.data.searches || []
                 });
             }
@@ -518,7 +549,18 @@ export default function ProfilePage() {
                 {user.gender && <p><strong>성별:</strong> {user.gender === 'M' ? '남성' : user.gender === 'F' ? '여성' : user.gender}</p>}
                 <p><strong>진단명:</strong> {user.cancer || "정보 없음"}</p>
                 <p><strong>병기:</strong> {user.stage || "정보 없음"}</p>
-                <p><strong>프로필 공개 여부:</strong> {user.isPublic ? "공개" : "비공개"}</p>
+                <p><strong>프로필 공개 여부:</strong> {user.profile_yn ? "공개" : "비공개"}</p>
+                
+                {!user.profile_yn && (
+                    <div className="privacy-notice">
+                        <p style={{color: '#ff6b6b', fontSize: '14px', marginTop: '10px'}}>
+                            ⚠️ 현재 프로필이 비공개로 설정되어 있습니다. 다른 사용자들이 회원님의 프로필을 볼 수 없습니다.
+                        </p>
+                        <p style={{color: '#666', fontSize: '12px'}}>
+                            공개로 변경하려면 '회원정보 수정하기'에서 '프로필 공개 여부'를 변경해주세요.
+                        </p>
+                    </div>
+                )}
             </div>
 
             <div className="tab-section">

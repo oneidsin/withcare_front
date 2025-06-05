@@ -193,11 +193,36 @@
 }
 
 .comment-header {
-    width: 100%;
     display: flex;
-    justify-content: space-between; /* 작성자 왼쪽 / 버튼 오른쪽 */
+    justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    width: 100%;
+    padding: 4px 0;
+}
+
+.comment-author {
+    flex: 1; /* 왼쪽 작성자가 자동으로 차지 */
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.comment-buttons {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.comlist-btn {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.comlist-btn:hover {
+    color: red;
+    text-decoration: underline;
 }
 
 .comment-body {
@@ -240,23 +265,6 @@
 
 .submit button {
     padding: 4px 10px;
-}
-
-.comlist-writer {
-    margin-right: auto; /* 혹은 10px, 필요에 따라 조절 */
-    font-weight: bold;
-}
-
-.comlist-btn {
-    margin-left: 8px; /* 8px;  혹은 10px, 필요에 따라 조절 */
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-}
-
-.comlist-btn:hover {
-    color: red;
-    text-decoration: underline;
 }
 
 .comment-writer{
@@ -336,8 +344,72 @@
 }
 
 .warn-button:active{
-    box-shadow: 0 0 12px 8px rgba(135, 209, 255, 0.5);
-    /* 밝은 효과 */
+    box-shadow: 0 0 12px 8px rgba(255, 99, 71, 0.3);
     transform: scale(0.98);
-    /* 눌리는 효과 */
+}
+
+/* 클릭 가능한 작성자 스타일 */
+.clickable-author {
+    cursor: pointer;
+    color: #5fa8d3;
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+
+.clickable-author:hover {
+    color: #4a90b8;
+    text-decoration: underline;
+}
+
+.mention-link {
+    cursor: pointer;
+    color: #007bff;
+    font-weight: 600;
+    background-color: rgba(0, 123, 255, 0.1);
+    padding: 2px 4px;
+    border-radius: 3px;
+    transition: all 0.2s ease;
+    display: inline-block;
+}
+
+.mention-link:hover {
+    color: #0056b3;
+    background-color: rgba(0, 123, 255, 0.2);
+    text-decoration: underline;
+    transform: scale(1.05);
+}
+
+/* 사용자 아이콘 스타일 */
+.author-with-icons,
+.comment-author-with-icons {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.user-icons {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.level-icon-small,
+.badge-icon-small {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    object-fit: cover;
+}
+
+.level-icon-small {
+    border: 1px solid rgba(0, 123, 255, 0.3);
+}
+
+.badge-icon-small {
+    border: 1px solid rgba(255, 193, 7, 0.5);
+}
+
+.icon-loading {
+    font-size: 12px;
+    opacity: 0.6;
 }

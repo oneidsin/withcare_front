@@ -29,6 +29,7 @@ export default function PostDetailPage() {
     const [mentionQuery, setMentionQuery] = useState('');
     const [mentionSuggestions, setMentionSuggestions] = useState([]);
     const [allUsers, setAllUsers] = useState([]);
+    const [userIcons, setUserIcons] = useState({}); // 사용자별 아이콘 정보 저장
     const effectiveBoardIdx = boardIdxFromParam || post?.board_idx;
     const comIdx = searchParams.get('com_idx');
     const [updateComIdx, setUpdateComIdx] = useState(null); // 수정 중인 댓글의 인덱스
@@ -456,6 +457,188 @@ export default function PostDetailPage() {
         window.open(reportUrl, '_blank');
     }
 
+    // 사용자 아이콘 정보 가져오기
+    const fetchUserIcons = async (userId) => {
+        if (userIcons[userId] || !userId || userId === '익명') {
+            return userIcons[userId] || null;
+        }
+
+        try {
+            console.log(`🔍 사용자 ${userId} 아이콘 정보 요청 중...`);
+            const response = await axios.get(`http://localhost/profile/public/${userId}`);
+            
+            console.log(`📋 ${userId} API 응답:`, response.data);
+            
+            if (response.data?.status === "success") {
+                const profile = response.data.profile;
+                const levelInfo = response.data.levelInfo;
+                const mainBadge = response.data.mainBadge;
+                
+                console.log(`📊 ${userId} 레벨 정보:`, levelInfo);
+                console.log(`🏆 ${userId} 배지 정보:`, mainBadge);
+                
+                let levelIconUrl = null;
+                let levelName = '새싹';
+                
+                // 레벨 정보가 없거나 아이콘이 없는 경우 별도로 레벨 목록에서 찾기
+                if (levelInfo?.lv_idx) {
+                    try {
+                        const token = sessionStorage.getItem('token');
+                        const levelRes = await axios.get("http://localhost:80/admin/level", {
+                            headers: { Authorization: token }
+                        });
+                        
+                        const levels = Array.isArray(levelRes.data) ? levelRes.data : levelRes.data.result || [];
+                        const userLevel = levels.find(level => Number(level.lv_idx) === Number(levelInfo.lv_idx));
+                        
+                        if (userLevel) {
+                            levelIconUrl = userLevel.lv_icon;
+                            levelName = userLevel.lv_name;
+                            console.log(`🎯 레벨 목록에서 찾은 레벨:`, userLevel);
+                        }
+                    } catch (levelError) {
+                        console.log(`⚠️ 레벨 목록 조회 실패, 기본 레벨 정보 사용`);
+                        // 기본 정보 사용
+                        if (levelInfo?.lv_icon) {
+                            levelIconUrl = levelInfo.lv_icon.startsWith('http') ? levelInfo.lv_icon : `http://localhost:80/file/${levelInfo.lv_icon}`;
+                        }
+                        levelName = levelInfo?.lv_name || '새싹';
+                    }
+                }
+                
+                // 배지 아이콘 URL 처리
+                let badgeIconUrl = null;
+                if (mainBadge?.bdg_icon) {
+                    if (mainBadge.bdg_icon.startsWith('http')) {
+                        badgeIconUrl = mainBadge.bdg_icon;
+                    } else {
+                        badgeIconUrl = `http://localhost:80/file/${mainBadge.bdg_icon}`;
+                    }
+                }
+                
+                const iconData = {
+                    levelIcon: levelIconUrl,
+                    levelName: levelName,
+                    badgeIcon: badgeIconUrl,
+                    badgeName: mainBadge?.bdg_name || null
+                };
+                
+                console.log(`✅ ${userId} 최종 아이콘 데이터:`, iconData);
+                
+                setUserIcons(prev => ({
+                    ...prev,
+                    [userId]: iconData
+                }));
+                
+                return iconData;
+            }
+        } catch (error) {
+            console.error(`❌ 사용자 ${userId} 아이콘 정보 로딩 실패:`, error);
+        }
+        
+        return null;
+    };
+
+    // 사용자 아이콘 렌더링 컴포넌트
+    const UserIcons = ({ userId }) => {
+        const [icons, setIcons] = useState(null);
+        const [loading, setLoading] = useState(false);
+
+        useEffect(() => {
+            if (userId && userId !== '익명' && !isAnonymousBoard) {
+                setLoading(true);
+                fetchUserIcons(userId).then((data) => {
+                    console.log(`🎨 ${userId} 아이콘 렌더링:`, data);
+                    setIcons(data);
+                    setLoading(false);
+                });
+            }
+        }, [userId]);
+
+        if (isAnonymousBoard || !userId || userId === '익명') return null;
+        if (loading) return <span className="icon-loading">⏳</span>;
+        if (!icons) return null;
+
+        return (
+            <div className="user-icons">
+                {icons.levelIcon && (
+                    <img 
+                        src={icons.levelIcon} 
+                        alt={icons.levelName}
+                        className="level-icon-small"
+                        title={`레벨: ${icons.levelName}`}
+                        onError={(e) => {
+                            console.error(`❌ 레벨 아이콘 로드 실패:`, icons.levelIcon);
+                            e.target.style.display = 'none';
+                        }}
+                        onLoad={() => {
+                            console.log(`✅ 레벨 아이콘 로드 성공:`, icons.levelIcon);
+                        }}
+                    />
+                )}
+                {icons.badgeIcon && (
+                    <img 
+                        src={icons.badgeIcon}
+                        alt={icons.badgeName}
+                        className="badge-icon-small"
+                        title={`배지: ${icons.badgeName}`}
+                        onError={(e) => {
+                            console.error(`❌ 배지 아이콘 로드 실패:`, icons.badgeIcon);
+                            e.target.style.display = 'none';
+                        }}
+                        onLoad={() => {
+                            console.log(`✅ 배지 아이콘 로드 성공:`, icons.badgeIcon);
+                        }}
+                    />
+                )}
+            </div>
+        );
+    };
+
+    // 멘션 파싱 및 렌더링 함수
+    const renderCommentWithMentions = (content) => {
+        if (!content) return '';
+        
+        // @로 시작하는 멘션을 찾는 정규식 (공백이나 문장 끝까지)
+        const mentionRegex = /@([a-zA-Z0-9_]+)/g;
+        const parts = [];
+        let lastIndex = 0;
+        let match;
+
+        while ((match = mentionRegex.exec(content)) !== null) {
+            // 멘션 이전 텍스트 추가
+            if (match.index > lastIndex) {
+                parts.push(content.slice(lastIndex, match.index));
+            }
+            
+            // 멘션 부분을 클릭 가능한 span으로 추가
+            const mentionedUserId = match[1];
+            parts.push(
+                <span
+                    key={`mention-${match.index}-${mentionedUserId}`}
+                    className="mention-link"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        if (!isAnonymousBoard) {
+                            router.push(`/profile/view/${mentionedUserId}`);
+                        }
+                    }}
+                >
+                    @{mentionedUserId}
+                </span>
+            );
+            
+            lastIndex = match.index + match[0].length;
+        }
+        
+        // 남은 텍스트 추가
+        if (lastIndex < content.length) {
+            parts.push(content.slice(lastIndex));
+        }
+        
+        return parts.length > 0 ? parts : content;
+    };
+
 
     return (
         <div className="detail-container">
@@ -487,7 +670,19 @@ export default function PostDetailPage() {
             <div className="detail-meta">
                 <div className="meta-left">
                     <div className="meta-author-line">
-                        <span>{isAnonymousBoard ? '익명' : (post.id || '익명')}</span>
+                        {isAnonymousBoard || !post.id || post.id === '익명' ? (
+                            <span>익명</span>
+                        ) : (
+                            <div className="author-with-icons">
+                                <span 
+                                    className="clickable-author"
+                                    onClick={() => router.push(`/profile/view/${post.id}`)}
+                                >
+                                    {post.id}
+                                </span>
+                                <UserIcons userId={post.id} />
+                            </div>
+                        )}
                     </div>
                     <div className="meta-date-line">
                         {post.post_create_date.slice(0, 10)} · 조회 {post.post_view_cnt}
@@ -561,23 +756,37 @@ export default function PostDetailPage() {
                             comList.map((comment, idx) => (
                                 <div key={idx} className="comment-item">
                                     <div className="comment-header">
-                                        <span className="comlist-writer">{isAnonymousBoard ? '익명' : comment.id}</span>
-                                        {updateComIdx === comment.com_idx ? (
-                                            <>
-                                                <button className="comlist-btn" onClick={handleEditSubmit}>완료</button>
-                                                <button className="comlist-btn" onClick={handleEditCancel}>취소</button>
-                                            </>
+                                        {isAnonymousBoard || !comment.id || comment.id === '익명' ? (
+                                            <span className="comlist-writer">익명</span>
                                         ) : (
-                                            <>
-                                                {(loginId === comment.id) && (
-                                                    <button className="comlist-btn" onClick={() => handleEditClick(comment)}>수정</button>
-                                                )}
-                                                {(loginId === comment.id || isAdmin) && (
-                                                    <button className="comlist-btn" onClick={() => comDelete(comment.com_idx)}>삭제</button>
-                                                )}
-                                                <button className="comlist-btn" onClick={() => moveToReportCom(comment.com_idx, comment.com_content)}>신고</button>
-                                            </>
+                                            <div className="comment-author-with-icons">
+                                                <span 
+                                                    className="comlist-writer clickable-author"
+                                                    onClick={() => router.push(`/profile/view/${comment.id}`)}
+                                                >
+                                                    {comment.id}
+                                                </span>
+                                                <UserIcons userId={comment.id} />
+                                            </div>
                                         )}
+                                        <div className="comment-buttons">
+                                            {updateComIdx === comment.com_idx ? (
+                                                <>
+                                                    <button className="comlist-btn" onClick={handleEditSubmit}>완료</button>
+                                                    <button className="comlist-btn" onClick={handleEditCancel}>취소</button>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    {(loginId === comment.id) && (
+                                                        <button className="comlist-btn" onClick={() => handleEditClick(comment)}>수정</button>
+                                                    )}
+                                                    {(loginId === comment.id || isAdmin) && (
+                                                        <button className="comlist-btn" onClick={() => comDelete(comment.com_idx)}>삭제</button>
+                                                    )}
+                                                    <button className="comlist-btn" onClick={() => moveToReportCom(comment.com_idx, comment.com_content)}>신고</button>
+                                                </>
+                                            )}
+                                        </div>
                                     </div>
 
                                     {updateComIdx === comment.com_idx ? (
@@ -587,7 +796,9 @@ export default function PostDetailPage() {
                                             onChange={(e) => setUpdateComs(e.target.value)}
                                         />
                                     ) : (
-                                        <div className="comment-content">{comment.com_content}</div>
+                                        <div className="comment-content">
+                                            {renderCommentWithMentions(comment.com_content)}
+                                        </div>
                                     )}
                                     <span className="comment-date">{comment.com_create_date?.slice(0, 10)}</span>
                                 </div>

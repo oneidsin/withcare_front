@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { UserWithIcons } from '@/components/UserIcons';
 import './post.css';
 
 export default function PostPage() {
@@ -24,6 +25,7 @@ export default function PostPage() {
     // 사용자 레벨과 게시판 레벨
     const [userLevel, setUserLevel] = useState(0);
     const [boardLevel, setBoardLevel] = useState(0);
+    const [isAnonymousBoard, setIsAnonymousBoard] = useState(false);
 
     useEffect(() => {
         fetchPosts(boardIdx, page, sort, searchType, keyword);
@@ -59,6 +61,7 @@ export default function PostPage() {
             const res = await axios.get(`http://localhost/board/${boardIdx}`);
             if (res.data) {
                 setBoardLevel(res.data.lv_idx || 0);
+                setIsAnonymousBoard(res.data.anony_yn === true);
             }
         } catch (err) {
             console.error('게시판 레벨 확인 실패:', err);
@@ -79,6 +82,11 @@ export default function PostPage() {
             // 알림 필요 없음
         }
     };
+
+    // 관리자가 아닌 경우 블라인드 처리된 게시글 필터링
+    const filteredPosts = userLevel === 7 
+        ? posts 
+        : posts.filter(item => !item.post.post_blind_yn);
 
     return (
         <div className="post-page">
@@ -102,15 +110,22 @@ export default function PostPage() {
                 </tr>
                 </thead>
                 <tbody>
-                {posts.map((item) => (
+                {filteredPosts.map((item) => (
                     <tr key={`${item.post.board_idx}-${item.post.post_idx}`} onClick={() => router.push(`/post/detail?post_idx=${item.post.post_idx}`)} style={{ cursor: 'pointer' }}>
                         <td>{item.post.post_idx}</td>
                         <td>
                             {item.post.post_blind_yn && '🔒 '}
                             {item.post.post_title}
                             {item.photos && item.photos.length > 0 && <span> 📷</span>}
+                            {item.commentCount > 0 && <span className="comment-count"> [{item.commentCount}]</span>}
                         </td>
-                        <td>{item.post.id || '익명'}</td>
+                        <td>
+                            <UserWithIcons 
+                                userId={item.post.id} 
+                                isAnonymousBoard={isAnonymousBoard}
+                                onClick={(userId) => router.push(`/profile/view/${userId}`)}
+                            />
+                        </td>
                         <td>{item.post.post_view_cnt}</td>
                         <td>{item.likes || 0}</td>
                         <td>{item.post.post_create_date?.slice(0, 10)}</td>

@@ -414,3 +414,91 @@
 .message-action-btn.message-delete-btn:hover {
   background-color: #ffcccc;
 }
+
+/*
+쪽지 작성 및 상세보기 (2025.06.05 ver.)
+ */
+
+.msg-form-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+    color: #3b4a54;
+    font-family: 'Pretendard', sans-serif;
+    background-color: #f7fcff;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.msg-form-table th,
+.msg-form-table td {
+    padding: 14px 18px;
+    vertical-align: top;
+}
+
+.msg-form-table th {
+    width: 130px;
+    background-color: #e6f3fb;
+    color: #2a6171;
+    font-weight: 600;
+    text-align: left;
+    border-bottom: 1px solid #d6eaf5;
+}
+
+.msg-form-table td {
+    background-color: #ffffff;
+    border-bottom: 1px solid #eef5f9;
+}
+
+.msg-form-table tr:last-child th,
+.msg-form-table tr:last-child td {
+    border-bottom: none;
+}
+
+
+
+/* 읽기 전용 input 스타일 */
+.readonly-input {
+    width: 100%;
+    background-color: #f9f9f9;
+    border: none;
+    color: #555;
+    font-size: 15px;
+    padding: 8px 10px;
+    font-family: 'Pretendard', sans-serif;
+}
+
+/* 받는 사람 입력창 스타일 (쪽지 쓰기)  */
+
+.form-input {
+    width: 100%;
+    border: 1px solid #ccc;
+    padding: 8px 10px;
+    font-size: 15px;
+    border-radius: 5px;
+    transition: border 0.2s ease;
+}
+
+.form-input:focus {
+    border-color: #58a9ff;
+    outline: none;
+}
+
+/* 내용 입력 textarea */
+.form-textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    resize: vertical;
+    font-size: 15px;
+    font-family: 'Pretendard', sans-serif;
+}
+
+/*글자 수 표시*/
+.char-count {
+    text-align: right;
+    margin-top: 4px;
+    font-size: 12px;
+    color: #888;
+}

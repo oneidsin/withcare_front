@@ -7,6 +7,7 @@
 .post-table {
     width: 100%;
     border-collapse: collapse;
+    table-layout: fixed;  /* 핵심 추가 */
 }
 
 .post-table th,
@@ -15,6 +16,9 @@
     border-bottom: 1px solid #ddd;
     font-size: 14px;
     text-align: center;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 div.post-page{
@@ -121,6 +125,15 @@ div.post-page{
     box-sizing: border-box;
 }
 
-.post-search-btn{
+.post-table th:nth-child(1), .post-table td:nth-child(1) { width: 8%; }
+.post-table th:nth-child(2), .post-table td:nth-child(2) { width: 40%; }
+.post-table th:nth-child(3), .post-table td:nth-child(3) { width: 12%; }
+.post-table th:nth-child(4), .post-table td:nth-child(4) { width: 10%; }
+.post-table th:nth-child(5), .post-table td:nth-child(5) { width: 10%; }
+.post-table th:nth-child(6), .post-table td:nth-child(6) { width: 20%; }
 
+/* 추가: 댓글 수 스타일 */
+.comment-count {
+    color: #0066cc;
+    font-weight: bold;
 }

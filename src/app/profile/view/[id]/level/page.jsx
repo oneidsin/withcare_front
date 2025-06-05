@@ -24,6 +24,14 @@ export default function ViewUserLevelPage() {
             return;
         }
 
+        // 시스템 경로 차단 (Next.js 시스템 경로만)
+        const blockedIds = ['_next', 'public', 'static', 'assets', 'favicon.ico'];
+        if (targetUserId && blockedIds.includes(targetUserId.toLowerCase())) {
+            alert("잘못된 접근입니다.");
+            router.push("/");
+            return;
+        }
+
         fetchLevelData();
     }, [targetUserId]);
 
@@ -59,18 +67,62 @@ export default function ViewUserLevelPage() {
                     }
                 }
             } catch (error) {
-                console.error("공개 API 호출 실패:", error);
-                setError("프로필 정보를 불러오는데 실패했습니다.");
+                console.error("공개 API 호출 실패:", error.response?.status, error.response?.data);
+                
+                // 404 또는 403 에러는 차단/탈퇴 사용자일 가능성
+                if (error.response?.status === 404) {
+                    alert("존재하지 않는 사용자입니다.");
+                    router.push("/main");
+                    return;
+                }
+                
+                if (error.response?.status === 403) {
+                    alert("접근 권한이 없습니다.");
+                    router.push("/main");
+                    return;
+                }
+                
+                alert("접근할 수 없는 사용자입니다.");
+                router.push("/main");
                 return;
             }
 
             console.log("최종 사용자 정보:", { name: userName, lv_idx: userLvIdx });
 
+            // 차단/탈퇴 사용자 체크
+            if (profileData?.block_yn === true || profileData?.block_yn === 1) {
+                alert("차단된 사용자의 프로필은 조회할 수 없습니다.");
+                router.push("/main");
+                return;
+            }
+            
+            if (profileData?.user_del_yn === true || profileData?.user_del_yn === 1) {
+                alert("탈퇴한 사용자의 프로필은 조회할 수 없습니다.");
+                router.push("/main");
+                return;
+            }
+
+            // 프로필 API에서 차단/탈퇴 필드가 없는 경우
+            if (!('block_yn' in profileData) || !('user_del_yn' in profileData)) {
+                console.warn("⚠️ 프로필 API에서 차단/탈퇴 상태를 제공하지 않음");
+                console.log("📝 차단/탈퇴 상태 필드가 없어도 프로필 조회는 허용합니다.");
+                // 프로필 API가 성공적으로 응답했다면 접근 가능한 사용자로 간주
+            }
+
+            // profile_yn 체크 - 비공개 프로필인 경우 타인 접근 차단
+            const currentUserId = sessionStorage.getItem("id");
+            if (profileData?.profile_yn === false && currentUserId !== targetUserId) {
+                alert("이 사용자는 프로필을 비공개로 설정했습니다.");
+                router.back(); // 이전 페이지로 돌아가기
+                return;
+            }
+
             setUser({
                 id: targetUserId,
                 name: userName,
                 lv_idx: userLvIdx,
-                profile: profileData // 프로필 데이터 추가
+                profile: profileData, // 프로필 데이터 추가
+                profile_yn: profileData?.profile_yn || false
             });
 
             // 레벨 목록에서 해당 레벨 정보 찾기

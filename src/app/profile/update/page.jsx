@@ -619,9 +619,20 @@ export default function UpdatePage() {
                 <div className="form-group">
                     <label>프로필 공개 여부</label>
                     <select name="profile_yn" value={info.profile_yn} onChange={handleChange}>
-                        <option value="Y">공개</option>
-                        <option value="N">비공개</option>
+                        <option value="Y">공개 - 다른 사용자들이 내 프로필을 볼 수 있습니다</option>
+                        <option value="N">비공개 - 다른 사용자들이 내 프로필을 볼 수 없습니다</option>
                     </select>
+                    <div className="form-help">
+                        {info.profile_yn === "N" ? (
+                            <span style={{color: '#ff6b6b', fontSize: '13px'}}>
+                                ⚠️ 비공개 설정 시 다른 사용자들이 회원님의 프로필, 배지, 타임라인, 레벨 정보를 볼 수 없습니다.
+                            </span>
+                        ) : (
+                            <span style={{color: '#4CAF50', fontSize: '13px'}}>
+                                ✅ 공개 설정 시 다른 사용자들이 회원님의 프로필 정보를 볼 수 있습니다.
+                            </span>
+                        )}
+                    </div>
                 </div>
 
                 <div className="button-group">

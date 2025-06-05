@@ -23,6 +23,14 @@ export default function ViewUserTimelinePage() {
             return;
         }
 
+        // 시스템 경로 차단 (Next.js 시스템 경로만)
+        const blockedIds = ['_next', 'public', 'static', 'assets', 'favicon.ico'];
+        if (targetUserId && blockedIds.includes(targetUserId.toLowerCase())) {
+            alert("잘못된 접근입니다.");
+            router.push("/");
+            return;
+        }
+
         fetchTimelineData();
     }, [targetUserId]);
 
@@ -38,9 +46,38 @@ export default function ViewUserTimelinePage() {
                     headers: { Authorization: token }
                 });
             } catch (error) {
-                profileRes = await axios.get(`http://localhost/profile/${targetUserId}`, {
-                    headers: { Authorization: token }
-                });
+                console.log("view API 실패:", error.response?.status);
+                
+                // 404 또는 403 에러는 차단/탈퇴 사용자일 가능성
+                if (error.response?.status === 404) {
+                    alert("존재하지 않는 사용자입니다.");
+                    router.push("/main");
+                    return;
+                }
+                
+                if (error.response?.status === 403) {
+                    alert("접근 권한이 없습니다.");
+                    router.push("/main");
+                    return;
+                }
+                
+                try {
+                    profileRes = await axios.get(`http://localhost/profile/${targetUserId}`, {
+                        headers: { Authorization: token }
+                    });
+                } catch (error2) {
+                    console.log("기본 API도 실패:", error2.response?.status);
+                    
+                    if (error2.response?.status === 404) {
+                        alert("존재하지 않는 사용자입니다.");
+                    } else if (error2.response?.status === 403) {
+                        alert("접근 권한이 없습니다.");
+                    } else {
+                        alert("접근할 수 없는 사용자입니다.");
+                    }
+                    router.push("/main");
+                    return;
+                }
             }
 
             // 사용자 정보 처리
@@ -53,9 +90,38 @@ export default function ViewUserTimelinePage() {
                 userData = profileRes.data;
             }
 
+            // 차단/탈퇴 사용자 체크
+            if (userData?.block_yn === true || userData?.block_yn === 1) {
+                alert("차단된 사용자의 프로필은 조회할 수 없습니다.");
+                router.push("/main");
+                return;
+            }
+            
+            if (userData?.user_del_yn === true || userData?.user_del_yn === 1) {
+                alert("탈퇴한 사용자의 프로필은 조회할 수 없습니다.");
+                router.push("/main");
+                return;
+            }
+
+            // 프로필 API에서 차단/탈퇴 필드가 없는 경우
+            if (!('block_yn' in userData) || !('user_del_yn' in userData)) {
+                console.warn("⚠️ 프로필 API에서 차단/탈퇴 상태를 제공하지 않음");
+                console.log("📝 차단/탈퇴 상태 필드가 없어도 프로필 조회는 허용합니다.");
+                // 프로필 API가 성공적으로 응답했다면 접근 가능한 사용자로 간주
+            }
+
+            // profile_yn 체크 - 비공개 프로필인 경우 타인 접근 차단
+            const currentUserId = sessionStorage.getItem("id");
+            if (userData?.profile_yn === false && currentUserId !== targetUserId) {
+                alert("이 사용자는 프로필을 비공개로 설정했습니다.");
+                router.back(); // 이전 페이지로 돌아가기
+                return;
+            }
+
             setUser({
                 id: targetUserId,
-                name: userData?.name || userData?.id || targetUserId
+                name: userData?.name || userData?.id || targetUserId,
+                profile_yn: userData?.profile_yn || false
             });
 
             // 타임라인 정보 가져오기 - 공개 타임라인 API 사용
