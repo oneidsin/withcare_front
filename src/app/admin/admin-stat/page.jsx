@@ -165,17 +165,23 @@ export default function AdminStat() {
           {tabValue === 0 && (
               <Box className="tab-content">
                 <Typography className="tab-summary">총 회원: <strong>{memberCounts.totalMember}</strong> | 오늘 신규: <strong>{memberCounts.newMember}</strong></Typography>
-                <Grid container spacing={2}>
+                <Grid container spacing={2} justifyContent="center">
                   <Grid item xs={12} md={3}>
                     <Paper className="chart-paper">
                       <Typography className="chart-title">성별 분포</Typography>
                       <Box className="chart-container">
                         <PieChart
-                            series={[{ data: memberStats.genderData.map((item, idx) => ({
-                                id: idx, value: item.count, label: item.label,
-                                color: item.label === '남자' ? 'rgba(54, 162, 235, 0.6)' : 'rgba(255, 99, 132, 0.6)',
-                              })) }]}
-                            width={240} height={240} slotProps={{ legend: { hidden: true } }}
+                            series={[{
+                              data: memberStats.genderData.map((item, idx) => {
+                                let color = 'rgba(255, 206, 86, 0.6)'; // 기본은 기타색: 노랑
+                                if (item.label === '남자') color = 'rgba(54, 162, 235, 0.6)'; // 파랑
+                                else if (item.label === '여자') color = 'rgba(255, 99, 132, 0.6)'; // 분홍
+                                return { id: idx, value: item.count, label: item.label, color };
+                              })
+                            }]}
+                            width={240}
+                            height={240}
+                            slotProps={{ legend: { hidden: true } }}
                         />
                       </Box>
                     </Paper>
@@ -201,7 +207,7 @@ export default function AdminStat() {
           {tabValue === 1 && (
               <Box className="tab-content">
                 <Typography className="tab-summary">주간 게시글: <strong>{postStats.weeklyPostCount}</strong> | 주간 댓글: <strong>{postStats.weeklyCommentCount}</strong></Typography>
-                <Grid container spacing={2}>
+                <Grid container spacing={2} justifyContent="center">
                   <Grid item xs={12} md={3}>
                     <Paper className="chart-paper">
                       <Typography className="chart-title">주간 게시글 vs 댓글</Typography>
@@ -253,7 +259,7 @@ export default function AdminStat() {
           {tabValue === 2 && (
               <Box className="tab-content">
                 <Typography className="tab-summary">전체 신고: <strong>{reportStats.totalCount}</strong> | 주간 신고: <strong>{reportStats.weeklyCount}</strong></Typography>
-                <Grid container spacing={2}>
+                <Grid container spacing={2} justifyContent="center">
                   <Grid item xs={12} md={3}>
                     <Paper className="chart-paper">
                       <Typography className="chart-title">신고 유형별</Typography>
@@ -302,7 +308,7 @@ export default function AdminStat() {
           {tabValue === 3 && (
               <Box className="tab-content">
                 <Typography className="tab-summary">전체 차단: <strong>{blockStats.totalCount}</strong> | 주간 차단: <strong>{blockStats.weeklyCount}</strong></Typography>
-                <Grid container spacing={2}>
+                <Grid container spacing={2} justifyContent="center">
                   <Grid item xs={12} md={4}>
                     <Paper className="chart-paper">
                       <Typography className="chart-title">차단 사유별</Typography>

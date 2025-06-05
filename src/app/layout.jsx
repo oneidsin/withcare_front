@@ -232,6 +232,7 @@ function HeaderComponent({ isLoggedIn, username, handleLogout }) {
           <Link href="/login">
             <LoginOutlinedIcon className="top-nav-icon"
               title="로그인"
+              style={{marginTop: '6px'}}
             />
           </Link>
         ) : (
@@ -240,22 +241,23 @@ function HeaderComponent({ isLoggedIn, username, handleLogout }) {
             <LogoutOutlinedIcon className="top-nav-icon"
               onClick={handleLogout}
               title="로그아웃"
+              style={{marginTop: '6px', marginRight: '13px'}}
             />
           </>
         )}
         <Link href="/search">
-          <SearchOutlinedIcon className="top-nav-icon" title="검색" />
+          <SearchOutlinedIcon className="top-nav-icon" title="검색" style={{marginTop: '6px'}}/>
         </Link>
         {isLoggedIn ? (
           <Link href="/msg">
-            <EmailOutlinedIcon className="top-nav-icon" title="쪽지" />
+            <EmailOutlinedIcon className="top-nav-icon" title="쪽지" style={{marginTop: '7px' }} />
           </Link>
         ) : (
           <EmailOutlinedIcon 
             className="top-nav-icon" 
             title="쪽지" 
             onClick={handleMessageClick} 
-            style={{ cursor: 'pointer' }}
+            style={{ cursor: 'pointer' , marginTop: '6px' }}
           />
         )}
         <div className="notification-container">

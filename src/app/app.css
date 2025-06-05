@@ -450,7 +450,8 @@ footer {
   align-items: center;
   height: 28px;
   font-weight: bold;
-  margin-right: 18px;
+  margin-right: 10px;
+  margin-top: 5px;
 }
 
 .ranking-item-small {
@@ -779,6 +780,8 @@ footer {
   box-sizing: border-box;
   z-index: 1;
   animation: pulse 2s infinite;
+  margin-top: 3px;
+  margin-right: 20px;
 }
 
 @keyframes pulse {
