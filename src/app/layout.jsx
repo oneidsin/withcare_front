@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {useEffect, useState} from "react";
 import './app.css';
 import LoginOutlinedIcon from '@mui/icons-material/LoginOutlined';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
@@ -8,13 +8,13 @@ import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
 import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
-import { Provider } from "react-redux";
+import {Provider} from "react-redux";
 import Link from "next/link";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { store } from "@/redux/store";
+import {usePathname, useRouter, useSearchParams} from "next/navigation";
+import {store} from "@/redux/store";
 import SSEClient from "@/components/SSEClient";
 import NotificationPopup from "@/components/NotificationPopup";
-import { NotificationProvider, useNotification } from "@/contexts/NotificationContext";
+import {NotificationProvider, useNotification} from "@/contexts/NotificationContext";
 import axios from "axios";
 
 export default function RootLayout({ children }) {
@@ -28,19 +28,22 @@ export default function RootLayout({ children }) {
 
   // 로그인/로그아웃 상태 동기화
   const syncLoginState = () => {
-    const token = sessionStorage.getItem("token");
-    const name = sessionStorage.getItem("id");
-
-    if (token && name) {
-      setIsLoggedIn(true);
-      setUsername(name);
-    } else {
-      setIsLoggedIn(false);
-      setUsername("");
+    if (typeof window !== "undefined") {
+      const token = sessionStorage.getItem("token");
+      const name = sessionStorage.getItem("id");
+      if (token && name) {
+        setIsLoggedIn(true);
+        setUsername(name);
+      } else {
+        setIsLoggedIn(false);
+        setUsername("");
+      }
     }
   };
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
     syncLoginState();
 
     // 로그인 이벤트 수신 (수동 dispatch를 위한)
@@ -50,28 +53,36 @@ export default function RootLayout({ children }) {
     window.addEventListener("login", handleLogin);
     window.addEventListener("logout", handleLogout);
 
-    axios.get("http://localhost/board/list", {
-      headers: {
-        'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache',
-        'Expires': '0',
-      },
-      params: {
-        t: new Date().getTime(), // 쿼리스트링으로 캐시 무효화
+    const fetchBoards = async () => {
+      try {
+        const res = await axios.get("http://localhost/board/list", {
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+          },
+          params: {
+            t: new Date().getTime(), // 쿼리스트링으로 패치 무효화
+          }
+        });
+
+        const boards = res.data;
+        const parents = boards.filter(b => b.parent_board_idx == null && String(b.blind_yn) !== "true");
+        const children = boards.filter(b => b.parent_board_idx != null && String(b.blind_yn) !== "true");
+
+        const structured = parents.map((parent) => ({
+          ...parent,
+          children: children.filter((child) => child.parent_board_idx === parent.board_idx),
+        }));
+
+        setMenuBoards(structured);
+      } catch (err) {
+        console.error("게시판 목록 불러오기 실패:", err);
+        setMenuBoards([]);  // 오류 시 초기화
       }
-    }).then((res) => {
-      console.log("불러온 게시판 목록:", res.data);
-      const boards = res.data;
-      const parents = boards.filter(b => b.parent_board_idx == null && String(b.blind_yn) !== "true");
-      const children = boards.filter(b => b.parent_board_idx != null && String(b.blind_yn) !== "true");
+    };
 
-      const structured = parents.map((parent) => ({
-        ...parent,
-        children: children.filter((child) => child.parent_board_idx === parent.board_idx),
-      }));
-
-      setMenuBoards(structured);
-    });
+    fetchBoards();
 
     return () => {
       window.removeEventListener("login", handleLogin);

@@ -56,7 +56,7 @@ export default function RecommendedPosts() {
                 <p>로딩 중...</p>
             ) : recommendedPosts.length > 0 ? (
                 <div className="recommended-posts">
-                    {recommendedPosts.slice(0, 3).map((post, idx) => (
+                    {recommendedPosts.slice(0, 5).map((post, idx) => (
                         <div 
                             key={idx} 
                             className="recommended-post-item"
