@@ -15,6 +15,7 @@ export default function AdminReport() {
   const [currentPage, setCurrentPage] = useState(1); // 현재 페이지 번호를 저장하는 상태
   const [totalPages, setTotalPages] = useState(1); // 전체 페이지 수를 저장하는 상태
   const pageSize = 10; // 한 페이지에 표시할 항목 수 설정
+  const [status, setStatus] = useState(''); // 신고 상태 드롭다운 상태 추가
 
   // 컴포넌트가 마운트되거나 id, currentPage가 변경될 때 실행되는 효과
   useEffect(() => {
@@ -23,25 +24,26 @@ export default function AdminReport() {
     const token = sessionStorage.getItem("token"); // 세션에 저장된 인증 토큰
 
     if (id) { // 사용자 ID가 있는 경우에만 실행
-      getReportList(currentPage, id, token); // 신고 목록 가져오기 함수 호출
+      getReportList(currentPage, id, token, status); // status 추가
     } else {
       alert('관리자 로그인이 필요합니다.');
       window.location.href = '/login';
     }
-  }, [currentPage]); // 의존성 배열: currentPage가 변경될 때마다 실행
+  }, [currentPage, status]); // status 변경 시도 반영
 
   // 신고 목록을 가져오는 비동기 함수
-  const getReportList = async (page, id, token) => {
+  const getReportList = async (page, id, token, statusParam = '') => {
     try {
       // 백엔드 API 호출
       const response = await axios.get(`http://localhost/admin/report/list`, {
-        params: { // 쿼리 파라미터 설정
-          id: id, // 사용자 ID
-          page: page, // 페이지 번호
-          pageSize: pageSize // 페이지 크기
+        params: {
+          id: id,
+          page: page,
+          pageSize: pageSize,
+          ...(statusParam && { status: statusParam }) // status 파라미터 추가
         },
-        headers: { // 요청 헤더 설정
-          Authorization: token // 인증 토큰
+        headers: {
+          Authorization: token
         }
       });
 
@@ -85,7 +87,7 @@ export default function AdminReport() {
   const handlePageChange = (event, page) => {
     const id = sessionStorage.getItem("id");
     const token = sessionStorage.getItem("token");
-    getReportList(page, id, token); // 선택된 페이지의 신고 목록 가져오기
+    getReportList(page, id, token, status); // 선택된 페이지의 신고 목록 가져오기
   };
 
   // 리포트 목록 렌더링 함수
@@ -161,6 +163,20 @@ export default function AdminReport() {
             <button className="report-cate-update">신고 카테고리 수정</button>
           </Link>
         </div>
+      </div>
+      {/* 신고 상태 드롭다운 */}
+      <div style={{ marginBottom: '16px' }}>
+        <label htmlFor="status-select" style={{ marginRight: '8px' }}>신고 상태:</label>
+        <select
+          id="status-select"
+          value={status}
+          onChange={e => setStatus(e.target.value)}
+          style={{ padding: '4px 8px' }}
+        >
+          <option value="">전체</option>
+          <option value="미처리">미처리</option>
+          <option value="처리중">처리중</option>
+        </select>
       </div>
 
       <table className="report-table">

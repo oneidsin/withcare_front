@@ -133,3 +133,44 @@
 .report-process-button:active {
   background-color: rgb(100, 0, 0);
 }
+
+/* 신고 정보 레이아웃 */
+.report-info-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+/* 왼쪽 정보 영역 */
+.report-info-left {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+}
+
+/* 오른쪽 버튼 영역 - 오른쪽 끝으로 밀기 위해 margin-left: auto 제거! 대신 부모에서 정렬 */
+.report-info-right {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+}
+
+
+.report-info-item {
+  background-color: #228B22;
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  margin: 0;
+}
+
+.status-select {
+  padding: 8px 12px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}

@@ -9,6 +9,8 @@ import Link from "next/link";
 export default function AdminReportHistoryDetail() {
   const searchParams = useSearchParams();
   const [reportDetail, setReportDetail] = useState(null);
+  const [repReason, setRepReason] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     const id = sessionStorage.getItem("id");
@@ -34,8 +36,44 @@ export default function AdminReportHistoryDetail() {
       );
       console.log("res : ", res.data);
       setReportDetail(res.data.result[0]);
+      setRepReason(res.data.result[0].rep_reason || '');
     } catch (error) {
       console.log("신고 히스토리 상세정보 불러오기 실패 : ", error);
+    }
+  };
+
+  // 신고 처리 사유 업데이트
+  const updateReportReason = async () => {
+    const id = sessionStorage.getItem("id");
+    const token = sessionStorage.getItem("token");
+    const rep_list_idx = searchParams.get("rep_list_idx");
+
+    try {
+      const res = await axios.post(`http://localhost/admin/report/history/update`,
+        {
+          id: id,
+          rep_list_idx: rep_list_idx,
+          rep_reason: repReason
+        },
+        { headers: { Authorization: token } }
+      );
+
+      console.log("업데이트 응답 : ", res.data);
+
+      if (res.data.loginYN && res.data.result) {
+        alert("신고 처리 사유가 업데이트되었습니다.");
+        setIsEditing(false);
+        // 업데이트된 데이터 다시 불러오기
+        getReportHistoryDetail(id, token, rep_list_idx);
+      } else if (!res.data.loginYN) {
+        alert("로그인이 필요합니다.");
+        window.location.href = '/login';
+      } else {
+        alert("업데이트에 실패했습니다.");
+      }
+    } catch (error) {
+      console.log("신고 처리 사유 업데이트 실패 : ", error);
+      alert("업데이트 중 오류가 발생했습니다.");
     }
   };
 
@@ -99,7 +137,44 @@ export default function AdminReportHistoryDetail() {
           {reportDetail ? (
             <div>
               <p>처리 관리자 : {reportDetail.rep_admin_id || '-'}</p>
-              <textarea rows={10} cols={60} name="rep_reason" id="rep_reason" value={reportDetail.rep_reason} readOnly></textarea>
+              <textarea
+                rows={10}
+                cols={60}
+                name="rep_reason"
+                id="rep_reason"
+                value={repReason}
+                onChange={(e) => setRepReason(e.target.value)}
+                readOnly={!isEditing}
+                className={`report-reason-textarea ${isEditing ? 'editing' : 'readonly'}`}
+              />
+              <div className="button-group">
+                {!isEditing ? (
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="btn btn-edit"
+                  >
+                    수정하기
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      onClick={updateReportReason}
+                      className="btn btn-save"
+                    >
+                      저장하기
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsEditing(false);
+                        setRepReason(reportDetail.rep_reason || '');
+                      }}
+                      className="btn btn-cancel"
+                    >
+                      취소
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
           ) : (
             <p>로딩 중</p>

@@ -94,3 +94,85 @@
   font-size: 14px;
   line-height: 1.5;
 }
+
+/* 신고 처리 사유 관련 스타일 */
+.report-reason-textarea {
+  width: 100%;
+  min-height: 200px;
+  padding: 10px;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 14px;
+  resize: vertical;
+  transition: all 0.3s ease;
+}
+
+.report-reason-textarea.readonly {
+  background-color: #f5f5f5;
+  border: 1px solid #ccc;
+  cursor: default;
+}
+
+.report-reason-textarea.editing {
+  background-color: white;
+  border: 2px solid #007bff;
+  outline: none;
+}
+
+.report-reason-textarea.editing:focus {
+  border-color: #0056b3;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.button-group {
+  margin-top: 15px;
+  display: flex;
+  gap: 10px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  min-width: 80px;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn-edit {
+  background-color: #007bff;
+  color: white;
+}
+
+.btn-edit:hover {
+  background-color: #0056b3;
+}
+
+.btn-save {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn-save:hover {
+  background-color: #218838;
+}
+
+.btn-cancel {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-cancel:hover {
+  background-color: #545b62;
+}
