@@ -94,7 +94,7 @@ export default function MessageDetail() {
             <div className="msg-form-buttons">
                 <div className="action-button">
                     <Link href={type === 'inbox' ? '/msg' : '/msg/outbox'}>
-                        <button className='btns'>목록으로</button>
+                        <button className='btns'>받은 쪽지함</button>
                     </Link>
                     {type === 'inbox' && (
                         <Link href={`/msg/send?reply_to=${message.sender_id}`}>

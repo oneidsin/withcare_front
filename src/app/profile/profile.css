@@ -998,3 +998,45 @@
     font-size: 12px;
     margin-top: 4px;
 }
+
+/* 타임라인 헤더 영역 프로필*/
+
+.profile-bio2 {
+    height: 60px;              /* 충분한 고정 높이 */
+    overflow-y: scroll;         /* 항상 스크롤 표시 */
+    padding-right: 8px;
+    white-space: pre-wrap;      /* 줄바꿈 유지 */
+    word-break: break-word;     /* 긴 단어 줄바꿈 */
+    border: 1px solid #ccc;     /* 시각적 확인용 */
+    font-size: 12px;            /* 보기 좋게 */
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+
+.profile-section2 {
+    height: 100px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    background: white;
+    padding: 16px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.profile-section2 .profile-image {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--primary-color);
+    background-color: white;
+    padding: 2px;
+}
+
+.profile-name2 {
+    padding-bottom: 1px;
+    margin-top: 1px;
+    margin-bottom: 1px;
+    font-size: 20px;
+}

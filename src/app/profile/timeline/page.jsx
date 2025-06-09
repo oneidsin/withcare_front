@@ -235,7 +235,7 @@ export default function TimelinePage() {
             <div className="timeline-container">
                 {/* 프로필 영역 및 연도 선택 */}
                 <div className="timeline-header">
-                    <div className="profile-section">
+                    <div className="profile-section2">
                         <div className="profile-image-wrapper">
                             <img
                                 src={profile.profile_image}
@@ -248,8 +248,8 @@ export default function TimelinePage() {
                             />
                         </div>
                         <div className="profile-text">
-                            <h2 className="profile-name">{profile.id}</h2>
-                            <p className="profile-bio">{profile.introduction}</p>
+                            <h2 className="profile-name2">{profile.id}</h2>
+                            <p className="profile-bio2">{profile.introduction}</p>
                         </div>
                     </div>
                     <div className="year-selector">
