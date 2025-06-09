@@ -7,6 +7,7 @@ import { AiOutlineAlert } from "react-icons/ai";
 import { AiOutlineEyeInvisible } from "react-icons/ai";
 import { AiOutlineBarChart } from "react-icons/ai";
 import { AiOutlinePieChart } from "react-icons/ai";
+import { AiFillMedicineBox } from "react-icons/ai";
 import { usePathname } from 'next/navigation';
 import SidebarLayout from "@/components/layout/SidebarLayout";
 import Link from "next/link";
@@ -47,6 +48,12 @@ export default function AdminCrawl({ children }) {
                 <Link href="/admin/admin-member"
                     className={pathname === '/admin/admin-member' ? 'active' : ''}>
                     <AiOutlineProfile style={{ marginRight: 5 }} />회원 관리
+                </Link>
+            </li>
+            <li>
+                <Link href="/admin/admin-cancer-stage"
+                    className={pathname === '/admin/admin-cancer-stage' ? 'active' : ''}>
+                    <AiFillMedicineBox style={{ marginRight: 5 }} />회원 진단 명/병기 관리
                 </Link>
             </li>
             <li>

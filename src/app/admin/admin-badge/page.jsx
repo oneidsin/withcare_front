@@ -450,11 +450,11 @@ export default function AdminBadge() {
                             name="bdg_condition"
                             value={badgeForm.bdg_condition}
                             onChange={handleInputChange}
-                            placeholder="배지 획득 조건 (최대 50글자)"
-                            maxLength={50}
+                            placeholder="배지 획득 조건 (최대 100글자)"
+                            maxLength={100}
                         />
-                        <div className={`char-count ${badgeForm.bdg_condition.length >= 45 ? 'warning' : ''}`}>
-                            {badgeForm.bdg_condition.length}/50
+                        <div className={`char-count ${badgeForm.bdg_condition.length >= 90 ? 'warning' : ''}`}>
+                            {badgeForm.bdg_condition.length}/100
                         </div>
                     </div>
                     
