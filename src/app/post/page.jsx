@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { UserWithIcons } from '@/components/UserIcons';
+import { UserWithIcons, clearUserIconCache } from '@/components/UserIcons';
 import './post.css';
 
 export default function PostPage() {
@@ -32,6 +32,17 @@ export default function PostPage() {
         checkUserLevel();
         checkBoardLevel();
     }, [boardIdx, page, sort]);
+
+    // 페이지 포커스 시 사용자 아이콘 캐시 새로고침
+    useEffect(() => {
+        const handleFocus = () => {
+            console.log('게시글 목록 페이지 포커스 - 사용자 아이콘 캐시 무효화');
+            clearUserIconCache(); // 모든 사용자의 캐시 무효화
+        };
+
+        window.addEventListener('focus', handleFocus);
+        return () => window.removeEventListener('focus', handleFocus);
+    }, []);
 
     useEffect(() => {
         if (keyword.trim() === '' && posts.length === 0) {

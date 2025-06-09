@@ -405,8 +405,12 @@ export default function AdminBadge() {
                             name="bdg_name"
                             value={badgeForm.bdg_name}
                             onChange={handleInputChange}
-                            placeholder="배지 이름"
+                            placeholder="배지 이름 (최대 20글자)"
+                            maxLength={20}
                         />
+                        <div className={`char-count ${badgeForm.bdg_name.length >= 18 ? 'warning' : ''}`}>
+                            {badgeForm.bdg_name.length}/20
+                        </div>
                     </div>
                     
                     <div className="form-group">
@@ -446,8 +450,12 @@ export default function AdminBadge() {
                             name="bdg_condition"
                             value={badgeForm.bdg_condition}
                             onChange={handleInputChange}
-                            placeholder="배지 획득 조건"
+                            placeholder="배지 획득 조건 (최대 50글자)"
+                            maxLength={50}
                         />
+                        <div className={`char-count ${badgeForm.bdg_condition.length >= 45 ? 'warning' : ''}`}>
+                            {badgeForm.bdg_condition.length}/50
+                        </div>
                     </div>
                     
                     <div className="form-group checkbox">

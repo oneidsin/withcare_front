@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { clearUserIconCache } from '@/components/UserIcons';
 import './badge.css';
 
 const API_BASE_URL = 'http://localhost:80';
@@ -172,6 +173,10 @@ export default function ProfileBadge() {
             if (response.data.result) {
                 setMainBadge(badgeIdx);
                 alert('메인 배지가 설정되었습니다.');
+                
+                // 사용자 아이콘 캐시 무효화 (게시글 목록에서 즉시 반영되도록)
+                clearUserIconCache(userId);
+                
                 // 배지 목록 새로고침
                 loadUserBadges();
             } else {
@@ -225,6 +230,10 @@ export default function ProfileBadge() {
 
             if (response.data.result) {
                 alert(`"${selectedBadge.bdg_name}" 배지를 획득했습니다! 🎉`);
+                
+                // 사용자 아이콘 캐시 무효화 (새 배지가 즉시 반영되도록)
+                clearUserIconCache(userId);
+                
                 // 배지 목록 새로고침
                 loadUserBadges();
             } else {
