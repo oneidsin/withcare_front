@@ -245,3 +245,17 @@
 .cancel-btn:hover {
     background-color: #e0e0e0;
 }
+
+/* 글자수 카운터 스타일 */
+.char-count {
+    font-size: 12px;
+    color: #666;
+    text-align: right;
+    margin-top: 4px;
+    font-weight: 500;
+}
+
+/* 글자수 제한에 가까워질 때 경고 색상 */
+.char-count.warning {
+    color: #e74c3c;
+}

@@ -7,6 +7,17 @@ import './UserIcons.css';
 // 사용자 아이콘 정보를 캐시하는 전역 객체
 const userIconsCache = {};
 
+// 캐시 무효화 함수 (외부에서 사용할 수 있도록 export)
+export const clearUserIconCache = (userId = null) => {
+    if (userId) {
+        delete userIconsCache[userId];
+        console.log(`사용자 ${userId}의 아이콘 캐시 무효화`);
+    } else {
+        Object.keys(userIconsCache).forEach(key => delete userIconsCache[key]);
+        console.log('모든 사용자 아이콘 캐시 무효화');
+    }
+};
+
 // 사용자 아이콘 정보 가져오기
 const fetchUserIcons = async (userId) => {
     if (userIconsCache[userId] || !userId || userId === '익명') {
