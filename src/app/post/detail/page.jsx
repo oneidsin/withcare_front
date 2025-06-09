@@ -689,14 +689,13 @@ export default function PostDetailPage() {
                     </div>
                 </div>
                 <div className="detail-controls">
-                    {canEditOrDelete ? (
+                    {canEditOrDelete && (
                         <>
                             <button className="detail-control-button" onClick={() => router.push(`/post/update?post_idx=${post.post_idx}`)}>수정</button>
                             <button className="detail-control-button" onClick={handleDelete}>삭제</button>
                         </>
-                    ) : (
-                        <button className="warn-button" onClick={() => moveToReportPost()}>⚠ 신고</button>
                     )}
+                    <button className="warn-button" onClick={() => moveToReportPost()}>⚠ 신고</button>
                 </div>
             </div>
 
