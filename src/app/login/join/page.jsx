@@ -26,6 +26,11 @@ export default function joinPage(){
         getStage();
     }, []);
 
+    // 아이디 값 변경 시 다시 중복 확인 처리
+    useEffect(()=>{
+        chk.current = false;
+    },[info.id])
+
     const input=(e)=>{
         let {name,value} = e.target;
         if ((name === 'cancer' || name === 'stage') && value === "") {
