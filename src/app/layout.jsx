@@ -225,6 +225,14 @@ function HeaderComponent({ isLoggedIn, username, handleLogout }) {
     }
   };
 
+  const handleProfileClick = (e) => {
+    if (!isLoggedIn) {
+      e.preventDefault();
+      router.push('/login');
+      alert('로그인이 필요한 서비스입니다.');
+    }
+  };
+
   const handleMessageClick = (e) => {
     if (!isLoggedIn) {
       e.preventDefault();
@@ -283,7 +291,12 @@ function HeaderComponent({ isLoggedIn, username, handleLogout }) {
           <NotificationPopup />
         </div>
         <Link href="/profile">
-          <AccountCircleOutlinedIcon className="top-nav-icon" title="프로필" />
+          <AccountCircleOutlinedIcon
+              className="top-nav-icon"
+              title="프로필"
+              onClick={handleProfileClick}
+              style={{ cursor: 'pointer' }}
+          />
         </Link>
       </div>
     </header>
