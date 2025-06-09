@@ -170,7 +170,7 @@ export default function AdminMemberPage() {
                             <td>{m.block_yn ? 'Y' : 'N'}</td>
                             <td>{m.block_start_date || '-'}</td>
                             <td>{m.block_end_date || '-'}</td>
-                            <td>{m.quit_yn ? 'Y' : 'N'}</td>
+                            <td>{m.user_del_yn === true ? 'Y' : 'N'}</td>
                         </tr>
                     ))}
                     </tbody>
