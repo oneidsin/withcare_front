@@ -268,12 +268,18 @@ export default function ProfilePage() {
         const id = sessionStorage.getItem("id");
 
         try {
+            // 현재 날짜를 탈퇴 날짜로 설정
+            const currentDate = new Date().toISOString();
+            
             const response = await fetch(`http://localhost/delete/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': token,
                     'Content-Type': 'application/json'
-                }
+                },
+                body: JSON.stringify({
+                    user_del_date: currentDate
+                })
             });
 
             if (!response.ok) {
@@ -473,6 +479,27 @@ export default function ProfilePage() {
         }
     };
 
+    // 이름이 10자 이상일 때 줄임표로 표시하는 함수
+    const formatNameWithEllipsis = (name, maxLength = 10) => {
+        if (!name) return "";
+        
+        if (name.length > maxLength) {
+            return name.substring(0, maxLength) + "...";
+        }
+        return name;
+    };
+
+    // 20자마다 줄바꿈하는 함수 (필요시 사용)
+    const formatTextWithLineBreaks = (text, maxCharsPerLine = 20) => {
+        if (!text) return "";
+        
+        const result = [];
+        for (let i = 0; i < text.length; i += maxCharsPerLine) {
+            result.push(text.slice(i, i + maxCharsPerLine));
+        }
+        return result.join('\n');
+    };
+
     // 활동 내역 가져오기
     const fetchActivities = async (userId) => {
         try {
@@ -484,9 +511,12 @@ export default function ProfilePage() {
             if (res.data.status === "success") {
                 const likesData = res.data.likes || [];
                 
+                // 추천만 필터링 (like_type이 1인 것만, 비추천은 -1이므로 제외)
+                const filteredLikes = likesData.filter(like => like.like_type === 1);
+                
                 // 추천한 글에 제목이 없는 경우 별도로 가져오기
                 const likesWithTitles = await Promise.all(
-                    likesData.map(async (like) => {
+                    filteredLikes.map(async (like) => {
                         if (!like.post_title) {
                             const title = await fetchPostTitle(like.post_idx);
                             return { ...like, post_title: title };
@@ -535,7 +565,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="profile-header-info">
                     <div className="profile-title">
-                        <h2>{user.name}님의 프로필</h2>
+                        <h2>{formatNameWithEllipsis(user.name)}님의 프로필</h2>
                     </div>
                     <div className="intro-text">{user.intro}</div>
                 </div>
