@@ -695,7 +695,9 @@ export default function PostDetailPage() {
                             <button className="detail-control-button" onClick={handleDelete}>삭제</button>
                         </>
                     )}
-                    <button className="warn-button" onClick={() => moveToReportPost()}>⚠ 신고</button>
+                    {!isOwnerOrAdmin && (
+                        <button className="warn-button" onClick={() => moveToReportPost()}>⚠ 신고</button>
+                    )}
                 </div>
             </div>
 
