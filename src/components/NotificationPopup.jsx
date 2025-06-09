@@ -41,6 +41,7 @@ export default function NotificationPopup() {
   const handleNotificationClick = async (notification) => {
     if (!notification.noti_read_yn) {
       const success = await markAsRead(notification.noti_idx);
+      console.log("알림 정보 : ", notification);
       if (!success) {
         console.error('알림 읽음 처리 실패');
       }
@@ -57,11 +58,24 @@ export default function NotificationPopup() {
           alert('댓글이 작성된 게시글을 찾을 수 없습니다.');
         }
       } else if (notification.noti_type === 'mention') {
+        console.log('Mention 알림 클릭 - relate_item_id:', notification.relate_item_id);
+        console.log('API 요청 URL:', `http://localhost/api/mention/${notification.relate_item_id}/post-id`);
+
         const res = await fetch(`http://localhost/api/mention/${notification.relate_item_id}/post-id`);
+        console.log('API 응답 상태:', res.status);
+
         if (res.ok) {
           const postIdx = await res.json();
-          window.open(`post/detail?post_idx=${postIdx}`, '_blank');
+          console.log('받은 postIdx:', postIdx);
+
+          if (postIdx && postIdx > 0) {
+            window.open(`post/detail?post_idx=${postIdx}`, '_blank');
+          } else {
+            console.error('유효하지 않은 postIdx:', postIdx);
+            alert('해당 멘션과 연결된 게시글을 찾을 수 없습니다. 게시글이 삭제되었거나 데이터에 문제가 있을 수 있습니다.');
+          }
         } else {
+          console.error('API 응답 실패:', res.status, res.statusText);
           alert('댓글이 작성된 게시글을 찾을 수 없습니다.');
         }
       } else if (notification.noti_type === 'report') {

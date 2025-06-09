@@ -12,12 +12,20 @@ export default function Block() {
   const page = useRef(1); // 현재 페이지
   const [pages, setPages] = useState(1); // 전체 페이지 수
   const [list, setList] = useState([]); // 차단 목록
-  const [loading, setLoading] = useState(false); // 로딩 상태
+  const [loading, setLoading] = useState(true); // 로딩 상태 - 초기값을 true로 변경
   const [error, setError] = useState(''); // 에러 메시지
+  const [initialized, setInitialized] = useState(false); // 초기화 상태 추가
 
   useEffect(() => {
-    if (id && token) {
-      fetchBlockedUsers(page.current);
+    // Redux store가 초기화되었는지 확인
+    if (id !== undefined && token !== undefined) {
+      setInitialized(true);
+      if (id && token) {
+        fetchBlockedUsers(page.current);
+      } else {
+        setError('로그인이 필요합니다.');
+        setLoading(false);
+      }
     }
   }, [id, token]);
 
@@ -68,57 +76,60 @@ export default function Block() {
     }
   }
 
-
-
   return (
     <div className="inbox-container">
       <div className="inbox-header">
         <h1>차단한 사용자</h1>
       </div>
 
-      {loading && <p>로딩 중...</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {!initialized && <p>초기화 중...</p>}
+      {initialized && loading && <p>로딩 중...</p>}
+      {initialized && error && <p style={{ color: 'red' }}>{error}</p>}
 
-      <p>현재 페이지: {page.current} / 전체 페이지: {pages}</p>
+      {initialized && !loading && (
+        <>
+          <p>현재 페이지: {page.current} / 전체 페이지: {pages}</p>
 
-      <table className="message-table">
-        <thead>
-          <tr>
-            <th>내가 차단한 ID</th>
-            <th>차단 날짜</th>
-            <th>차단 해제</th>
-          </tr>
-        </thead>
-        <tbody>
-          {list.length > 0 ? (
-            list.map((user) => (
-              <tr key={user.user_block_idx}>
-                <td>{user.blocked_id}</td>
-                <td>{new Date(user.block_start_date).toLocaleDateString()}</td>
-                <td><button className='unblock-button'
-                  onClick={() => handleUnblock(user.blocked_id)}>차단 해제</button></td>
+          <table className="message-table">
+            <thead>
+              <tr>
+                <th>내가 차단한 ID</th>
+                <th>차단 날짜</th>
+                <th>차단 해제</th>
               </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="3" style={{ textAlign: 'center', color: '#888' }}>
-                차단한 사용자가 없습니다.
-              </td>
-            </tr>
-          )}
-          <tr>
-            <td colSpan="3">
-              <Stack spacing={2} sx={{ alignItems: 'center', mt: 2 }}>
-                <Pagination
-                  count={pages}
-                  page={page.current}
-                  onChange={(e, p) => fetchBlockedUsers(p)}
-                />
-              </Stack>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+            </thead>
+            <tbody>
+              {list.length > 0 ? (
+                list.map((user) => (
+                  <tr key={user.user_block_idx}>
+                    <td>{user.blocked_id}</td>
+                    <td>{new Date(user.block_start_date).toLocaleDateString()}</td>
+                    <td><button className='unblock-button'
+                      onClick={() => handleUnblock(user.blocked_id)}>차단 해제</button></td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="3" style={{ textAlign: 'center', color: '#888' }}>
+                    차단한 사용자가 없습니다.
+                  </td>
+                </tr>
+              )}
+              <tr>
+                <td colSpan="3">
+                  <Stack spacing={2} sx={{ alignItems: 'center', mt: 2 }}>
+                    <Pagination
+                      count={pages}
+                      page={page.current}
+                      onChange={(e, p) => fetchBlockedUsers(p)}
+                    />
+                  </Stack>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </>
+      )}
     </div>
   );
 }
