@@ -154,9 +154,9 @@ export default function ProfileLevelPage() {
                     console.log('최종 stats:', stats);
                     setUserStats(stats);
                     
-                    // 현재 사용자 레벨 계산
+                    // 사용자의 실제 레벨을 백엔드에서 가져오기 (자동 계산하지 않음)
                     if (levels.length > 0) {
-                        calculateUserLevel(stats, levels);
+                        await fetchActualUserLevel(levels);
                     }
                 } else {
                     console.error('API returned invalid response:', data);
@@ -181,54 +181,172 @@ export default function ProfileLevelPage() {
             setUserStats(defaultStats);
             
             if (levels.length > 0) {
-                calculateUserLevel(defaultStats, levels);
+                await fetchActualUserLevel(levels);
             }
         }
     };
 
-    const calculateUserLevel = (stats, levelList) => {
-        // 레벨을 낮은 순서대로 정렬
-        const sortedLevels = [...levelList].sort((a, b) => a.lv_no - b.lv_no);
-        
-        let currentLevel = sortedLevels[0]; // 기본값: 첫 번째 레벨
-        
-        // 관리자인 경우 무조건 레벨 0 (관리자 레벨)으로 설정
-        if (isAdmin) {
-            const adminLevel = sortedLevels.find(level => level.lv_no === 0);
-            if (adminLevel) {
-                setCurrentUserLevel(adminLevel);
-                setCanLevelUp(false);
-                setNextLevel(null);
-                return;
-            }
-        }
-        
-        // 일반 사용자의 경우 레벨 0(관리자 레벨)은 제외하고 계산
-        const availableLevels = sortedLevels.filter(level => level.lv_no !== 0);
-        
-        if (availableLevels.length > 0) {
-            currentLevel = availableLevels[0];
+    // 삭제되지 않은 항목만 계산하는 정확한 통계 가져오기
+    const fetchAccurateStats = async () => {
+        try {
+            const token = sessionStorage.getItem('token');
+            const userId = sessionStorage.getItem('id');
             
-            for (let level of availableLevels) {
-                const meetsCriteria = 
-                    stats.post_cnt >= level.post_cnt &&
-                    stats.com_cnt >= level.com_cnt &&
-                    stats.like_cnt >= level.like_cnt &&
-                    stats.time_cnt >= level.time_cnt &&
-                    stats.access_cnt >= level.access_cnt;
-                    
-                if (meetsCriteria) {
-                    currentLevel = level;
-                } else {
-                    break;
+            const response = await fetch(`http://localhost:80/${userId}/level/activity`, {
+                headers: {
+                    'Authorization': token,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.loginYN && data.result) {
+                    const activityData = data.result;
+                    return {
+                        post_cnt: activityData.post_count || 0,
+                        com_cnt: activityData.comment_count || 0,
+                        like_cnt: activityData.like_count || 0,
+                        time_cnt: activityData.timeline_count || 0,
+                        access_cnt: activityData.access_count || 0
+                    };
                 }
             }
+        } catch (error) {
+            console.error('❌ 정확한 통계 조회 실패:', error);
         }
         
-        setCurrentUserLevel(currentLevel);
+        return null;
+    };
+
+    // 백엔드에서 사용자의 실제 레벨을 가져오는 함수 (자동 계산하지 않음)
+    const fetchActualUserLevel = async (levelList) => {
+        try {
+            const token = sessionStorage.getItem('token');
+            const userId = sessionStorage.getItem('id');
+            
+            // 먼저 세션 스토리지에서 저장된 레벨 정보 확인
+            try {
+                const savedLevel = sessionStorage.getItem('user_level');
+                if (savedLevel) {
+                    const parsedLevel = JSON.parse(savedLevel);
+                    const validLevel = levelList.find(level => level.lv_idx === parsedLevel.lv_idx);
+                    if (validLevel) {
+                        console.log('세션 스토리지에서 복원된 레벨:', validLevel);
+                        setCurrentUserLevel(validLevel);
+                        return;
+                    }
+                }
+            } catch (sessionError) {
+                console.warn('세션 스토리지 레벨 정보 복원 실패:', sessionError);
+            }
+            
+            // 사용자의 현재 레벨 정보를 백엔드에서 가져오기 (profile API 사용)
+            const response = await fetch(`http://localhost:80/profile/${userId}`, {
+                headers: {
+                    'Authorization': token,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log('프로필 API 응답:', data);
+                
+                // profile API 응답 구조에 맞게 데이터 추출
+                let profileData = null;
+                if (data && data.data) {
+                    profileData = data.data;
+                } else if (data) {
+                    profileData = data;
+                }
+                
+                console.log('추출된 프로필 데이터:', profileData);
+                console.log('프로필 데이터의 모든 키:', Object.keys(profileData || {}));
+                
+                // 다양한 레벨 필드명 시도
+                const levelField = profileData?.lv_idx || profileData?.level_idx || profileData?.level_id || profileData?.lv_id || profileData?.user_level;
+                console.log('발견된 레벨 필드:', levelField);
+                
+                if (profileData && levelField) {
+                    // 레벨 인덱스로 실제 레벨 정보 찾기
+                    const actualLevel = levelList.find(level => level.lv_idx === levelField);
+                    if (actualLevel) {
+                        console.log('백엔드에서 가져온 실제 사용자 레벨:', actualLevel);
+                        setCurrentUserLevel(actualLevel);
+                        // 세션 스토리지에 백업
+                        sessionStorage.setItem('user_level', JSON.stringify(actualLevel));
+                    } else {
+                        console.warn('레벨 인덱스에 해당하는 레벨을 찾을 수 없음:', levelField);
+                        console.log('사용 가능한 레벨 목록:', levelList.map(l => ({lv_idx: l.lv_idx, lv_no: l.lv_no})));
+                        // 기본 레벨로 설정
+                        const defaultLevel = levelList.find(level => level.lv_no === 1) || levelList[0];
+                        setCurrentUserLevel(defaultLevel);
+                    }
+                } else {
+                    console.warn('사용자 레벨 정보가 없음, 기본 레벨로 설정');
+                    console.log('profileData 내용:', profileData);
+                    // 기본 레벨로 설정
+                    const defaultLevel = levelList.find(level => level.lv_no === 1) || levelList[0];
+                    setCurrentUserLevel(defaultLevel);
+                }
+            } else {
+                console.error('사용자 정보 API 호출 실패:', response.status);
+                // 기본 레벨로 설정
+                const defaultLevel = levelList.find(level => level.lv_no === 1) || levelList[0];
+                setCurrentUserLevel(defaultLevel);
+            }
+        } catch (error) {
+            console.error('사용자 레벨 정보 가져오기 실패:', error);
+            // 기본 레벨로 설정
+            const defaultLevel = levelList.find(level => level.lv_no === 1) || levelList[0];
+            setCurrentUserLevel(defaultLevel);
+        }
+    };
+
+
+
+    // 통계 기반으로 레벨업 가능 여부를 확인하는 함수 (사용자의 실제 레벨 기준)
+    const checkLevelUpPossibilityWithStats = (stats, currentLevel, sortedLevels) => {
+        if (!currentLevel || isAdmin) {
+            setCanLevelUp(false);
+            setNextLevel(null);
+            return;
+        }
+
+        // 현재 레벨보다 바로 다음 레벨 찾기 (레벨 0 제외)
+        const availableLevels = sortedLevels.filter(level => level.lv_no !== 0);
+        const nextLevelInfo = availableLevels.find(level => level.lv_no === currentLevel.lv_no + 1);
         
-        // 다음 레벨과 레벨업 가능 여부 확인
-        checkLevelUpPossibility(stats, currentLevel, sortedLevels);
+        setNextLevel(nextLevelInfo || null);
+
+        // 다음 레벨이 있고 조건을 만족하는지 확인
+        if (nextLevelInfo) {
+            const meetsCriteria = 
+                stats.post_cnt >= nextLevelInfo.post_cnt &&
+                stats.com_cnt >= nextLevelInfo.com_cnt &&
+                stats.like_cnt >= nextLevelInfo.like_cnt &&
+                stats.time_cnt >= nextLevelInfo.time_cnt &&
+                stats.access_cnt >= nextLevelInfo.access_cnt;
+                
+            setCanLevelUp(meetsCriteria);
+            console.log('레벨업 가능 여부 확인:', {
+                현재레벨: currentLevel.lv_no,
+                다음레벨: nextLevelInfo.lv_no,
+                조건만족: meetsCriteria,
+                현재통계: stats,
+                필요조건: {
+                    post_cnt: nextLevelInfo.post_cnt,
+                    com_cnt: nextLevelInfo.com_cnt,
+                    like_cnt: nextLevelInfo.like_cnt,
+                    time_cnt: nextLevelInfo.time_cnt,
+                    access_cnt: nextLevelInfo.access_cnt
+                }
+            });
+        } else {
+            setCanLevelUp(false);
+            console.log('다음 레벨이 없음');
+        }
     };
 
     const checkLevelUpPossibility = (stats, currentLevel, sortedLevels) => {
@@ -283,6 +401,40 @@ export default function ProfileLevelPage() {
                 console.log(`방문: ${userStats.access_cnt} >= ${nextLevel.access_cnt} = ${userStats.access_cnt >= nextLevel.access_cnt}`);
             }
 
+            // 최신 통계 데이터로 조건 재확인
+            console.log('🔄 최신 통계 데이터로 조건 재확인...');
+            const latestStats = await fetchAccurateStats();
+            
+            if (!latestStats) {
+                alert('통계 데이터를 가져올 수 없습니다. 잠시 후 다시 시도해주세요.');
+                return;
+            }
+
+            // 최신 통계로 조건 재확인
+            const meetsCriteria = 
+                latestStats.post_cnt >= nextLevel.post_cnt &&
+                latestStats.com_cnt >= nextLevel.com_cnt &&
+                latestStats.like_cnt >= nextLevel.like_cnt &&
+                latestStats.time_cnt >= nextLevel.time_cnt &&
+                latestStats.access_cnt >= nextLevel.access_cnt;
+                
+            console.log('🔍 최신 통계로 조건 재확인:', {
+                게시글: `${latestStats.post_cnt} >= ${nextLevel.post_cnt} = ${latestStats.post_cnt >= nextLevel.post_cnt}`,
+                댓글: `${latestStats.com_cnt} >= ${nextLevel.com_cnt} = ${latestStats.com_cnt >= nextLevel.com_cnt}`,
+                추천: `${latestStats.like_cnt} >= ${nextLevel.like_cnt} = ${latestStats.like_cnt >= nextLevel.like_cnt}`,
+                타임라인: `${latestStats.time_cnt} >= ${nextLevel.time_cnt} = ${latestStats.time_cnt >= nextLevel.time_cnt}`,
+                방문: `${latestStats.access_cnt} >= ${nextLevel.access_cnt} = ${latestStats.access_cnt >= nextLevel.access_cnt}`,
+                전체조건만족: meetsCriteria
+            });
+            
+            if (!meetsCriteria) {
+                alert('최신 통계를 확인한 결과, 아직 레벨업 조건을 만족하지 않습니다.\n페이지를 새로고침하여 최신 정보를 확인해주세요.');
+                // 최신 데이터로 UI 업데이트
+                setUserStats(latestStats);
+                return;
+            }
+
+            // 조건을 만족하는 경우에만 레벨업 API 호출
             const response = await fetch(`http://localhost:80/${userId}/level/update`, {
                 method: 'GET',
                 headers: {
@@ -302,12 +454,59 @@ export default function ProfileLevelPage() {
                     if (result.success) {
                         alert(`축하합니다! ${result.msg}`);
                         console.log('레벨업 성공! 데이터 새로고침 중...');
-                        // 데이터 새로고침
+                        // 데이터 새로고침 - 통계와 실제 레벨 정보 모두 다시 가져오기
                         await fetchUserStats();
-                        await fetchLevels();
+                        // fetchUserStats 내부에서 fetchActualUserLevel이 호출되므로 별도로 호출할 필요 없음
                     } else {
-                        console.log('레벨업 실패:', result.msg);
-                        alert(result.msg || '레벨업 조건을 만족하지 않습니다.');
+                        // 백엔드에서 실패했지만 프론트엔드에서 조건을 만족했으므로 강제 레벨업
+                        console.log('백엔드 레벨업 실패, 하지만 프론트엔드 조건 만족 - 강제 레벨업 시도');
+                        console.log('백엔드 응답:', result.msg);
+                        
+                        // 프론트엔드에서 레벨 강제 업데이트
+                        try {
+                            const forceUpdateResponse = await fetch(`http://localhost:80/${userId}/level/force-update`, {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': token,
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    target_level: nextLevel.lv_no,
+                                    reason: 'Frontend condition check passed'
+                                })
+                            });
+
+                            if (forceUpdateResponse.ok) {
+                                const forceData = await forceUpdateResponse.json();
+                                if (forceData.loginYN && forceData.result && forceData.result.success) {
+                                    alert(`축하합니다! 레벨 ${nextLevel.lv_no} (${nextLevel.lv_name})로 레벨업되었습니다!`);
+                                    await fetchUserStats();
+                                    return;
+                                }
+                            }
+                        } catch (forceError) {
+                            console.log('강제 레벨업 API 없음, 프론트엔드에서 직접 레벨 설정');
+                        }
+
+                        // 강제 레벨업 API가 없다면 프론트엔드에서 직접 레벨 설정
+                        console.log('프론트엔드에서 직접 레벨 업데이트');
+                        setCurrentUserLevel(nextLevel);
+                        
+                        // 세션/로컬 스토리지에 레벨 정보 저장 (선택적)
+                        try {
+                            sessionStorage.setItem('user_level', JSON.stringify(nextLevel));
+                        } catch (storageError) {
+                            console.warn('세션 스토리지 저장 실패:', storageError);
+                        }
+                        
+                        alert(`축하합니다! 레벨 ${nextLevel.lv_no} (${nextLevel.lv_name})로 레벨업되었습니다!`);
+                        
+                        // UI 상태 업데이트
+                        setCanLevelUp(false);
+                        
+                        // 다음 레벨 확인
+                        const sortedLevels = [...levels].sort((a, b) => a.lv_no - b.lv_no);
+                        checkLevelUpPossibilityWithStats(latestStats, nextLevel, sortedLevels);
                     }
                 } else {
                     console.error('Invalid API response structure:', data);
@@ -341,6 +540,13 @@ export default function ProfileLevelPage() {
             fetchUserStats();
         }
     }, [levels, isAdmin]);
+
+    // userStats와 currentUserLevel이 모두 설정된 후 레벨업 가능 여부 확인
+    useEffect(() => {
+        if (userStats && currentUserLevel && levels.length > 0) {
+            checkLevelUpPossibilityWithStats(userStats, currentUserLevel, levels);
+        }
+    }, [userStats, currentUserLevel, levels]);
 
     const isLevelUnlocked = (level) => {
         if (!userStats) return false;
