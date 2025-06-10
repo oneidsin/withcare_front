@@ -24,6 +24,7 @@ export default function UpdatePage() {
     const [previewImage, setPreviewImage] = useState(null);
     const [cancerList, setCancerList] = useState([]);
     const [stageList, setStageList] = useState([]);
+    const [isImageDeleted, setIsImageDeleted] = useState(false);
 
     useEffect(() => {
         const token = sessionStorage.getItem("token");
@@ -214,11 +215,20 @@ export default function UpdatePage() {
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            // 파일 형식 검증
+            // 파일 형식 검증 - MIME 타입과 파일 확장자 모두 확인
             const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
             const fileType = file.type.toLowerCase();
+            const fileName = file.name.toLowerCase();
+            const fileExtension = fileName.split('.').pop();
             
-            if (!allowedTypes.includes(fileType)) {
+            console.log('선택된 파일 정보:', {
+                name: file.name,
+                type: file.type,
+                size: file.size,
+                extension: fileExtension
+            });
+            
+            if (!allowedTypes.includes(fileType) || !['jpg', 'jpeg', 'png'].includes(fileExtension)) {
                 alert('JPG, JPEG, PNG 형식의 이미지 파일만 업로드 가능합니다.');
                 e.target.value = ''; // 파일 입력 초기화
                 return;
@@ -232,12 +242,65 @@ export default function UpdatePage() {
                 return;
             }
             
-            setProfileImage(file);
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setPreviewImage(reader.result);
+            // 이미지 파일인지 추가 검증
+            const img = new Image();
+            const objectUrl = URL.createObjectURL(file);
+            
+            img.onload = function() {
+                // URL 해제 (메모리 누수 방지)
+                URL.revokeObjectURL(objectUrl);
+                
+                console.log('이미지 검증 성공:', {
+                    width: this.width,
+                    height: this.height
+                });
+                
+                // 검증 성공 시에만 파일 설정
+                setProfileImage(file);
+                setIsImageDeleted(false);
+                
+                // FileReader로 미리보기 생성
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    console.log('이미지 읽기 완료');
+                    setPreviewImage(event.target.result);
+                };
+                reader.onerror = function(error) {
+                    console.error('이미지 읽기 실패:', error);
+                    alert('이미지를 읽는데 실패했습니다. 다른 이미지를 선택해주세요.');
+                    e.target.value = '';
+                };
+                reader.readAsDataURL(file);
             };
-            reader.readAsDataURL(file);
+            
+            img.onerror = function() {
+                // URL 해제 (메모리 누수 방지)
+                URL.revokeObjectURL(objectUrl);
+                console.error('유효하지 않은 이미지 파일');
+                alert('유효하지 않은 이미지 파일입니다. 다른 파일을 선택해주세요.');
+                e.target.value = '';
+            };
+            
+            // 이미지 로드 시작
+            img.src = objectUrl;
+            
+        } else {
+            // 파일 선택이 취소된 경우
+            console.log('파일 선택 취소됨');
+        }
+    };
+
+    const handleImageDelete = () => {
+        if (window.confirm('프로필 이미지를 삭제하시겠습니까?\n기본 이미지로 변경됩니다.')) {
+            setProfileImage(null);
+            setPreviewImage("/defaultProfileImg.png");
+            setIsImageDeleted(true);
+            
+            // 파일 입력 초기화
+            const fileInput = document.querySelector('input[type="file"]');
+            if (fileInput) {
+                fileInput.value = '';
+            }
         }
     };
 
@@ -271,7 +334,7 @@ export default function UpdatePage() {
                 gender: info.gender || "",
                 profile_yn: info.profile_yn === "Y",
                 intro: info.intro || "",
-                profile_photo: info.profile_photo  // 기존 이미지 URL 유지
+                profile_photo: isImageDeleted ? "" : info.profile_photo
             };
 
             // cancer_idx와 stage_idx는 유효한 값이 있을 때만 추가
@@ -339,13 +402,29 @@ export default function UpdatePage() {
                 // 세션 스토리지 업데이트
                 sessionStorage.setItem("name", info.name);
                 
-                // 이미지 URL을 세션 스토리지에 저장 (필요한 경우)
-                if (profileData.profile_photo) {
+                // 이미지 URL을 세션 스토리지에 저장/삭제 처리
+                if (isImageDeleted) {
+                    // 이미지가 삭제된 경우 세션 스토리지에서도 제거
+                    sessionStorage.removeItem("profilePic");
+                    console.log("세션 스토리지에서 프로필 이미지 삭제됨");
+                } else if (data.data && data.data.profile_photo) {
+                    // 서버에서 받은 새 이미지 URL이 있는 경우
+                    sessionStorage.setItem("profilePic", getValidImageUrl(data.data.profile_photo));
+                    console.log("세션 스토리지 프로필 이미지 업데이트:", data.data.profile_photo);
+                } else if (profileData.profile_photo) {
+                    // 기존 이미지 URL 유지
                     sessionStorage.setItem("profilePic", getValidImageUrl(profileData.profile_photo));
                 }
                 
                 // 프로필 업데이트 커스텀 이벤트 발생 - 다른 컴포넌트에 알림
                 window.dispatchEvent(new Event('profileUpdated'));
+                
+                // 세션 스토리지 변경 이벤트도 수동으로 발생시켜 사이드바 즉시 업데이트
+                window.dispatchEvent(new StorageEvent('storage', {
+                    key: 'profilePic',
+                    newValue: isImageDeleted ? null : (data.data && data.data.profile_photo ? getValidImageUrl(data.data.profile_photo) : profileData.profile_photo),
+                    storageArea: sessionStorage
+                }));
                 
                 alert(`프로필이 성공적으로 수정되었습니다.\n이름: ${info.name}`);
                 
@@ -496,21 +575,33 @@ export default function UpdatePage() {
                     <label>프로필 사진</label>
                     <input
                         type="file"
-                        accept=".jpg,.jpeg,.png"
+                        accept="image/jpeg,image/jpg,image/png,.jpg,.jpeg,.png"
                         onChange={handleImageChange}
+                        capture="environment"
+                        style={{ width: '100%' }}
                     />
                     <div className="file-info">JPG, JPEG, PNG 형식만 가능 (최대 10MB)</div>
                     {previewImage && (
-                        <img
-                            src={previewImage}
-                            alt="Profile preview"
-                            className="profile-preview"
-                            onError={(e) => { 
-                                console.log("이미지 로드 실패, 기본 이미지로 대체:", e.target.src);
-                                e.target.onerror = null; 
-                                e.target.src = "/defaultProfileImg.png"; 
-                            }}
-                        />
+                        <div className="image-preview-container">
+                            <img
+                                src={previewImage}
+                                alt="Profile preview"
+                                className="profile-preview"
+                                onError={(e) => { 
+                                    console.log("이미지 로드 실패, 기본 이미지로 대체:", e.target.src);
+                                    e.target.onerror = null; 
+                                    e.target.src = "/defaultProfileImg.png"; 
+                                }}
+                            />
+                            <button 
+                                type="button" 
+                                className="delete-image-btn" 
+                                onClick={handleImageDelete}
+                                title="이미지 삭제"
+                            >
+                                ✕ 이미지 삭제
+                            </button>
+                        </div>
                     )}
                 </div>
 

@@ -602,7 +602,7 @@ export default function ViewProfilePage() {
                     <img 
                         src={user?.profile_photo ? getValidImageUrl(user.profile_photo) : "/defaultProfileImg.png"} 
                         alt="프로필 이미지"
-                        className="profile-pic"
+                        className="view-profile-pic"
                         onError={(e) => { 
                             e.target.onerror = null; 
                             e.target.src = "/defaultProfileImg.png";

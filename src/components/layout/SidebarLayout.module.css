@@ -46,12 +46,7 @@
   /* 높이는 내용에 따라 자동으로 조절됩니다. */
 }
 
-.profile-pic {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  object-fit: cover;
-}
+/* 프로필 이미지는 전역 CSS에서 sidebar-profile-pic 클래스로 정의됨 */
 
 .user-name {
   font-weight: bold;

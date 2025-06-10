@@ -144,6 +144,9 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+    background-color: #f8f9fa;
+    /* 이미지 로딩 실패 시 기본 배경색 */
+    display: block;
 }
 
 .profile-details {
