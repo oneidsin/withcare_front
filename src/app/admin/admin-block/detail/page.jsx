@@ -3,10 +3,11 @@
 import axios from "axios";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import "./block-detail.css";
 
-export default function AdminBlockDetail() {
+// useSearchParams를 사용하는 컴포넌트를 분리
+function DetailContent() {
   const [blockDetail, setBlockDetail] = useState(null);
   const searchParams = useSearchParams();
   const [reason, setReason] = useState('');
@@ -90,5 +91,14 @@ export default function AdminBlockDetail() {
         </div>
       </div>
     </div>
+  );
+}
+
+// 메인 컴포넌트 - Suspense로 래핑
+export default function AdminBlockDetail() {
+  return (
+    <Suspense fallback={<div>로딩 중...</div>}>
+      <DetailContent />
+    </Suspense>
   );
 }

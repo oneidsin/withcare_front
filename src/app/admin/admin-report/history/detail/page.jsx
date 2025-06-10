@@ -1,12 +1,13 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import axios from "axios";
 import { useSearchParams } from "next/navigation";
 import "../../admin_report.css";
 import "./history-detail.css";
 import Link from "next/link";
 
-export default function AdminReportHistoryDetail() {
+// useSearchParams를 사용하는 컴포넌트를 분리
+function DetailContent() {
   const searchParams = useSearchParams();
   const [reportDetail, setReportDetail] = useState(null);
   const [repReason, setRepReason] = useState('');
@@ -114,7 +115,6 @@ export default function AdminReportHistoryDetail() {
         )}
       </div>
 
-
       {/* 신고 히스토리 내용 */}
       <div className="report-history-box">
         <h3>신고 히스토리 내용</h3>
@@ -122,7 +122,6 @@ export default function AdminReportHistoryDetail() {
           {reportDetail ? (
             <div>
               <p>{reportDetail.reported_content}</p>
-
             </div>
           ) : (
             <p>로딩 중</p>
@@ -182,5 +181,14 @@ export default function AdminReportHistoryDetail() {
         </div>
       </div>
     </div>
+  );
+}
+
+// 메인 컴포넌트 - Suspense로 래핑
+export default function AdminReportHistoryDetail() {
+  return (
+    <Suspense fallback={<div>로딩 중...</div>}>
+      <DetailContent />
+    </Suspense>
   );
 }

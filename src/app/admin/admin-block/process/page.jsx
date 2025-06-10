@@ -1,15 +1,16 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import "./block-process.css";
 import Link from "next/link";
 import axios from "axios";
 
-export default function AdminBlockProcess() {
+// useSearchParams를 사용하는 컴포넌트를 분리
+function ProcessContent() {
   const [reason, setReason] = useState('');
   const [blockedId, setBlockedId] = useState('');
-  const searchParams = useSearchParams()
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     const id = sessionStorage.getItem('id');
@@ -86,5 +87,14 @@ export default function AdminBlockProcess() {
         </div>
       </div>
     </div>
+  );
+}
+
+// 메인 컴포넌트 - Suspense로 래핑
+export default function AdminBlockProcess() {
+  return (
+    <Suspense fallback={<div>로딩 중...</div>}>
+      <ProcessContent />
+    </Suspense>
   );
 }

@@ -1,13 +1,14 @@
 "use client";
 
 import React from 'react'
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import axios from "axios";
 import { useSearchParams } from "next/navigation";
 import "./report-detail.css";
 import Link from "next/link";
 
-export default function ReportDetail() {
+// useSearchParams를 사용하는 컴포넌트를 분리
+function DetailContent() {
   const searchParams = useSearchParams();
   const [processReason, setProcessReason] = useState(''); // 처리 사유 (관리자가 작성)
   const [reportDetail, setReportDetail] = useState(null);
@@ -193,5 +194,14 @@ export default function ReportDetail() {
         </div>
       </div>
     </div>
+  );
+}
+
+// 메인 컴포넌트 - Suspense로 래핑
+export default function ReportDetail() {
+  return (
+    <Suspense fallback={<div>로딩 중...</div>}>
+      <DetailContent />
+    </Suspense>
   );
 }

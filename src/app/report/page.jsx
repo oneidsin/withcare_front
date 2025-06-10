@@ -96,7 +96,7 @@ export default function UserReport() {
           <div className="category-header">
             <h3>신고 카테고리를 선택해주세요</h3>
             <div className="button-group">
-              <button className="report-submit-btn cancel">취소</button>
+              <button className="report-submit-btn cancel" onClick={() => window.close()}>취소</button>
               <button className="report-submit-btn" onClick={() => handleReport(selectedCateIdx, itemIdx, itemType)}>제출</button>
             </div>
           </div>
