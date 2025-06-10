@@ -1,6 +1,6 @@
 "use client";
 
-import {useEffect, useState} from "react";
+import { useEffect, useState, Suspense } from "react";
 import './app.css';
 import LoginOutlinedIcon from '@mui/icons-material/LoginOutlined';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
@@ -8,16 +8,17 @@ import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
 import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
-import {Provider} from "react-redux";
+import { Provider } from "react-redux";
 import Link from "next/link";
-import {usePathname, useRouter, useSearchParams} from "next/navigation";
-import {store} from "@/redux/store";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { store } from "@/redux/store";
 import SSEClient from "@/components/SSEClient";
 import NotificationPopup from "@/components/NotificationPopup";
-import {NotificationProvider, useNotification} from "@/contexts/NotificationContext";
+import { NotificationProvider, useNotification } from "@/contexts/NotificationContext";
 import axios from "axios";
 
-export default function RootLayout({ children }) {
+// useSearchParams를 사용하는 컴포넌트를 분리
+function LayoutContent({ children }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState("");
   const router = useRouter();
@@ -49,7 +50,7 @@ export default function RootLayout({ children }) {
     // 로그인 이벤트 수신 (수동 dispatch를 위한)
     const handleLogin = () => syncLoginState();
     const handleLogout = () => syncLoginState();
-    
+
     window.addEventListener("login", handleLogin);
     window.addEventListener("logout", handleLogout);
 
@@ -120,50 +121,59 @@ export default function RootLayout({ children }) {
   };
 
   return (
+    <Provider store={store}>
+      <NotificationProvider>
+        <SSEClient />
+        <HeaderComponent
+          isLoggedIn={isLoggedIn}
+          username={username}
+          handleLogout={handleLogout}
+        />
+
+        <nav className="top-nav">
+          {menuBoards.map((parent) => (
+            <div key={parent.board_idx} className="nav-item">
+              <Link
+                href={`/post?board_idx=${parent.board_idx}`}
+                className={isActiveBoard(parent.board_idx) ? 'active-nav-link' : ''}
+              >
+                {parent.board_name}
+              </Link>
+              {parent.children.length > 0 && (
+                <div className={`dropdown ${hasActiveChild(parent) ? 'show-dropdown' : ''}`}>
+                  {parent.children.map((child) => (
+                    <Link
+                      key={child.board_idx}
+                      href={`/post?board_idx=${child.board_idx}`}
+                      className={isActiveBoard(child.board_idx) ? 'active-nav-link' : ''}
+                    >
+                      {child.board_name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </nav>
+
+        <main className="container">{children}</main>
+        <footer>ⓒ 2025 withcare</footer>
+      </NotificationProvider>
+    </Provider>
+  );
+}
+
+// 메인 컴포넌트 - Suspense로 래핑
+export default function RootLayout({ children }) {
+  return (
     <html lang="ko">
       <head>
         <link rel="icon" href="/favicon.ico" type="image/x-icon" />
       </head>
       <body>
-        <Provider store={store}>
-          <NotificationProvider>
-            <SSEClient />
-            <HeaderComponent
-              isLoggedIn={isLoggedIn}
-              username={username}
-              handleLogout={handleLogout}
-            />
-
-            <nav className="top-nav">
-              {menuBoards.map((parent) => (
-                <div key={parent.board_idx} className="nav-item">
-                  <Link 
-                    href={`/post?board_idx=${parent.board_idx}`}
-                    className={isActiveBoard(parent.board_idx) ? 'active-nav-link' : ''}
-                  >
-                    {parent.board_name}
-                  </Link>
-                  {parent.children.length > 0 && (
-                    <div className={`dropdown ${hasActiveChild(parent) ? 'show-dropdown' : ''}`}>
-                      {parent.children.map((child) => (
-                        <Link
-                          key={child.board_idx}
-                          href={`/post?board_idx=${child.board_idx}`}
-                          className={isActiveBoard(child.board_idx) ? 'active-nav-link' : ''}
-                        >
-                          {child.board_name}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </nav>
-
-            <main className="container">{children}</main>
-            <footer>ⓒ 2025 withcare</footer>
-          </NotificationProvider>
-        </Provider>
+        <Suspense fallback={<div>로딩 중...</div>}>
+          <LayoutContent>{children}</LayoutContent>
+        </Suspense>
       </body>
     </html>
   );
@@ -251,7 +261,7 @@ function HeaderComponent({ isLoggedIn, username, handleLogout }) {
           <Link href="/login">
             <LoginOutlinedIcon className="top-nav-icon"
               title="로그인"
-              style={{marginTop: '6px'}}
+              style={{ marginTop: '6px' }}
             />
           </Link>
         ) : (
@@ -260,23 +270,23 @@ function HeaderComponent({ isLoggedIn, username, handleLogout }) {
             <LogoutOutlinedIcon className="top-nav-icon"
               onClick={handleLogout}
               title="로그아웃"
-              style={{marginTop: '6px', marginRight: '13px'}}
+              style={{ marginTop: '6px', marginRight: '13px' }}
             />
           </>
         )}
         <Link href="/search">
-          <SearchOutlinedIcon className="top-nav-icon" title="검색" style={{marginTop: '6px'}}/>
+          <SearchOutlinedIcon className="top-nav-icon" title="검색" style={{ marginTop: '6px' }} />
         </Link>
         {isLoggedIn ? (
           <Link href="/msg">
-            <EmailOutlinedIcon className="top-nav-icon" title="쪽지" style={{marginTop: '7px' }} />
+            <EmailOutlinedIcon className="top-nav-icon" title="쪽지" style={{ marginTop: '7px' }} />
           </Link>
         ) : (
-          <EmailOutlinedIcon 
-            className="top-nav-icon" 
-            title="쪽지" 
-            onClick={handleMessageClick} 
-            style={{ cursor: 'pointer' , marginTop: '6px' }}
+          <EmailOutlinedIcon
+            className="top-nav-icon"
+            title="쪽지"
+            onClick={handleMessageClick}
+            style={{ cursor: 'pointer', marginTop: '6px' }}
           />
         )}
         <div className="notification-container">
@@ -292,10 +302,10 @@ function HeaderComponent({ isLoggedIn, username, handleLogout }) {
         </div>
         <Link href="/profile">
           <AccountCircleOutlinedIcon
-              className="top-nav-icon"
-              title="프로필"
-              onClick={handleProfileClick}
-              style={{ cursor: 'pointer' }}
+            className="top-nav-icon"
+            title="프로필"
+            onClick={handleProfileClick}
+            style={{ cursor: 'pointer' }}
           />
         </Link>
       </div>

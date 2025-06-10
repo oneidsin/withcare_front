@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import axios from 'axios';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { UserWithIcons, clearUserIconCache } from '@/components/UserIcons';
 import './post.css';
 
-export default function PostPage() {
+// useSearchParams를 사용하는 컴포넌트를 분리
+function PostPageContent() {
     // 게시글 리스트
     const searchParams = useSearchParams();
     const router = useRouter();
@@ -95,8 +96,8 @@ export default function PostPage() {
     };
 
     // 관리자가 아닌 경우 블라인드 처리된 게시글 필터링
-    const filteredPosts = userLevel === 7 
-        ? posts 
+    const filteredPosts = userLevel === 7
+        ? posts
         : posts.filter(item => !item.post.post_blind_yn);
 
     return (
@@ -111,37 +112,37 @@ export default function PostPage() {
 
             <table className="post-table">
                 <thead>
-                <tr>
-                    <th>글번호</th>
-                    <th>제목</th>
-                    <th>작성자</th>
-                    <th>조회</th>
-                    <th>추천</th>
-                    <th>날짜</th>
-                </tr>
+                    <tr>
+                        <th>글번호</th>
+                        <th>제목</th>
+                        <th>작성자</th>
+                        <th>조회</th>
+                        <th>추천</th>
+                        <th>날짜</th>
+                    </tr>
                 </thead>
                 <tbody>
-                {filteredPosts.map((item) => (
-                    <tr key={`${item.post.board_idx}-${item.post.post_idx}`} onClick={() => router.push(`/post/detail?post_idx=${item.post.post_idx}`)} style={{ cursor: 'pointer' }}>
-                        <td>{item.post.post_idx}</td>
-                        <td>
-                            {item.post.post_blind_yn && '🔒 '}
-                            {item.post.post_title}
-                            {item.photos && item.photos.length > 0 && <span> 📷</span>}
-                            {item.commentCount > 0 && <span className="comment-count"> [{item.commentCount}]</span>}
-                        </td>
-                        <td>
-                            <UserWithIcons 
-                                userId={item.post.id} 
-                                isAnonymousBoard={isAnonymousBoard}
-                                onClick={(userId) => router.push(`/profile/view/${userId}`)}
-                            />
-                        </td>
-                        <td>{item.post.post_view_cnt}</td>
-                        <td>{item.likes || 0}</td>
-                        <td>{item.post.post_create_date?.slice(0, 10)}</td>
-                    </tr>
-                ))}
+                    {filteredPosts.map((item) => (
+                        <tr key={`${item.post.board_idx}-${item.post.post_idx}`} onClick={() => router.push(`/post/detail?post_idx=${item.post.post_idx}`)} style={{ cursor: 'pointer' }}>
+                            <td>{item.post.post_idx}</td>
+                            <td>
+                                {item.post.post_blind_yn && '🔒 '}
+                                {item.post.post_title}
+                                {item.photos && item.photos.length > 0 && <span> 📷</span>}
+                                {item.commentCount > 0 && <span className="comment-count"> [{item.commentCount}]</span>}
+                            </td>
+                            <td>
+                                <UserWithIcons
+                                    userId={item.post.id}
+                                    isAnonymousBoard={isAnonymousBoard}
+                                    onClick={(userId) => router.push(`/profile/view/${userId}`)}
+                                />
+                            </td>
+                            <td>{item.post.post_view_cnt}</td>
+                            <td>{item.likes || 0}</td>
+                            <td>{item.post.post_create_date?.slice(0, 10)}</td>
+                        </tr>
+                    ))}
                 </tbody>
             </table>
 
@@ -186,5 +187,14 @@ export default function PostPage() {
                 <button className="post-search-btn" type="submit">검색</button>
             </form>
         </div>
+    );
+}
+
+// 메인 컴포넌트 - Suspense로 래핑
+export default function PostPage() {
+    return (
+        <Suspense fallback={<div>로딩 중...</div>}>
+            <PostPageContent />
+        </Suspense>
     );
 }

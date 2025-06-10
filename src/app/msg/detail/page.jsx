@@ -1,32 +1,33 @@
 "use client"
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import axios from 'axios';
 import '../msg.css';
 import Link from 'next/link';
 
-export default function MessageDetail() {
+// useSearchParams를 사용하는 컴포넌트를 분리
+function MessageDetailContent() {
     const [message, setMessage] = useState(null);
     const [loading, setLoading] = useState(true);
     const searchParams = useSearchParams();
-    
+
     // URL 파라미터에서 필요한 정보 추출
     const msgId = searchParams.get('id');
     const type = searchParams.get('type'); // 'inbox' 또는 'outbox'
-    
+
     useEffect(() => {
         const fetchMessageDetail = async () => {
             const id = sessionStorage.getItem('id');
             const token = sessionStorage.getItem('token');
-            
+
             const { data } = await axios.get(
                 `http://localhost/msg/detail/${id}/${msgId}`,
                 {
                     headers: { Authorization: token }
                 }
             );
-            
+
             if (data.loginYN && data.msg) {
                 setMessage(data.msg);
             }
@@ -51,7 +52,7 @@ export default function MessageDetail() {
             <div className='inbox-header'>
                 <h1>📝 쪽지 내용</h1>
             </div>
-            
+
             <table className="msg-form-table">
                 <tbody>
                     <tr>
@@ -104,5 +105,14 @@ export default function MessageDetail() {
                 </div>
             </div>
         </div>
+    );
+}
+
+// 메인 컴포넌트 - Suspense로 래핑
+export default function MessageDetail() {
+    return (
+        <Suspense fallback={<div>로딩 중...</div>}>
+            <MessageDetailContent />
+        </Suspense>
     );
 }

@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import axios from 'axios';
 import './update.css';
-import {fetchVisibleBoards} from "@/app/post/boardList";
+import { fetchVisibleBoards } from "@/app/post/boardList";
 
-export default function PostUpdatePage() {
+// useSearchParams를 사용하는 컴포넌트를 분리
+function PostUpdateContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const postIdx = searchParams.get('post_idx');
@@ -21,7 +22,7 @@ export default function PostUpdatePage() {
 
     const [newFiles, setNewFiles] = useState([]);
     const [previewUrls, setPreviewUrls] = useState([]);
-    
+
     // 에러 메시지 상태 추가
     const [imageError, setImageError] = useState('');
 
@@ -38,14 +39,14 @@ export default function PostUpdatePage() {
             const res = await axios.get(`http://localhost/post/detail/${postIdx}`, {
                 headers: { Authorization: token },
             });
-            
+
             if (res.data.success) {
                 const post = res.data.post;
                 setTitle(post.post_title);
                 setContent(post.post_content);
                 setBoard(post.board_idx.toString());
                 setAllowComment(post.com_yn === true);
-                
+
                 // 기존 파일 정보 설정
                 if (res.data.photos) {
                     setPhotos(res.data.photos);
@@ -67,26 +68,26 @@ export default function PostUpdatePage() {
         if (!files || files.length === 0) return;
 
         const fileArray = Array.from(files);
-        
+
         // 파일 개수 검증 (기존 유지할 파일 + 새 파일)
         const totalFileCount = keepFileIdx.length + newFiles.length + fileArray.length;
         if (totalFileCount > 10) {
             setImageError('이미지는 최대 10장까지만 업로드할 수 있습니다.');
             return;
         }
-        
+
         // 현재 선택된 파일들의 총 크기 계산
         const currentTotalSize = newFiles.reduce((total, file) => total + file.size, 0);
         const newFilesSize = fileArray.reduce((total, file) => total + file.size, 0);
         const totalSize = currentTotalSize + newFilesSize;
-        
+
         // 총 파일 크기 검증 (10MB = 10 * 1024 * 1024 바이트)
         if (totalSize > 10 * 1024 * 1024) {
             const totalSizeMB = (totalSize / (1024 * 1024)).toFixed(2);
             setImageError(`이미지 총 용량이 제한을 초과합니다: ${totalSizeMB}MB (최대 10MB)`);
             return;
         }
-        
+
         // 에러 메시지 초기화
         setImageError('');
 
@@ -125,37 +126,37 @@ export default function PostUpdatePage() {
             setImageError('');
         }
     };
-    
+
     const validateForm = () => {
         if (!title.trim()) {
             alert('제목을 입력해주세요.');
             return false;
         }
-        
+
         if (!content.trim()) {
             alert('내용을 입력해주세요.');
             return false;
         }
-        
+
         if (!board) {
             alert('게시판을 선택해주세요.');
             return false;
         }
-        
+
         if (imageError) {
             alert(imageError);
             return false;
         }
-        
+
         return true;
     };
 
     const handleUpdate = async () => {
         // 폼 유효성 검사
         if (!validateForm()) return;
-        
+
         const token = sessionStorage.getItem('token');
-        
+
         try {
             // 이미지가 있을 경우, 총 용량 확인
             if (newFiles.length > 0) {
@@ -166,7 +167,7 @@ export default function PostUpdatePage() {
                     return;
                 }
             }
-            
+
             const postRes = await axios.put('http://localhost/post/update', {
                 post_idx: postIdx,
                 post_title: title,
@@ -176,31 +177,31 @@ export default function PostUpdatePage() {
             }, {
                 headers: { Authorization: token },
             });
-    
+
             if (!postRes.data.success) {
                 alert('게시글 수정 실패');
                 return;
             }
-    
+
             const form = new FormData();
             form.append('post_idx', postIdx);
             keepFileIdx.forEach(idx => form.append('keepFileIdx', idx));
             newFiles.forEach(file => form.append('files', file));
-    
+
             const fileRes = await axios.post('http://localhost/post/file/update', form, {
                 headers: { Authorization: token },
             });
-    
+
             if (!fileRes.data.success) {
                 // 파일 업로드 실패 시 서버에서 전달된 메시지 표시
                 const errorMessage = fileRes.data.message || '파일 수정 실패';
                 alert(errorMessage);
-                
+
                 // 게시글은 수정되었지만 파일 업로드가 실패한 경우 게시글 상세 페이지로 이동
                 router.push(`/post/detail?post_idx=${postIdx}&board_idx=${parseInt(board)}`);
                 return;
             }
-    
+
             alert('게시글이 수정되었습니다.');
             router.push(`/post/detail?post_idx=${postIdx}&board_idx=${parseInt(board)}`);
         } catch (error) {
@@ -344,5 +345,14 @@ export default function PostUpdatePage() {
                 <button onClick={handleUpdate} className="submit-button">등록</button>
             </div>
         </div>
+    );
+}
+
+// 메인 컴포넌트 - Suspense로 래핑
+export default function PostUpdatePage() {
+    return (
+        <Suspense fallback={<div>로딩 중...</div>}>
+            <PostUpdateContent />
+        </Suspense>
     );
 }

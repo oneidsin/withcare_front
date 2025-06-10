@@ -1,10 +1,11 @@
 "use client"
 
 import "../../login.css"
-import {useState, useEffect} from "react";
-import {useSearchParams} from 'next/navigation';
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from 'next/navigation';
 
-export default function ResetPwPage() {
+// useSearchParams를 사용하는 컴포넌트를 분리
+function ResetPwContent() {
     const searchParams = useSearchParams();
     const [info, setInfo] = useState({
         id: '',
@@ -17,12 +18,12 @@ export default function ResetPwPage() {
         // URL에서 id 파라미터 가져오기
         const id = searchParams.get('id');
         if (id) {
-            setInfo(prev => ({...prev, id}));
+            setInfo(prev => ({ ...prev, id }));
         }
     }, [searchParams]);
 
     const save = (e) => {
-        const {name, value} = e.target;
+        const { name, value } = e.target;
         setInfo(prev => ({
             ...prev,
             [name]: value
@@ -63,8 +64,8 @@ export default function ResetPwPage() {
         <div className="login">
             <img src="/logo.png" alt="withcare 로고" className="logo" />
             <h3>비밀번호 재설정</h3>
-            <hr/>
-            <br/>
+            <hr />
+            <br />
             <table>
                 <tbody>
                     <tr>
@@ -94,17 +95,26 @@ export default function ResetPwPage() {
                 </tbody>
             </table>
 
-            <div style={{marginTop: '20px', textAlign: 'center'}}>
+            <div style={{ marginTop: '20px', textAlign: 'center' }}>
                 <button onClick={resetPw}>
                     비밀번호 변경
                 </button>
             </div>
 
             {result && (
-                <p style={{textAlign: 'center', marginTop: '20px', color: '#333', fontSize: '16px'}}>
+                <p style={{ textAlign: 'center', marginTop: '20px', color: '#333', fontSize: '16px' }}>
                     {result}
                 </p>
             )}
         </div>
+    );
+}
+
+// 메인 컴포넌트 - Suspense로 래핑
+export default function ResetPwPage() {
+    return (
+        <Suspense fallback={<div>로딩 중...</div>}>
+            <ResetPwContent />
+        </Suspense>
     );
 }

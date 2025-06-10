@@ -1,12 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import axios from 'axios';
 import '../member.css';
 import './detail.css';
 
-export default function MemberDetailPage() {
+// useSearchParams를 사용하는 컴포넌트를 분리
+function DetailContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const id = searchParams.get('id');
@@ -17,7 +18,7 @@ export default function MemberDetailPage() {
     const [timelines, setTimelines] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('basic'); // 'basic', 'activity', 'timeline'
-    
+
     // 페이지네이션 상태 추가
     const [currentPostPage, setCurrentPostPage] = useState(1);
     const [currentCommentPage, setCurrentCommentPage] = useState(1);
@@ -64,7 +65,7 @@ export default function MemberDetailPage() {
                 );
 
                 setPosts(postsRes.data.data || []);
-                
+
                 // 댓글 데이터 디버깅 로그 추가
                 console.log('댓글 데이터 응답:', commentsRes.data);
                 if (commentsRes.data && commentsRes.data.data) {
@@ -74,7 +75,7 @@ export default function MemberDetailPage() {
                         console.log('첫 번째 댓글 구조:', commentsRes.data.data[0]);
                     }
                 }
-                
+
                 setComments(commentsRes.data.data || []);
                 setTimelines(timelinesRes.data.data || []);
 
@@ -140,7 +141,7 @@ export default function MemberDetailPage() {
             // admin_yn이 true면 관리자(7), false면 일반회원(1)
             // 관리자 권한 해제 시 lv_idx=1로 설정, 부여 시 lv_idx=7로 설정
             console.log(`권한 변경 시도: ${id}, 현재 admin_yn: ${member.admin_yn}, 변경할 lv_idx: ${member.admin_yn ? 1 : 7}`);
-            
+
             const res = await axios.put(
                 'http://localhost/admin/grant',
                 {
@@ -149,7 +150,7 @@ export default function MemberDetailPage() {
                 },
                 { headers: { Authorization: token } }
             );
-            
+
             console.log('응답 결과:', res.data);
 
             if (res.data.success) {
@@ -175,11 +176,11 @@ export default function MemberDetailPage() {
     // 페이지 번호 생성 함수
     const generatePageNumbers = (totalItems, itemsPerPage, currentPage) => {
         const totalPages = Math.ceil(totalItems / itemsPerPage);
-        
+
         // 표시할 페이지 번호 범위 계산 (최대 5개)
         let startPage = Math.max(1, currentPage - 2);
         let endPage = Math.min(totalPages, startPage + 4);
-        
+
         // 5개 페이지 번호를 유지하기 위한 조정
         if (endPage - startPage < 4 && totalPages > 5) {
             if (startPage === 1) {
@@ -188,12 +189,12 @@ export default function MemberDetailPage() {
                 startPage = Math.max(1, totalPages - 4);
             }
         }
-        
+
         const pageNumbers = [];
         for (let i = startPage; i <= endPage; i++) {
             pageNumbers.push(i);
         }
-        
+
         return { pageNumbers, totalPages };
     };
 
@@ -208,11 +209,11 @@ export default function MemberDetailPage() {
     // 현재 페이지에 표시할 게시글과 댓글
     const currentPosts = paginate(posts, currentPostPage, postsPerPage);
     const currentComments = paginate(comments, currentCommentPage, commentsPerPage);
-    
+
     // 페이지 번호 계산
-    const { pageNumbers: postPageNumbers, totalPages: totalPostPages } = 
+    const { pageNumbers: postPageNumbers, totalPages: totalPostPages } =
         generatePageNumbers(posts.length, postsPerPage, currentPostPage);
-    const { pageNumbers: commentPageNumbers, totalPages: totalCommentPages } = 
+    const { pageNumbers: commentPageNumbers, totalPages: totalCommentPages } =
         generatePageNumbers(comments.length, commentsPerPage, currentCommentPage);
 
     return (
@@ -375,17 +376,17 @@ export default function MemberDetailPage() {
                                                 ))}
                                             </tbody>
                                         </table>
-                                        
+
                                         {posts.length > postsPerPage && (
                                             <div className="pagination">
-                                                <button 
+                                                <button
                                                     className="pagination-button"
                                                     onClick={() => setCurrentPostPage(prev => Math.max(prev - 1, 1))}
                                                     disabled={currentPostPage === 1}
                                                 >
                                                     &lt;
                                                 </button>
-                                                
+
                                                 {postPageNumbers.map(number => (
                                                     <button
                                                         key={number}
@@ -395,7 +396,7 @@ export default function MemberDetailPage() {
                                                         {number}
                                                     </button>
                                                 ))}
-                                                
+
                                                 <button
                                                     className="pagination-button"
                                                     onClick={() => setCurrentPostPage(prev => Math.min(prev + 1, totalPostPages))}
@@ -429,7 +430,7 @@ export default function MemberDetailPage() {
                                                     const postTitle = comment.post_title || '제목 없음';
                                                     const postIdx = comment.post_idx || '';
                                                     const commentContent = comment.com_content || comment.content || '내용 없음';
-                                                    
+
                                                     // 날짜 형식 확인 및 안전하게 변환
                                                     let commentDate = '날짜 정보 없음';
                                                     const dateField = comment.com_create_date || comment.createDate;
@@ -440,10 +441,10 @@ export default function MemberDetailPage() {
                                                             console.error('날짜 변환 오류:', e);
                                                         }
                                                     }
-                                                    
+
                                                     return (
-                                                        <tr 
-                                                            key={comment.com_idx || index} 
+                                                        <tr
+                                                            key={comment.com_idx || index}
                                                             onClick={() => postIdx && window.open(`/post/detail?post_idx=${postIdx}`, '_blank')}
                                                         >
                                                             <td>{postTitle}</td>
@@ -454,17 +455,17 @@ export default function MemberDetailPage() {
                                                 })}
                                             </tbody>
                                         </table>
-                                        
+
                                         {comments.length > commentsPerPage && (
                                             <div className="pagination">
-                                                <button 
+                                                <button
                                                     className="pagination-button"
                                                     onClick={() => setCurrentCommentPage(prev => Math.max(prev - 1, 1))}
                                                     disabled={currentCommentPage === 1}
                                                 >
                                                     &lt;
                                                 </button>
-                                                
+
                                                 {commentPageNumbers.map(number => (
                                                     <button
                                                         key={number}
@@ -474,7 +475,7 @@ export default function MemberDetailPage() {
                                                         {number}
                                                     </button>
                                                 ))}
-                                                
+
                                                 <button
                                                     className="pagination-button"
                                                     onClick={() => setCurrentCommentPage(prev => Math.min(prev + 1, totalCommentPages))}
@@ -494,5 +495,14 @@ export default function MemberDetailPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+// 메인 컴포넌트 - Suspense로 래핑
+export default function MemberDetailPage() {
+    return (
+        <Suspense fallback={<div>로딩 중...</div>}>
+            <DetailContent />
+        </Suspense>
     );
 }

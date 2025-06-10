@@ -1,10 +1,11 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import "./report.css";
 import axios from "axios";
 import { useSearchParams } from "next/navigation";
 
-export default function UserReport() {
+// useSearchParams를 사용하는 컴포넌트를 분리
+function UserReportContent() {
 
   const [reportCategory, setReportCategory] = useState([]);
   const [selectedCateIdx, setSelectedCateIdx] = useState(null);
@@ -106,5 +107,14 @@ export default function UserReport() {
         </div>
       </div>
     </div>
+  );
+}
+
+// 메인 컴포넌트 - Suspense로 래핑
+export default function UserReport() {
+  return (
+    <Suspense fallback={<div>로딩 중...</div>}>
+      <UserReportContent />
+    </Suspense>
   );
 }

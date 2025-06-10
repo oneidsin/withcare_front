@@ -1,12 +1,13 @@
 'use client';
 
-import {useEffect, useState} from 'react';
-import {useRouter, useSearchParams} from 'next/navigation';
+import { useEffect, useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import axios from 'axios';
 import '../update/update.css';
-import {fetchVisibleBoards} from "@/app/post/boardList";
+import { fetchVisibleBoards } from "@/app/post/boardList";
 
-export default function PostWritePage() {
+// useSearchParams를 사용하는 컴포넌트를 분리
+function PostWriteContent() {
     const router = useRouter();
 
     // 게시글 작성 시 게시판 자동 입력
@@ -25,7 +26,7 @@ export default function PostWritePage() {
 
     const [newFiles, setNewFiles] = useState([]);
     const [previewUrls, setPreviewUrls] = useState([]);
-    
+
     // 에러 메시지 상태 추가
     const [imageError, setImageError] = useState('');
 
@@ -68,28 +69,28 @@ export default function PostWritePage() {
 
     const handleFileChange = (e) => {
         const files = Array.from(e.target.files);
-        
+
         // 파일 개수 검증
         if (newFiles.length + files.length > 10) {
             setImageError('이미지는 최대 10장까지만 업로드할 수 있습니다.');
             return;
         }
-        
+
         // 현재 선택된 파일들의 총 크기 계산
         const currentTotalSize = newFiles.reduce((total, file) => total + file.size, 0);
         const newFilesSize = files.reduce((total, file) => total + file.size, 0);
         const totalSize = currentTotalSize + newFilesSize;
-        
+
         // 총 파일 크기 검증 (10MB = 10 * 1024 * 1024 바이트)
         if (totalSize > 10 * 1024 * 1024) {
             const totalSizeMB = (totalSize / (1024 * 1024)).toFixed(2);
             setImageError(`이미지 총 용량이 제한을 초과합니다: ${totalSizeMB}MB (최대 10MB)`);
             return;
         }
-        
+
         // 에러 메시지 초기화
         setImageError('');
-        
+
         const readers = files.map(file => {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -106,7 +107,7 @@ export default function PostWritePage() {
     const handleRemoveNewFile = (index) => {
         setNewFiles(prev => prev.filter((_, i) => i !== index));
         setPreviewUrls(prev => prev.filter((_, i) => i !== index));
-        
+
         // 파일 삭제 시 에러 메시지 초기화
         setImageError('');
     };
@@ -116,22 +117,22 @@ export default function PostWritePage() {
             alert('제목을 입력해주세요.');
             return false;
         }
-        
+
         if (!content.trim()) {
             alert('내용을 입력해주세요.');
             return false;
         }
-        
+
         if (!board) {
             alert('게시판을 선택해주세요.');
             return false;
         }
-        
+
         if (imageError) {
             alert(imageError);
             return false;
         }
-        
+
         return true;
     };
 
@@ -170,28 +171,28 @@ export default function PostWritePage() {
             }, {
                 headers: { Authorization: token },
             });
-    
+
             if (!postRes.data.success) {
                 alert('게시글 등록 실패');
                 return;
             }
-            
+
             const postIdx = postRes.data.idx;
-    
+
             if (newFiles.length > 0) {
                 const form = new FormData();
                 form.append('post_idx', postIdx);
                 newFiles.forEach(file => form.append('files', file));
-    
+
                 const fileRes = await axios.post('http://localhost/post/file/upload', form, {
                     headers: { Authorization: token },
                 });
-    
+
                 if (!fileRes.data.success) {
                     // 파일 업로드 실패 시 서버에서 전달된 메시지 표시
                     const errorMessage = fileRes.data.message || '파일 업로드 실패';
                     alert(errorMessage);
-                    
+
                     // 게시글은 작성되었지만 파일 업로드가 실패한 경우 게시글 삭제 요청
                     try {
                         await axios.put('http://localhost/post/delete', {
@@ -203,11 +204,11 @@ export default function PostWritePage() {
                     } catch (deleteError) {
                         console.error('게시글 삭제 중 오류 발생:', deleteError);
                     }
-                    
+
                     return;
                 }
             }
-    
+
             alert('게시글이 등록되었습니다.');
             router.push(`/post/detail?post_idx=${postIdx}&board_idx=${board}`);
         } catch (error) {
@@ -281,5 +282,14 @@ export default function PostWritePage() {
                 <button onClick={handleSubmit} className="submit-button">등록</button>
             </div>
         </div>
+    );
+}
+
+// 메인 컴포넌트 - Suspense로 래핑
+export default function PostWritePage() {
+    return (
+        <Suspense fallback={<div>로딩 중...</div>}>
+            <PostWriteContent />
+        </Suspense>
     );
 }

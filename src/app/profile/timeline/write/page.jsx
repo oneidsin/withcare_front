@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import "../../profile.css";
 import axios from 'axios';
 
-export default function TimelineWritePage() {
+// useSearchParams를 사용하는 컴포넌트를 분리
+function TimelineWriteContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -26,7 +27,7 @@ export default function TimelineWritePage() {
 
         const token = sessionStorage.getItem('token');
         const userId = sessionStorage.getItem('id');
-        
+
         if (!token || !userId) {
             router.push('/login');  // 로그인 안 된 경우 로그인 페이지로 이동
             return;
@@ -42,7 +43,7 @@ export default function TimelineWritePage() {
                 day: formData.date
             },
             {
-                headers: { 
+                headers: {
                     'Authorization': token,
                     'Content-Type': 'application/json'
                 }
@@ -66,7 +67,7 @@ export default function TimelineWritePage() {
     // 입력 필드 값 변경 처리
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        
+
         // 제목과 내용의 글자 수 제한
         if (name === 'title' && value.length > 50) {
             alert('제목은 50자를 초과할 수 없습니다.');
@@ -152,5 +153,14 @@ export default function TimelineWritePage() {
                 </form>
             </div>
         </div>
+    );
+}
+
+// 메인 컴포넌트 - Suspense로 래핑
+export default function TimelineWritePage() {
+    return (
+        <Suspense fallback={<div>로딩 중...</div>}>
+            <TimelineWriteContent />
+        </Suspense>
     );
 }

@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import axios from 'axios';
 import './detail.css';
 
-export default function PostDetailPage() {
+function PostDetailContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const postIdx = searchParams.get('post_idx');
@@ -466,20 +466,20 @@ export default function PostDetailPage() {
         try {
             console.log(`🔍 사용자 ${userId} 아이콘 정보 요청 중...`);
             const response = await axios.get(`http://localhost/profile/public/${userId}`);
-            
+
             console.log(`📋 ${userId} API 응답:`, response.data);
-            
+
             if (response.data?.status === "success") {
                 const profile = response.data.profile;
                 const levelInfo = response.data.levelInfo;
                 const mainBadge = response.data.mainBadge;
-                
+
                 console.log(`📊 ${userId} 레벨 정보:`, levelInfo);
                 console.log(`🏆 ${userId} 배지 정보:`, mainBadge);
-                
+
                 let levelIconUrl = null;
                 let levelName = '새싹';
-                
+
                 // 레벨 정보가 없거나 아이콘이 없는 경우 별도로 레벨 목록에서 찾기
                 if (levelInfo?.lv_idx) {
                     try {
@@ -487,10 +487,10 @@ export default function PostDetailPage() {
                         const levelRes = await axios.get("http://localhost:80/admin/level", {
                             headers: { Authorization: token }
                         });
-                        
+
                         const levels = Array.isArray(levelRes.data) ? levelRes.data : levelRes.data.result || [];
                         const userLevel = levels.find(level => Number(level.lv_idx) === Number(levelInfo.lv_idx));
-                        
+
                         if (userLevel) {
                             levelIconUrl = userLevel.lv_icon;
                             levelName = userLevel.lv_name;
@@ -505,7 +505,7 @@ export default function PostDetailPage() {
                         levelName = levelInfo?.lv_name || '새싹';
                     }
                 }
-                
+
                 // 배지 아이콘 URL 처리
                 let badgeIconUrl = null;
                 if (mainBadge?.bdg_icon) {
@@ -515,27 +515,27 @@ export default function PostDetailPage() {
                         badgeIconUrl = `http://localhost:80/file/${mainBadge.bdg_icon}`;
                     }
                 }
-                
+
                 const iconData = {
                     levelIcon: levelIconUrl,
                     levelName: levelName,
                     badgeIcon: badgeIconUrl,
                     badgeName: mainBadge?.bdg_name || null
                 };
-                
+
                 console.log(`✅ ${userId} 최종 아이콘 데이터:`, iconData);
-                
+
                 setUserIcons(prev => ({
                     ...prev,
                     [userId]: iconData
                 }));
-                
+
                 return iconData;
             }
         } catch (error) {
             console.error(`❌ 사용자 ${userId} 아이콘 정보 로딩 실패:`, error);
         }
-        
+
         return null;
     };
 
@@ -562,8 +562,8 @@ export default function PostDetailPage() {
         return (
             <div className="user-icons">
                 {icons.levelIcon && (
-                    <img 
-                        src={icons.levelIcon} 
+                    <img
+                        src={icons.levelIcon}
                         alt={icons.levelName}
                         className="level-icon-small"
                         title={`레벨: ${icons.levelName}`}
@@ -577,7 +577,7 @@ export default function PostDetailPage() {
                     />
                 )}
                 {icons.badgeIcon && (
-                    <img 
+                    <img
                         src={icons.badgeIcon}
                         alt={icons.badgeName}
                         className="badge-icon-small"
@@ -598,7 +598,7 @@ export default function PostDetailPage() {
     // 멘션 파싱 및 렌더링 함수
     const renderCommentWithMentions = (content) => {
         if (!content) return '';
-        
+
         // @로 시작하는 멘션을 찾는 정규식 (공백이나 문장 끝까지)
         const mentionRegex = /@([a-zA-Z0-9_]+)/g;
         const parts = [];
@@ -610,7 +610,7 @@ export default function PostDetailPage() {
             if (match.index > lastIndex) {
                 parts.push(content.slice(lastIndex, match.index));
             }
-            
+
             // 멘션 부분을 클릭 가능한 span으로 추가
             const mentionedUserId = match[1];
             parts.push(
@@ -627,15 +627,15 @@ export default function PostDetailPage() {
                     @{mentionedUserId}
                 </span>
             );
-            
+
             lastIndex = match.index + match[0].length;
         }
-        
+
         // 남은 텍스트 추가
         if (lastIndex < content.length) {
             parts.push(content.slice(lastIndex));
         }
-        
+
         return parts.length > 0 ? parts : content;
     };
 
@@ -643,26 +643,26 @@ export default function PostDetailPage() {
     return (
         <div className="detail-container">
             <div className="detail-header">
-            <span
-                className="detail-category"
-                style={{
-                    cursor: 'pointer',
-                    padding: '4px 8px',
-                    borderRadius: '12px',
-                    backgroundColor: '#f0f8ff',
-                    color: '#007bff',
-                    fontWeight: 'bold',
-                    transition: 'all 0.3s',
-                    display: 'inline-block'
-                }}
-                onClick={() => {
-                    if (effectiveBoardIdx) {
-                        router.push(`/post/?board_idx=${effectiveBoardIdx}`);
-                    }
-                }}
-            >
-                {boardName || '게시판'}
-            </span>
+                <span
+                    className="detail-category"
+                    style={{
+                        cursor: 'pointer',
+                        padding: '4px 8px',
+                        borderRadius: '12px',
+                        backgroundColor: '#f0f8ff',
+                        color: '#007bff',
+                        fontWeight: 'bold',
+                        transition: 'all 0.3s',
+                        display: 'inline-block'
+                    }}
+                    onClick={() => {
+                        if (effectiveBoardIdx) {
+                            router.push(`/post/?board_idx=${effectiveBoardIdx}`);
+                        }
+                    }}
+                >
+                    {boardName || '게시판'}
+                </span>
             </div>
 
             <h2 className="detail-title">{post.post_title}</h2>
@@ -674,7 +674,7 @@ export default function PostDetailPage() {
                             <span>익명</span>
                         ) : (
                             <div className="author-with-icons">
-                                <span 
+                                <span
                                     className="clickable-author"
                                     onClick={() => router.push(`/profile/view/${post.id}`)}
                                 >
@@ -710,13 +710,13 @@ export default function PostDetailPage() {
                     const imgSrc = photo.file_url.startsWith('http://') || photo.file_url.startsWith('https://')
                         ? photo.file_url  // 이미 전체 URL이면 그대로 사용
                         : `http://localhost/file/${photo.file_url}`;  // 아니면 경로 추가
-                    
+
                     return (
-                        <img 
-                            key={idx} 
-                            src={imgSrc} 
-                            alt="첨부 이미지" 
-                            className="attached-image" 
+                        <img
+                            key={idx}
+                            src={imgSrc}
+                            alt="첨부 이미지"
+                            className="attached-image"
                             onError={(e) => {
                                 console.error("이미지 로드 실패:", imgSrc);
                                 e.target.style.display = 'none'; // 이미지 로드 실패 시 숨김 처리
@@ -761,7 +761,7 @@ export default function PostDetailPage() {
                                             <span className="comlist-writer">익명</span>
                                         ) : (
                                             <div className="comment-author-with-icons">
-                                                <span 
+                                                <span
                                                     className="comlist-writer clickable-author"
                                                     onClick={() => router.push(`/profile/view/${comment.id}`)}
                                                 >
@@ -842,9 +842,9 @@ export default function PostDetailPage() {
                     </div>
                 </>
             ) : (
-                <div className="comment-disabled-message" style={{ 
-                    textAlign: 'center', 
-                    padding: '20px', 
+                <div className="comment-disabled-message" style={{
+                    textAlign: 'center',
+                    padding: '20px',
                     margin: '20px 0',
                     color: '#666',
                     backgroundColor: '#f8f8f8',
@@ -870,5 +870,14 @@ export default function PostDetailPage() {
                 </button>
             </div>
         </div>
+    );
+}
+
+// 메인 컴포넌트 - Suspense로 래핑
+export default function PostDetailPage() {
+    return (
+        <Suspense fallback={<div>로딩 중...</div>}>
+            <PostDetailContent />
+        </Suspense>
     );
 }
