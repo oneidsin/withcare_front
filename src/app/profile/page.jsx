@@ -555,7 +555,7 @@ export default function ProfilePage() {
                     <img 
                         src={user?.profile_photo ? getValidImageUrl(user.profile_photo) : "/defaultProfileImg.png"} 
                         alt="프로필 이미지"
-                        className="profile-pic"
+                        className="main-profile-pic"
                         onError={(e) => { 
                             console.error("이미지 로드 실패:", e.target.src);
                             e.target.onerror = null; 

@@ -25,6 +25,31 @@ function DetailContent() {
     const postsPerPage = 5;
     const commentsPerPage = 5;
 
+    // 유효한 이미지 URL 생성 함수
+    const getValidImageUrl = (url) => {
+        if (!url || url === 'null' || url === 'undefined' || url === '') {
+            return "/defaultProfileImg.png";
+        }
+        
+        // URL이 이미 http://로 시작하는지 확인
+        if (url.startsWith('http://') || url.startsWith('https://')) {
+            return url;
+        }
+        
+        // URL이 /로 시작하는지 확인 (절대 경로)
+        if (url.startsWith('/')) {
+            return `http://localhost${url}`;
+        }
+        
+        // profile/ 경로로 시작하는 경우 file/ 접두사 추가
+        if (url.startsWith('profile/')) {
+            return `http://localhost/file/${url}`;
+        }
+        
+        // 그 외의 경우 백엔드 기본 URL에 경로 추가
+        return `http://localhost/${url}`;
+    };
+
     useEffect(() => {
         if (!id) return;
 
@@ -40,8 +65,11 @@ function DetailContent() {
                 );
 
                 if (memberRes.data.success) {
-                    setMember(memberRes.data.data);
-                    console.log(memberRes.data.data);
+                    const memberData = memberRes.data.data;
+                    setMember(memberData);
+                    console.log('회원 상세 정보:', memberData);
+                    console.log('프로필 이미지 원본 URL:', memberData.profile_photo);
+                    console.log('처리된 프로필 이미지 URL:', getValidImageUrl(memberData.profile_photo));
                 } else {
                     alert('회원 정보를 불러오는데 실패했습니다.');
                     router.push('/admin/admin-member');
@@ -264,9 +292,13 @@ function DetailContent() {
                             <div className="profile-section">
                                 <div className="profile-image">
                                     <img
-                                        src={member.profile_photo || '/defaultProfileImg.png'}
+                                        src={getValidImageUrl(member.profile_photo)}
                                         alt="프로필 이미지"
-                                        onError={(e) => e.target.src = '/defaultProfileImg.png'}
+                                        onError={(e) => { 
+                                            console.log("프로필 이미지 로드 실패, 기본 이미지로 대체:", e.target.src);
+                                            e.target.onerror = null; 
+                                            e.target.src = '/defaultProfileImg.png'; 
+                                        }}
                                     />
                                 </div>
                                 <div className="profile-details">

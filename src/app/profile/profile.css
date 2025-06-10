@@ -75,14 +75,41 @@
     margin-bottom: 20px;
 }
 
-.profile-pic {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    object-fit: cover;
+/* 사이드바 프로필 이미지 - 우선순위 높임 */
+.sidebar-profile-pic,
+img.sidebar-profile-pic {
+    width: 60px !important;
+    height: 60px !important;
+    min-width: 60px !important;
+    min-height: 60px !important;
+    max-width: 60px !important;
+    max-height: 60px !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
     margin-bottom: 12px;
     border: 3px solid #fff;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden !important;
+    display: block;
+}
+
+/* 레벨 페이지와 다른 프로필 페이지에서도 적용되도록 더 구체적인 선택자 */
+.profile-level-container .sidebar-profile-pic,
+.profile-level-container img.sidebar-profile-pic,
+aside .sidebar-profile-pic,
+aside img.sidebar-profile-pic,
+.sidebar .sidebar-profile-pic,
+.sidebar img.sidebar-profile-pic {
+    width: 60px !important;
+    height: 60px !important;
+    min-width: 60px !important;
+    min-height: 60px !important;
+    max-width: 60px !important;
+    max-height: 60px !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    overflow: hidden !important;
+    display: block !important;
 }
 
 .user-name {
@@ -135,7 +162,7 @@
     flex-shrink: 0;
 }
 
-.profile-pic {
+.main-profile-pic {
     width: 120px;
     height: 120px;
     border-radius: 50%;
@@ -995,8 +1022,8 @@
     }
 }
 
-/* 글자 수 카운터 스타일 */
-.char-count {
+/* 타임라인 글자 수 카운터 스타일 */
+.timeline-char-count {
     display: block;
     text-align: right;
     color: var(--text-secondary);

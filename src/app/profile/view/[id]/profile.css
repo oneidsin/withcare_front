@@ -31,7 +31,7 @@
     border-radius: 8px;
 }
 
-.profile-pic {
+.view-profile-pic {
     width: 100px;
     height: 100px;
     border-radius: 50%;
@@ -258,7 +258,7 @@
         padding: 15px;
     }
     
-    .profile-pic {
+    .view-profile-pic {
         width: 80px;
         height: 80px;
     }

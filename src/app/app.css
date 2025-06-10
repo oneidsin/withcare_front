@@ -828,3 +828,21 @@ footer {
     transform: scale(1);
   }
 }
+
+/* 사이드바 프로필 이미지 크기 강제 제한 (hydration mismatch 방지) */
+.sidebar-profile-pic,
+img.sidebar-profile-pic,
+aside .sidebar-profile-pic,
+aside img.sidebar-profile-pic {
+  width: 60px !important;
+  height: 60px !important;
+  min-width: 60px !important;
+  min-height: 60px !important;
+  max-width: 60px !important;
+  max-height: 60px !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+  overflow: hidden !important;
+  display: block !important;
+  box-sizing: border-box !important;
+}

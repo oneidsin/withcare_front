@@ -92,7 +92,8 @@ export default function SearchPage() {
                 board_idx: selectedBoardIdx,
                 page: pageNum,
                 pageSize: SEARCH_CONSTANTS.PAGE_SIZE,
-                offset: calculateOffset(pageNum, SEARCH_CONSTANTS.PAGE_SIZE)
+                offset: calculateOffset(pageNum, SEARCH_CONSTANTS.PAGE_SIZE),
+                isNewBoard: pageNum === 1
             });
 
             const requestData = {
@@ -101,7 +102,7 @@ export default function SearchPage() {
                 pageSize: SEARCH_CONSTANTS.PAGE_SIZE,
                 offset: calculateOffset(pageNum, SEARCH_CONSTANTS.PAGE_SIZE),
                 sch_type: SEARCH_CONSTANTS.TYPE_MAP[searchType],
-                sch_keyword: keyword ? keyword.trim() : '' // 현재 검색어 유지
+                sch_keyword: '' // 게시판 변경 시에는 검색어 없이 전체 목록 로딩
             };
 
             console.log('API 요청 데이터:', requestData);
@@ -128,23 +129,36 @@ export default function SearchPage() {
                     // 실패해도 빈 배열 설정
                     setPosts([]);
                     setTotalPages(1);
-                    if (pageNum === 1) setPage(1);
+                    setPage(pageNum);
                     return;
                 }
 
-                setPosts(res.data.data || []);
-                setTotalPages(res.data.totalPages || 1);
-                if (pageNum === 1) setPage(1); // 게시판 변경 시에만 페이지를 1로 초기화
+                const postData = res.data.data || [];
+                const totalPagesFromAPI = res.data.totalPages || 1;
+                const totalCountFromAPI = res.data.totalCount || 0;
+
+                console.log(`게시판 ${selectedBoardIdx} 로딩 완료:`, {
+                    게시글수: postData.length,
+                    총페이지: totalPagesFromAPI,
+                    총게시글수: totalCountFromAPI,
+                    현재페이지: pageNum
+                });
+
+                setPosts(postData);
+                setTotalPages(totalPagesFromAPI);
+                setPage(pageNum);
 
             } catch (err) {
                 console.error("초기 게시글 로딩 실패", err);
                 setPosts([]);
                 setTotalPages(1);
+                setPage(1);
             }
         } catch (outerErr) {
             console.error("치명적인 오류 발생", outerErr);
             setPosts([]);
             setTotalPages(1);
+            setPage(1);
         }
     };
 
@@ -293,21 +307,33 @@ export default function SearchPage() {
 
     // 페이지 변경 핸들러
     const handlePageChange = async (newPage) => {
-        if (newPage === page) return; // 같은 페이지면 무시
+        if (newPage === page || newPage < 1 || newPage > totalPages) return; // 유효하지 않은 페이지면 무시
         
         console.log('페이지 변경:', {
             currentPage: page,
             newPage: newPage,
             keyword: keyword,
-            boardIdx: boardIdx
+            boardIdx: boardIdx,
+            totalPages: totalPages
         });
 
-        // 페이지 변경 시에는 검색어 저장하지 않음
-        await handleSearchInternal(keyword, newPage, false);
+        if (!boardIdx) {
+            alert('게시판을 선택해주세요.');
+            return;
+        }
+
+        // 검색어가 있으면 검색으로, 없으면 게시글 목록으로
+        if (keyword && keyword.trim().length > 0) {
+            // 검색 상태에서 페이지 변경 - 검색어 저장하지 않음
+            await handleSearchInternal(keyword, newPage, false);
+        } else {
+            // 일반 게시글 목록에서 페이지 변경
+            await loadInitialPosts(boardIdx, newPage);
+        }
     };
 
     // 게시판 변경 처리
-    const handleBoardChange = (selectedBoardIdx) => {
+    const handleBoardChange = async (selectedBoardIdx) => {
         console.log('게시판 변경:', {
             selectedBoardIdx,
             currentKeyword: keyword,
@@ -318,6 +344,8 @@ export default function SearchPage() {
             setPosts([]);
             setBoardIdx(null);
             setIsAnonymousBoard(false);
+            setTotalPages(1);
+            setPage(1);
             return;
         }
 
@@ -325,15 +353,19 @@ export default function SearchPage() {
         const selectedBoard = boards.find(board => board.board_idx == selectedBoardIdx);
         if (selectedBoard) {
             setIsAnonymousBoard(selectedBoard.anony_yn === true);
+            console.log(`게시판 변경: ${selectedBoard.board_name} (익명: ${selectedBoard.anony_yn})`);
         }
 
         // 문자열을 숫자로 변환
         const boardIdxNum = parseInt(selectedBoardIdx);
         setBoardIdx(boardIdxNum);
-        setPage(1);
+        setPage(1); // 페이지를 1로 초기화
+        setTotalPages(1); // 총 페이지도 초기화
+        setKeyword(''); // 검색어도 초기화
 
-        // 게시판 변경 시 해당 게시판의 게시글 목록 불러오기 (검색어 저장하지 않음)
-        handleSearchInternal("", 1, false);
+        // 게시판 변경 시 해당 게시판의 게시글 목록 불러오기
+        console.log('게시판 변경 후 게시글 로딩 시작...');
+        await loadInitialPosts(boardIdxNum, 1);
     };
 
     // 게시글 정렬 처리
@@ -448,7 +480,13 @@ export default function SearchPage() {
                 <tbody>
                     {posts.length === 0 ? (
                         <tr>
-                            <td colSpan="6" style={{ textAlign: "center" }}>게시글이 없습니다.</td>
+                            <td colSpan="6" style={{ textAlign: "center", padding: "40px" }}>
+                                {boardIdx ? (
+                                    keyword && keyword.trim().length > 0 ? 
+                                    `'${keyword}' 검색 결과가 없습니다.` : 
+                                    '게시글이 없습니다.'
+                                ) : '게시판을 선택해주세요.'}
+                            </td>
                         </tr>
                     ) : (
                         sortedPosts.map(post => renderPostRow(post))

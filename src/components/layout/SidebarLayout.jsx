@@ -10,9 +10,10 @@ export default function SidebarLayout({
   writeButton,
   sidebarContent
 }) {
-  const [userProfilePic, setUserProfilePic] = useState(profileImage);
-  const [userDisplayName, setUserDisplayName] = useState(userName);
+  const [userProfilePic, setUserProfilePic] = useState('/defaultProfileImg.png');
+  const [userDisplayName, setUserDisplayName] = useState('');
   const [imageError, setImageError] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   
   // 사용자 정보 가져오기 함수
   const fetchUserInfo = () => {
@@ -42,6 +43,9 @@ export default function SidebarLayout({
   };
   
   useEffect(() => {
+    // 클라이언트 사이드임을 표시
+    setIsClient(true);
+    
     // 초기 로드 시 사용자 정보 가져오기
     fetchUserInfo();
     
@@ -86,12 +90,12 @@ export default function SidebarLayout({
         {/* 사용자 프로필 */}
         <div className={styles['user-profile']}>
           <img
-            src={imageError ? '/defaultProfileImg.png' : userProfilePic}
-            alt={userDisplayName}
-            className={styles['profile-pic']}
+            src={imageError ? '/defaultProfileImg.png' : (isClient ? userProfilePic : '/defaultProfileImg.png')}
+            alt={isClient ? userDisplayName : ''}
+            className="sidebar-profile-pic"
             onError={handleImageError}
           />
-          <div className={styles['user-name']}>{userDisplayName}</div>
+          <div className={styles['user-name']}>{isClient ? userDisplayName : ''}</div>
         </div>
 
         {/* 작성하기 버튼 */}

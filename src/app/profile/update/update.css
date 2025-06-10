@@ -73,6 +73,50 @@
     border-radius: 50%;
     margin: 1em 0;
     border: 2px solid #eee;
+    display: block;
+    background-color: #f8f9fa;
+    /* 이미지 보안 강화 */
+    image-rendering: auto;
+    user-select: none;
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+}
+
+/* 이미지 프리뷰 컨테이너 스타일 */
+.image-preview-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5em;
+    margin: 1em 0;
+}
+
+/* 이미지 삭제 버튼 스타일 */
+.delete-image-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 0.5em 1em;
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.3em;
+}
+
+.delete-image-btn:hover {
+    background-color: #c82333;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+}
+
+.delete-image-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(220, 53, 69, 0.3);
 }
 
 .button-group {

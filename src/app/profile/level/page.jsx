@@ -225,20 +225,33 @@ export default function ProfileLevelPage() {
             const token = sessionStorage.getItem('token');
             const userId = sessionStorage.getItem('id');
             
-            // 먼저 세션 스토리지에서 저장된 레벨 정보 확인
-            try {
-                const savedLevel = sessionStorage.getItem('user_level');
-                if (savedLevel) {
-                    const parsedLevel = JSON.parse(savedLevel);
-                    const validLevel = levelList.find(level => level.lv_idx === parsedLevel.lv_idx);
-                    if (validLevel) {
-                        console.log('세션 스토리지에서 복원된 레벨:', validLevel);
-                        setCurrentUserLevel(validLevel);
-                        return;
-                    }
+            // 관리자인 경우 레벨 0으로 강제 설정
+            if (isAdmin) {
+                const adminLevel = levelList.find(level => level.lv_no === 0);
+                if (adminLevel) {
+                    console.log('관리자 권한 확인됨, 레벨 0으로 설정:', adminLevel);
+                    setCurrentUserLevel(adminLevel);
+                    sessionStorage.setItem('user_level', JSON.stringify(adminLevel));
+                    return;
                 }
-            } catch (sessionError) {
-                console.warn('세션 스토리지 레벨 정보 복원 실패:', sessionError);
+            }
+            
+            // 먼저 세션 스토리지에서 저장된 레벨 정보 확인 (관리자가 아닌 경우만)
+            if (!isAdmin) {
+                try {
+                    const savedLevel = sessionStorage.getItem('user_level');
+                    if (savedLevel) {
+                        const parsedLevel = JSON.parse(savedLevel);
+                        const validLevel = levelList.find(level => level.lv_idx === parsedLevel.lv_idx);
+                        if (validLevel && validLevel.lv_no !== 0) { // 레벨 0이 아닌 경우만 사용
+                            console.log('세션 스토리지에서 복원된 레벨:', validLevel);
+                            setCurrentUserLevel(validLevel);
+                            return;
+                        }
+                    }
+                } catch (sessionError) {
+                    console.warn('세션 스토리지 레벨 정보 복원 실패:', sessionError);
+                }
             }
             
             // 사용자의 현재 레벨 정보를 백엔드에서 가져오기 (profile API 사용)
@@ -273,34 +286,70 @@ export default function ProfileLevelPage() {
                     const actualLevel = levelList.find(level => level.lv_idx === levelField);
                     if (actualLevel) {
                         console.log('백엔드에서 가져온 실제 사용자 레벨:', actualLevel);
+                        
+                        // 관리자인데 레벨 0이 아닌 경우 레벨 0으로 강제 설정
+                        if (isAdmin && actualLevel.lv_no !== 0) {
+                            const adminLevel = levelList.find(level => level.lv_no === 0);
+                            if (adminLevel) {
+                                console.log('관리자이지만 레벨이 0이 아님, 레벨 0으로 강제 설정:', adminLevel);
+                                setCurrentUserLevel(adminLevel);
+                                sessionStorage.setItem('user_level', JSON.stringify(adminLevel));
+                                return;
+                            }
+                        }
+                        
                         setCurrentUserLevel(actualLevel);
                         // 세션 스토리지에 백업
                         sessionStorage.setItem('user_level', JSON.stringify(actualLevel));
                     } else {
                         console.warn('레벨 인덱스에 해당하는 레벨을 찾을 수 없음:', levelField);
                         console.log('사용 가능한 레벨 목록:', levelList.map(l => ({lv_idx: l.lv_idx, lv_no: l.lv_no})));
-                        // 기본 레벨로 설정
-                        const defaultLevel = levelList.find(level => level.lv_no === 1) || levelList[0];
-                        setCurrentUserLevel(defaultLevel);
+                        
+                        // 관리자인 경우 레벨 0, 아닌 경우 레벨 1로 설정
+                        if (isAdmin) {
+                            const adminLevel = levelList.find(level => level.lv_no === 0);
+                            setCurrentUserLevel(adminLevel || levelList[0]);
+                        } else {
+                            const defaultLevel = levelList.find(level => level.lv_no === 1) || levelList[0];
+                            setCurrentUserLevel(defaultLevel);
+                        }
                     }
                 } else {
                     console.warn('사용자 레벨 정보가 없음, 기본 레벨로 설정');
                     console.log('profileData 내용:', profileData);
-                    // 기본 레벨로 설정
-                    const defaultLevel = levelList.find(level => level.lv_no === 1) || levelList[0];
-                    setCurrentUserLevel(defaultLevel);
+                    
+                    // 관리자인 경우 레벨 0, 아닌 경우 레벨 1로 설정
+                    if (isAdmin) {
+                        const adminLevel = levelList.find(level => level.lv_no === 0);
+                        setCurrentUserLevel(adminLevel || levelList[0]);
+                    } else {
+                        const defaultLevel = levelList.find(level => level.lv_no === 1) || levelList[0];
+                        setCurrentUserLevel(defaultLevel);
+                    }
                 }
             } else {
                 console.error('사용자 정보 API 호출 실패:', response.status);
-                // 기본 레벨로 설정
-                const defaultLevel = levelList.find(level => level.lv_no === 1) || levelList[0];
-                setCurrentUserLevel(defaultLevel);
+                
+                // 관리자인 경우 레벨 0, 아닌 경우 레벨 1로 설정
+                if (isAdmin) {
+                    const adminLevel = levelList.find(level => level.lv_no === 0);
+                    setCurrentUserLevel(adminLevel || levelList[0]);
+                } else {
+                    const defaultLevel = levelList.find(level => level.lv_no === 1) || levelList[0];
+                    setCurrentUserLevel(defaultLevel);
+                }
             }
         } catch (error) {
             console.error('사용자 레벨 정보 가져오기 실패:', error);
-            // 기본 레벨로 설정
-            const defaultLevel = levelList.find(level => level.lv_no === 1) || levelList[0];
-            setCurrentUserLevel(defaultLevel);
+            
+            // 관리자인 경우 레벨 0, 아닌 경우 레벨 1로 설정
+            if (isAdmin) {
+                const adminLevel = levelList.find(level => level.lv_no === 0);
+                setCurrentUserLevel(adminLevel || levelList[0]);
+            } else {
+                const defaultLevel = levelList.find(level => level.lv_no === 1) || levelList[0];
+                setCurrentUserLevel(defaultLevel);
+            }
         }
     };
 
@@ -539,7 +588,14 @@ export default function ProfileLevelPage() {
         if (levels.length > 0) {
             fetchUserStats();
         }
-    }, [levels, isAdmin]);
+    }, [levels]);
+
+    // 관리자 상태가 변경될 때마다 레벨 재설정
+    useEffect(() => {
+        if (levels.length > 0 && typeof isAdmin === 'boolean') {
+            fetchActualUserLevel(levels);
+        }
+    }, [isAdmin, levels]);
 
     // userStats와 currentUserLevel이 모두 설정된 후 레벨업 가능 여부 확인
     useEffect(() => {
@@ -574,11 +630,11 @@ export default function ProfileLevelPage() {
             
             {currentUserLevel && userStats && (
                 <div className="current-level-info">
-                    <div className="current-level-card">
+                    <div className={`current-level-card ${currentUserLevel.lv_no === 0 ? 'admin-level' : ''}`}>
                         <img src={currentUserLevel.lv_icon} alt="current level" className="current-level-icon" />
                         <div className="current-level-details">
                             <div className="current-level-text">
-                                <h3>현재 레벨: Level {currentUserLevel.lv_no}</h3>
+                                <h3>현재 레벨: Level {currentUserLevel.lv_no} {currentUserLevel.lv_no === 0 ? '(관리자)' : ''}</h3>
                                 <h4>{currentUserLevel.lv_name}</h4>
                             </div>
                             <div className="user-stats">
