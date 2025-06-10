@@ -7,7 +7,8 @@
 .post-table {
     width: 100%;
     border-collapse: collapse;
-    table-layout: fixed;  /* 핵심 추가 */
+    table-layout: fixed;
+    /* 핵심 추가 */
 }
 
 .post-table th,
@@ -21,8 +22,9 @@
     text-overflow: ellipsis;
 }
 
-div.post-page{
+div.post-page {
     width: 100%;
+    white-space: pre-wrap;
 }
 
 .pagination {
@@ -52,12 +54,12 @@ div.post-page{
     margin-top: 24px;
 }
 
-.search-form button{
+.search-form button {
     width: 60px;
 }
 
 .search-form button,
-.write-button{
+.write-button {
     background-color: rgba(174, 226, 255, 0.4);
     /* 연한 하늘 배경 */
     color: #2d2d2d;
@@ -83,7 +85,7 @@ div.post-page{
 
 /* 버튼 클릭 시 */
 .search-form button:active,
-.write-button:active{
+.write-button:active {
     box-shadow: 0 0 12px 8px rgba(135, 209, 255, 0.5);
     /* 밝은 효과 */
     transform: scale(0.98);
@@ -98,7 +100,7 @@ div.post-page{
     margin-left: auto;
 }
 
-.post-search-form{
+.post-search-form {
     width: 100px;
     height: 30px;
     border: 1px solid #ddd;
@@ -107,7 +109,7 @@ div.post-page{
     box-sizing: border-box;
 }
 
-.post-sort-form{
+.post-sort-form {
     width: 100px;
     height: 30px;
     border: 1px solid #ddd;
@@ -116,7 +118,7 @@ div.post-page{
     box-sizing: border-box;
 }
 
-.post-search-input{
+.post-search-input {
     width: 40%;
     height: 30px;
     border: 1px solid #ddd;
@@ -125,12 +127,35 @@ div.post-page{
     box-sizing: border-box;
 }
 
-.post-table th:nth-child(1), .post-table td:nth-child(1) { width: 8%; }
-.post-table th:nth-child(2), .post-table td:nth-child(2) { width: 40%; }
-.post-table th:nth-child(3), .post-table td:nth-child(3) { width: 12%; }
-.post-table th:nth-child(4), .post-table td:nth-child(4) { width: 10%; }
-.post-table th:nth-child(5), .post-table td:nth-child(5) { width: 10%; }
-.post-table th:nth-child(6), .post-table td:nth-child(6) { width: 20%; }
+.post-table th:nth-child(1),
+.post-table td:nth-child(1) {
+    width: 8%;
+}
+
+.post-table th:nth-child(2),
+.post-table td:nth-child(2) {
+    width: 40%;
+}
+
+.post-table th:nth-child(3),
+.post-table td:nth-child(3) {
+    width: 12%;
+}
+
+.post-table th:nth-child(4),
+.post-table td:nth-child(4) {
+    width: 10%;
+}
+
+.post-table th:nth-child(5),
+.post-table td:nth-child(5) {
+    width: 10%;
+}
+
+.post-table th:nth-child(6),
+.post-table td:nth-child(6) {
+    width: 20%;
+}
 
 /* 추가: 댓글 수 스타일 */
 .comment-count {
