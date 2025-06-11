@@ -22,7 +22,7 @@ export default function InfoBoard() {
 
     const fetchBoardInfo = async () => {
         try {
-            const response = await axios.get(`http://localhost/board/${DEFAULT_INFO_BOARD_ID}`);
+            const response = await axios.get(`http://192.168.0.132/board/${DEFAULT_INFO_BOARD_ID}`);
             setBoardInfo(response.data);
             setIsBoardAccessible(!response.data.blind_yn);
         } catch (err) {
@@ -35,7 +35,16 @@ export default function InfoBoard() {
         const token = sessionStorage.getItem('token');
         if (token) {
             setIsLoggedIn(true);
-            loadCancerRelatedPosts(token);
+
+            // 프로필 정보 확인
+            const profile = sessionStorage.getItem('profile'); // 예시
+            if (!profile || profile === '{}') {
+                console.log('프로필 정보 없음 → 기본 정보 게시판 로딩');
+                loadInfoBoardPosts(); // 🔁 기본 게시글 로딩
+            } else {
+                loadCancerRelatedPosts(token);
+            }
+
         } else {
             setIsLoggedIn(false);
             loadInfoBoardPosts();
@@ -54,7 +63,7 @@ export default function InfoBoard() {
 
             // 암 관련 게시글 검색 API 호출
             console.log("암 관련 게시글 API 호출 시작");
-            const response = await axios.post('http://localhost/search/cancer', {}, {
+            const response = await axios.post('http://192.168.0.132/search/cancer', {}, {
                 headers: {
                     'Authorization': token
                 }
@@ -101,7 +110,7 @@ export default function InfoBoard() {
             const allPosts = [];
 
             for (const boardId of INFO_BOARD_IDS) {
-                const response = await axios.post('http://localhost/search', {
+                const response = await axios.post('http://192.168.0.132/search', {
                     board_idx: boardId,
                     page: 1,
                     pageSize: 5,
@@ -121,8 +130,7 @@ export default function InfoBoard() {
             }
 
             const sortedPosts = allPosts
-                .sort((a, b) => (b.like_count || 0) - (a.like_count || 0))
-                .slice(0, 5);
+                .sort((a, b) => (b.like_count || 0) - (a.like_count || 0));
 
             setCancerPosts(sortedPosts);
         } catch (err) {
