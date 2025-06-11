@@ -56,13 +56,17 @@ nav {
 }
 
 /* 네비게이션 항목 스타일 */
-nav a {
-  color: #555555;
+.nav-item>a, 
+.nav-item>span {
   text-decoration: none;
-  font-size: 15.2px;
-  padding: 4.8px 9.6px;
-  border-radius: 6px;
-  transition: background-color 0.25s ease, color 0.25s ease;
+  color: #444;
+  font-weight: 500;
+  padding: 8px 12px;
+  display: inline-block;
+}
+
+.nav-item>span {
+  cursor: default;
 }
 
 /* 네비게이션 마우스오버 시 애니메이션 */
@@ -361,14 +365,6 @@ footer {
 .nav-item {
   position: relative;
   margin: 0 16px;
-}
-
-.nav-item>a {
-  text-decoration: none;
-  color: #444;
-  font-weight: 500;
-  padding: 8px 12px;
-  display: inline-block;
 }
 
 /* 현재 선택된 메뉴 스타일 */

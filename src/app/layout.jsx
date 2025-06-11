@@ -133,12 +133,24 @@ function LayoutContent({ children }) {
         <nav className="top-nav">
           {menuBoards.map((parent) => (
             <div key={parent.board_idx} className="nav-item">
-              <Link
-                href={`/post?board_idx=${parent.board_idx}`}
-                className={isActiveBoard(parent.board_idx) ? 'active-nav-link' : ''}
-              >
-                {parent.board_name}
-              </Link>
+              {parent.children.length > 0 ? (
+                <span
+                  className={isActiveBoard(parent.board_idx) ? 'active-nav-link' : ''}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    alert('하위 게시판을 선택해주세요.');
+                  }}
+                >
+                  {parent.board_name}
+                </span>
+              ) : (
+                <Link
+                  href={`/post?board_idx=${parent.board_idx}`}
+                  className={isActiveBoard(parent.board_idx) ? 'active-nav-link' : ''}
+                >
+                  {parent.board_name}
+                </Link>
+              )}
               {parent.children.length > 0 && (
                 <div className={`dropdown ${hasActiveChild(parent) ? 'show-dropdown' : ''}`}>
                   {parent.children.map((child) => (

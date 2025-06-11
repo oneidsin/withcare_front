@@ -352,6 +352,12 @@ export default function SearchPage() {
         // 선택된 게시판 정보 찾기
         const selectedBoard = boards.find(board => board.board_idx == selectedBoardIdx);
         if (selectedBoard) {
+            // 자식 게시판이 있는 부모 게시판인 경우 선택 불가
+            if (selectedBoard.hasChildren) {
+                alert('하위 게시판을 선택해주세요.');
+                return;
+            }
+            
             setIsAnonymousBoard(selectedBoard.anony_yn === true);
             console.log(`게시판 변경: ${selectedBoard.board_name} (익명: ${selectedBoard.anony_yn})`);
         }
@@ -416,8 +422,13 @@ export default function SearchPage() {
                 >
                     <option value="">게시판 선택</option>
                     {boards.map(board => (
-                        <option key={board.board_idx} value={board.board_idx}>
+                        <option 
+                            key={board.board_idx} 
+                            value={board.board_idx}
+                            disabled={board.hasChildren}
+                        >
                             {board.board_name}
+                            {board.hasChildren ? ' (하위 게시판 선택)' : ''}
                         </option>
                     ))}
                 </select>

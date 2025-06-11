@@ -103,7 +103,8 @@ function PostPageContent() {
     return (
         <div className="post-page">
             <div className="post-header">
-                {userLevel >= boardLevel && (
+                {(userLevel >= boardLevel && 
+                 !(((boardIdx === '1' || boardIdx === '5' || boardIdx === '6') && userLevel !== 7))) && (
                     <button className='write-button' onClick={() => router.push(`/post/write?board_idx=${boardIdx}`)}>
                         ✏ 글쓰기
                     </button>

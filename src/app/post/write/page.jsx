@@ -57,6 +57,24 @@ function PostWriteContent() {
             setBoards(boards);
             console.log(boards)
             if (boardIdxFromURL) {
+                // URL에서 가져온 게시판이 자식 게시판이 있는 부모 게시판인지 확인
+                const selectedBoard = boards.find(b => b.board_idx.toString() === boardIdxFromURL);
+                
+                if (selectedBoard && selectedBoard.hasChildren) {
+                    alert('하위 게시판을 선택해주세요.');
+                    router.push('/post'); // 게시판 목록으로 이동
+                    return;
+                }
+                
+                // URL에서 board_idx를 가져온 경우 권한 체크
+                if ((boardIdxFromURL === '1' || boardIdxFromURL === '5' || boardIdxFromURL === '6')) {
+                    const userLevel = sessionStorage.getItem('lv_idx');
+                    if (userLevel !== '7') {
+                        alert('이 게시판은 관리자만 작성할 수 있습니다.');
+                        router.push('/post'); // 게시판 목록으로 이동
+                        return;
+                    }
+                }
                 applyBoardSettings(boardIdxFromURL, boards);
             }
         });
@@ -64,6 +82,29 @@ function PostWriteContent() {
 
     const handleBoardChange = (e) => {
         const value = e.target.value;
+        
+        // 선택한 게시판 찾기
+        const selectedBoard = boards.find(b => b.board_idx.toString() === value);
+        
+        // 자식 게시판이 있는 경우 선택 불가
+        if (selectedBoard && selectedBoard.hasChildren) {
+            alert('하위 게시판을 선택해주세요.');
+            e.target.value = '';
+            return;
+        }
+        
+        // 게시판 권한 체크 - board_idx가 1, 5, 6인 경우 관리자만 작성 가능
+        if (value === '1' || value === '5' || value === '6') {
+            // 사용자 레벨 확인 (세션에서 가져오기)
+            const userLevel = sessionStorage.getItem('lv_idx');
+            if (userLevel !== '7') {
+                alert('이 게시판은 관리자만 작성할 수 있습니다.');
+                // 게시판 선택 초기화
+                e.target.value = '';
+                return;
+            }
+        }
+        
         applyBoardSettings(value, boards);
     };
 
@@ -248,8 +289,14 @@ function PostWriteContent() {
                 <select value={board} onChange={handleBoardChange}>
                     <option value="">게시판을 선택해주세요</option>
                     {boards.map((b) => (
-                        <option key={b.board_idx} value={b.board_idx}>
+                        <option 
+                            key={b.board_idx} 
+                            value={b.board_idx}
+                            disabled={b.hasChildren}
+                        >
                             {b.board_name}
+                            {b.isAdminOnly ? ' (관리자 전용)' : ''}
+                            {b.hasChildren ? ' (하위 게시판 선택)' : ''}
                         </option>
                     ))}
                 </select>
