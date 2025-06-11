@@ -640,6 +640,24 @@ function PostDetailContent() {
     };
 
 
+    // 날짜를 한국 형식으로 포맷팅하는 함수
+    const formatDate = (dateString) => {
+        if (!dateString) return '-'; // 날짜 문자열이 없으면 '-' 반환
+
+        const date = new Date(dateString); // 날짜 객체 생성
+        // 날짜 부분을 한국어 형식으로 변환하고 공백 제거
+        const datePart = date.toLocaleDateString('ko-KR').replace(/ /g, '');
+        // 시간 부분을 24시간 형식으로 변환
+        const timePart = date.toLocaleTimeString('ko-KR', {
+            hour: '2-digit', // 시간: 두 자리 숫자
+            minute: '2-digit', // 분: 두 자리 숫자
+            hour12: false // 24시간 형식 사용
+        });
+
+        return `${datePart} ${timePart}`; // 날짜와 시간 조합하여 반환
+    };
+
+
     return (
         <div className="detail-container">
             <div className="detail-header">
@@ -801,7 +819,11 @@ function PostDetailContent() {
                                             {renderCommentWithMentions(comment.com_content)}
                                         </div>
                                     )}
-                                    <span className="comment-date">{comment.com_create_date?.slice(0, 10)}</span>
+                                    <span className="comment-date"> {formatDate(comment.com_update_date || comment.com_create_date)}
+                                        {(comment.com_update_date && comment.com_update_date !== comment.com_create_date) && (
+                                            <span className="edited-label"> (수정됨)</span>
+                                        )} </span>
+
                                 </div>
                             ))
                         )}
