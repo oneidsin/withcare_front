@@ -55,7 +55,7 @@ export default function NotificationPopup() {
           const result = await res.json();
 
           if (result.success && result.postIdx) {
-            window.open(`post/detail?post_idx=${result.postIdx}`, '_blank');
+            window.open(`/post/detail?post_idx=${result.postIdx}`, '_blank');
           } else if (result.error === 'POST_BLINDED') {
             alert('해당 게시글이 삭제되었습니다.');
           } else if (result.error === 'POST_DELETED') {
@@ -82,7 +82,7 @@ export default function NotificationPopup() {
           console.log('받은 결과:', result);
 
           if (result.success && result.postIdx && result.postIdx > 0) {
-            window.open(`post/detail?post_idx=${result.postIdx}`, '_blank');
+            window.open(`/post/detail?post_idx=${result.postIdx}`, '_blank');
           } else if (result.error === 'POST_BLINDED') {
             alert('해당 게시글이 삭제되었습니다.');
           } else if (result.error === 'POST_DELETED') {
