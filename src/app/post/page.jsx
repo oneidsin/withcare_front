@@ -61,7 +61,10 @@ function PostPageContent() {
                 headers: { Authorization: token }
             });
             if (res.data.success) {
-                setUserLevel(res.data.lv_idx || 0);
+                const lvIdx = res.data.lv_idx || 0;
+                setUserLevel(lvIdx);
+                // lv_idx를 세션 스토리지에 저장
+                sessionStorage.setItem('lv_idx', lvIdx.toString());
             }
         } catch (err) {
             console.error('사용자 레벨 확인 실패:', err);
