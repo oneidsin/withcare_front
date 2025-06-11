@@ -22,7 +22,7 @@ export default function InfoBoard() {
 
     const fetchBoardInfo = async () => {
         try {
-            const response = await axios.get(`http://192.168.0.132/board/${DEFAULT_INFO_BOARD_ID}`);
+            const response = await axios.get(`http://localhost/board/${DEFAULT_INFO_BOARD_ID}`);
             setBoardInfo(response.data);
             setIsBoardAccessible(!response.data.blind_yn);
         } catch (err) {
@@ -63,7 +63,7 @@ export default function InfoBoard() {
 
             // 암 관련 게시글 검색 API 호출
             console.log("암 관련 게시글 API 호출 시작");
-            const response = await axios.post('http://192.168.0.132/search/cancer', {}, {
+            const response = await axios.post('http://localhost/search/cancer', {}, {
                 headers: {
                     'Authorization': token
                 }
@@ -110,7 +110,7 @@ export default function InfoBoard() {
             const allPosts = [];
 
             for (const boardId of INFO_BOARD_IDS) {
-                const response = await axios.post('http://192.168.0.132/search', {
+                const response = await axios.post('http://localhost/search', {
                     board_idx: boardId,
                     page: 1,
                     pageSize: 5,
