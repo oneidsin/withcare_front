@@ -703,7 +703,7 @@ function PostDetailContent() {
                         )}
                     </div>
                     <div className="meta-date-line">
-                        {post.post_create_date.slice(0, 10)} · 조회 {post.post_view_cnt}
+                        {formatDate(post.post_create_date)} · 조회 {post.post_view_cnt}
                     </div>
                 </div>
                 <div className="detail-controls">
