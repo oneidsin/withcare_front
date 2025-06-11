@@ -225,6 +225,8 @@ export default function ProfileLevelPage() {
             const token = sessionStorage.getItem('token');
             const userId = sessionStorage.getItem('id');
             
+            console.log(`=== ${userId} 사용자의 레벨 정보 가져오기 시작 ===`);
+            
             // 관리자인 경우 레벨 0으로 강제 설정
             if (isAdmin) {
                 const adminLevel = levelList.find(level => level.lv_no === 0);
@@ -279,11 +281,20 @@ export default function ProfileLevelPage() {
                 
                 // 다양한 레벨 필드명 시도
                 const levelField = profileData?.lv_idx || profileData?.level_idx || profileData?.level_id || profileData?.lv_id || profileData?.user_level;
-                console.log('발견된 레벨 필드:', levelField);
+                console.log('프로필 데이터에서 발견된 레벨 필드:', levelField);
+                console.log('레벨 필드 타입:', typeof levelField);
+                console.log('모든 프로필 필드와 값:', Object.entries(profileData || {}).map(([key, value]) => `${key}: ${value} (${typeof value})`));
                 
-                if (profileData && levelField) {
+                if (profileData && levelField && levelField !== 0 && levelField !== null) {
                     // 레벨 인덱스로 실제 레벨 정보 찾기
-                    const actualLevel = levelList.find(level => level.lv_idx === levelField);
+                    const actualLevel = levelList.find(level => Number(level.lv_idx) === Number(levelField));
+                    console.log('레벨 검색 결과:', {
+                        찾는레벨필드: levelField,
+                        찾는레벨필드타입: typeof levelField,
+                        전체레벨목록: levelList.map(l => ({lv_idx: l.lv_idx, lv_no: l.lv_no, lv_name: l.lv_name})),
+                        찾은레벨: actualLevel
+                    });
+                    
                     if (actualLevel) {
                         console.log('백엔드에서 가져온 실제 사용자 레벨:', actualLevel);
                         
@@ -315,10 +326,38 @@ export default function ProfileLevelPage() {
                         }
                     }
                 } else {
-                    console.warn('사용자 레벨 정보가 없음, 기본 레벨로 설정');
-                    console.log('profileData 내용:', profileData);
+                    console.warn('프로필 API에서 레벨 정보를 찾을 수 없음');
+                    console.log('profileData 전체 내용:', profileData);
+                    
+                    // 대안: 공개 프로필 API에서 레벨 정보 시도
+                    console.log('공개 프로필 API에서 레벨 정보 재시도...');
+                    try {
+                        const publicResponse = await fetch(`http://localhost:80/profile/public/${userId}`);
+                        if (publicResponse.ok) {
+                            const publicData = await publicResponse.json();
+                            console.log('공개 프로필 API 응답 (대안):', publicData);
+                            
+                            if (publicData.status === "success" && publicData.levelInfo) {
+                                const levelInfo = publicData.levelInfo;
+                                console.log('공개 API에서 찾은 레벨 정보 (대안):', levelInfo);
+                                
+                                if (levelInfo.lv_idx) {
+                                    const actualLevel = levelList.find(level => Number(level.lv_idx) === Number(levelInfo.lv_idx));
+                                    if (actualLevel) {
+                                        console.log('공개 API에서 복원된 레벨 (대안):', actualLevel);
+                                        setCurrentUserLevel(actualLevel);
+                                        sessionStorage.setItem('user_level', JSON.stringify(actualLevel));
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                    } catch (publicError) {
+                        console.log('공개 프로필 API 대안 시도도 실패:', publicError);
+                    }
                     
                     // 관리자인 경우 레벨 0, 아닌 경우 레벨 1로 설정
+                    console.log('모든 API 시도 실패, 기본 레벨로 설정');
                     if (isAdmin) {
                         const adminLevel = levelList.find(level => level.lv_no === 0);
                         setCurrentUserLevel(adminLevel || levelList[0]);
@@ -329,6 +368,33 @@ export default function ProfileLevelPage() {
                 }
             } else {
                 console.error('사용자 정보 API 호출 실패:', response.status);
+                
+                // 대안 API 시도: 공개 프로필 API에서 레벨 정보 가져오기
+                console.log('대안으로 공개 프로필 API에서 레벨 정보 시도...');
+                try {
+                    const publicResponse = await fetch(`http://localhost:80/profile/public/${userId}`);
+                    if (publicResponse.ok) {
+                        const publicData = await publicResponse.json();
+                        console.log('공개 프로필 API 응답:', publicData);
+                        
+                        if (publicData.status === "success" && publicData.levelInfo) {
+                            const levelInfo = publicData.levelInfo;
+                            console.log('공개 API에서 찾은 레벨 정보:', levelInfo);
+                            
+                            if (levelInfo.lv_idx) {
+                                const actualLevel = levelList.find(level => level.lv_idx === levelInfo.lv_idx);
+                                if (actualLevel) {
+                                    console.log('공개 API에서 복원된 레벨:', actualLevel);
+                                    setCurrentUserLevel(actualLevel);
+                                    sessionStorage.setItem('user_level', JSON.stringify(actualLevel));
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                } catch (publicError) {
+                    console.log('공개 프로필 API도 실패:', publicError);
+                }
                 
                 // 관리자인 경우 레벨 0, 아닌 경우 레벨 1로 설정
                 if (isAdmin) {
@@ -500,9 +566,30 @@ export default function ProfileLevelPage() {
 
                 if (data.loginYN && data.result) {
                     const result = data.result;
+                    console.log('레벨업 API 전체 응답 분석:', result);
+                    
                     if (result.success) {
                         alert(`축하합니다! ${result.msg}`);
                         console.log('레벨업 성공! 데이터 새로고침 중...');
+                        
+                        // 레벨업 API 응답에서 새로운 레벨 정보가 있는지 확인
+                        if (result.newLevel || result.new_level || result.updatedLevel) {
+                            const newLevelInfo = result.newLevel || result.new_level || result.updatedLevel;
+                            console.log('레벨업 API에서 반환된 새 레벨 정보:', newLevelInfo);
+                            
+                            // 새로운 레벨 정보로 즉시 업데이트
+                            const newLevel = levels.find(level => 
+                                level.lv_idx === newLevelInfo.lv_idx || 
+                                level.lv_no === newLevelInfo.lv_no
+                            );
+                            
+                            if (newLevel) {
+                                console.log('API에서 받은 새 레벨로 즉시 업데이트:', newLevel);
+                                setCurrentUserLevel(newLevel);
+                                sessionStorage.setItem('user_level', JSON.stringify(newLevel));
+                            }
+                        }
+                        
                         // 데이터 새로고침 - 통계와 실제 레벨 정보 모두 다시 가져오기
                         await fetchUserStats();
                         // fetchUserStats 내부에서 fetchActualUserLevel이 호출되므로 별도로 호출할 필요 없음
