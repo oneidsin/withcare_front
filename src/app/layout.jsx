@@ -95,11 +95,18 @@ function LayoutContent({ children }) {
     const confirmed = confirm("로그아웃하시겠습니까?");
     if (!confirmed) return;
 
+    // 세션 스토리지 정리
     sessionStorage.removeItem("token");
     sessionStorage.removeItem("id");
+    sessionStorage.removeItem("loginId");     // 로그인 아이디 제거
     sessionStorage.removeItem("name");        // 이름 정보 제거
     sessionStorage.removeItem("profilePic");  // 프로필 이미지 정보 제거
     sessionStorage.removeItem("signupName");  // 회원가입 임시 이름 제거 (혹시 남아있을 경우)
+    sessionStorage.removeItem("user_level");  // 레벨 정보 제거
+    sessionStorage.removeItem("loginSuccess"); // 로그인 성공 플래그 제거
+    
+    // 로컬 스토리지에서 사용자별 정보도 정리
+    localStorage.removeItem("user_level_backup");  // 레벨 백업 정보 제거
 
     setIsLoggedIn(false);
     setUsername("");
