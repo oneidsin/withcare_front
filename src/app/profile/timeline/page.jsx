@@ -12,6 +12,9 @@ export default function TimelinePage() {
 
     // 선택된 연도 상태
     const [selectedYr, setSelectedYr] = useState(new Date().getFullYear().toString());
+    
+    // 캘린더 활성 날짜 상태 (선택된 연도의 1월 1일로 설정)
+    const [activeStartDate, setActiveStartDate] = useState(new Date());
 
     // 이벤트 목록 및 로딩 상태
     const [events, setEvents] = useState([]);
@@ -263,7 +266,13 @@ export default function TimelinePage() {
                         {displayedYrs.map((year) => (
                             <button
                                 key={year}
-                                onClick={() => setSelectedYr(year.toString())}
+                                onClick={() => {
+                                    setSelectedYr(year.toString());
+                                    // 현재 캘린더의 월을 유지하면서 연도만 변경
+                                    const currentMonth = activeStartDate.getMonth();
+                                    const currentDay = activeStartDate.getDate();
+                                    setActiveStartDate(new Date(year, currentMonth, currentDay));
+                                }}
                                 className={selectedYr === year.toString() ? "active-year" : ""}
                             >
                                 {year}
@@ -286,6 +295,8 @@ export default function TimelinePage() {
                             <Calendar
                                 calendarType="gregory"
                                 locale="ko-KR"
+                                activeStartDate={activeStartDate}
+                                onActiveStartDateChange={({ activeStartDate }) => setActiveStartDate(activeStartDate)}
                                 formatDay={(locale, date) => date.getDate()}
                                 tileClassName={({ date }) => {
                                     const formatted = new Date(date.getTime() - (date.getTimezoneOffset() * 60000))
